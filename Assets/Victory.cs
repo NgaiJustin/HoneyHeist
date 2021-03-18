@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Victory : MonoBehaviour
 {
-    public bool victory {get; private set;}
+    public bool victory;
 
     void Start()
     {

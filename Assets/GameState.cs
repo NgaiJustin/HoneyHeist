@@ -29,5 +29,6 @@ public class GameState : MonoBehaviour
         player.Reset();
         stage.Reset();
         victoryText.enabled = false;
+        victoryHitBox.victory = false;
     }
 }
