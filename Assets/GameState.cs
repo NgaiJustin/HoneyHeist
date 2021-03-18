@@ -28,5 +28,6 @@ public class GameState : MonoBehaviour
     {
         player.Reset();
         stage.Reset();
+        victoryText.enabled = false;
     }
 }

@@ -628,4 +628,4 @@ ScriptsOnlyBuild:
   platform: 2
   scenePathNames:
   - Assets/Scenes/SampleScene.unity
-  playerPath: C:/Users/bobin/Desktop/Prototype/Mac.app
+  playerPath: C:/Users/bobin/Desktop/Unity_Projects/ThrowAway_Prototype/Builds/Mac.app

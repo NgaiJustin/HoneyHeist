@@ -628,4 +628,4 @@ ScriptsOnlyBuild:
   platform: 19
   scenePathNames:
   - Assets/Scenes/SampleScene.unity
-  playerPath: C:/Users/bobin/Desktop/Prototype/ThrowAway_Prototype.exe
+  playerPath: C:/Users/bobin/Desktop/Unity_Projects/ThrowAway_Prototype/Builds/ThrowAway_Prototype.exe
