@@ -4,36 +4,64 @@ using UnityEngine;
 
 public class InputController : MonoBehaviour
 {
+    public bool clampButton;
     public Stage stage;
     public Player player;
     public PlayerRotator playerRotator;
 
+    public GameState gameState;
+
     // Update is called once per frame
-    void Update()
+    void FixedUpdate()
     {
-        if (Input.GetKey(KeyCode.A))
+        if (Input.GetKey(KeyCode.D))
         {
             stage.Rotate(true);
             if (player.OnPlatform())
             {
-                playerRotator.Rotate(true);
+                if (Input.GetKey(KeyCode.C) && clampButton)
+                {
+                    playerRotator.Rotate(true);
+                }
+                else if (!clampButton)
+                {
+                    playerRotator.Rotate(true);
+                }
             }
         }
-        else if (Input.GetKey(KeyCode.D))
+        else if (Input.GetKey(KeyCode.A))
         {
             stage.Rotate(false);
             if (player.OnPlatform())
             {
-                playerRotator.Rotate(false);
+                if (Input.GetKey(KeyCode.C) && clampButton)
+                {
+                    playerRotator.Rotate(false);
+                }
+                else if (!clampButton)
+                {
+                    playerRotator.Rotate(false);
+                }
             }
+        }
+
+        if (Input.GetKey(KeyCode.C) && clampButton && player.OnPlatform())
+        {
+            player.FreezePlayer();
+            player.ClampPlayer();
+        }
+        else if ((!Input.GetKey(KeyCode.C) && clampButton) || !player.OnPlatform())
+        {
+            player.UnClampPlayer();
+            player.UnFreezePlayer();
         }
         
         
-        if (Input.GetKey(KeyCode.LeftArrow) && !playerRotator.rotating)
+        if (Input.GetKey(KeyCode.LeftArrow) && !playerRotator.rotating && !player.freezePlayer)
         {
             player.Move(-1);
         }
-        else if(Input.GetKey(KeyCode.RightArrow) && !playerRotator.rotating)
+        else if(Input.GetKey(KeyCode.RightArrow) && !playerRotator.rotating && !player.freezePlayer)
         {
             player.Move(1);
         }
@@ -44,6 +72,11 @@ public class InputController : MonoBehaviour
         if (!player.OnPlatform())
         {
             playerRotator.StopRotation();
+        }
+
+        if (Input.GetKey(KeyCode.R))
+        {
+            gameState.Reset();
         }
     }
 }

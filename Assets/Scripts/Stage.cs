@@ -11,6 +11,8 @@ public class Stage : MonoBehaviour
 
     Coroutine currentCoroutine;
 
+    public Vector3 initialRotation;
+
     public void Rotate(bool left)
     {
         float rotation = ROTATION_DEGREES;
@@ -24,6 +26,11 @@ public class Stage : MonoBehaviour
             }
             currentCoroutine = StartCoroutine(RotationLerp(this.transform, rotation, DURATION_OF_ROTATION));
         }
+    }
+
+    public void Reset()
+    {
+        transform.rotation = Quaternion.Euler(initialRotation);
     }
 
     private IEnumerator RotationLerp(Transform transform, float rotation, float duration)
