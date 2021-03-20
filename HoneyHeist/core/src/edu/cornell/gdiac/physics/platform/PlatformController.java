@@ -20,7 +20,6 @@ import com.badlogic.gdx.physics.box2d.*;
 
 import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.audio.SoundBuffer;
-import edu.cornell.gdiac.physics.rocket.RocketModel;
 import edu.cornell.gdiac.util.*;
 import edu.cornell.gdiac.physics.*;
 import edu.cornell.gdiac.physics.obstacle.*;
@@ -189,20 +188,20 @@ public class PlatformController extends WorldController implements ContactListen
 		addObject(avatar);
 
 		// Create rope bridge
-		dwidth  = bridgeTexture.getRegionWidth()/scale.x;
-		dheight = bridgeTexture.getRegionHeight()/scale.y;
-		RopeBridge bridge = new RopeBridge(constants.get("bridge"), dwidth, dheight);
-		bridge.setTexture(bridgeTexture);
-		bridge.setDrawScale(scale);
-		addObject(bridge);
+//		dwidth  = bridgeTexture.getRegionWidth()/scale.x;
+//		dheight = bridgeTexture.getRegionHeight()/scale.y;
+//		RopeBridge bridge = new RopeBridge(constants.get("bridge"), dwidth, dheight);
+//		bridge.setTexture(bridgeTexture);
+//		bridge.setDrawScale(scale);
+//		addObject(bridge);
 		
 		// Create spinning platform
-		dwidth  = barrierTexture.getRegionWidth()/scale.x;
-		dheight = barrierTexture.getRegionHeight()/scale.y;
-		Spinner spinPlatform = new Spinner(constants.get("spinner"),dwidth,dheight);
-		spinPlatform.setDrawScale(scale);
-		spinPlatform.setTexture(barrierTexture);
-		addObject(spinPlatform);
+//		dwidth  = barrierTexture.getRegionWidth()/scale.x;
+//		dheight = barrierTexture.getRegionHeight()/scale.y;
+//		Spinner spinPlatform = new Spinner(constants.get("spinner"),dwidth,dheight);
+//		spinPlatform.setDrawScale(scale);
+//		spinPlatform.setTexture(barrierTexture);
+//		addObject(spinPlatform);
 
 		volume = constants.getFloat("volume", 1.0f);
 	}
