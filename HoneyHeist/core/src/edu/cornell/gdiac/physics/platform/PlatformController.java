@@ -11,6 +11,9 @@
 package edu.cornell.gdiac.physics.platform;
 
 import com.badlogic.gdx.math.*;
+import com.badlogic.gdx.physics.box2d.joints.RevoluteJointDef;
+import com.badlogic.gdx.physics.box2d.joints.WeldJoint;
+import com.badlogic.gdx.physics.box2d.joints.WeldJointDef;
 import com.badlogic.gdx.utils.*;
 import com.badlogic.gdx.audio.*;
 import com.badlogic.gdx.assets.*;
@@ -65,6 +68,8 @@ public class PlatformController extends WorldController implements ContactListen
 
 	/** Mark set to handle more sophisticated collision callbacks */
 	protected ObjectSet<Fixture> sensorFixtures;
+
+	private Stage gameStage;
 
 	/**
 	 * Creates and initialize a new instance of the platformer game
@@ -160,7 +165,8 @@ public class PlatformController extends WorldController implements ContactListen
 			obj.setName(wname+ii);
 			addObject(obj);
 	    }
-	    
+
+		/*
 	    String pname = "platform";
 		JsonValue platjv = constants.get("platforms");
 	    for (int ii = 0; ii < platjv.size; ii++) {
@@ -174,7 +180,10 @@ public class PlatformController extends WorldController implements ContactListen
 			obj.setTexture(earthTile);
 			obj.setName(pname+ii);
 			addObject(obj);
+
 	    }
+
+		 */
 
 	    // This world is heavier
 		world.setGravity( new Vector2(0,defaults.getFloat("gravity",0)) );
@@ -202,6 +211,14 @@ public class PlatformController extends WorldController implements ContactListen
 //		spinPlatform.setDrawScale(scale);
 //		spinPlatform.setTexture(barrierTexture);
 //		addObject(spinPlatform);
+
+		dwidth = barrierTexture.getRegionWidth()/scale.x;
+		dheight = barrierTexture.getRegionHeight()/scale.y;
+		Stage stage = new Stage(constants, dwidth, dheight, earthTile);
+		stage.setDrawScale(scale);
+		//stage.setTexture(earthTile);
+		gameStage = stage;
+		addObject(stage);
 
 		volume = constants.getFloat("volume", 1.0f);
 	}
@@ -255,6 +272,9 @@ public class PlatformController extends WorldController implements ContactListen
 	    if (avatar.isJumping()) {
 	    	jumpId = playSound( jumpSound, jumpId, volume );
 	    }
+
+	    gameStage.rotate();
+
 	}
 
 	/**
