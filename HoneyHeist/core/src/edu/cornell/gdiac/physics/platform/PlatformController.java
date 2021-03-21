@@ -11,6 +11,8 @@
 package edu.cornell.gdiac.physics.platform;
 
 import com.badlogic.gdx.math.*;
+import com.badlogic.gdx.physics.box2d.joints.RevoluteJointDef;
+import com.badlogic.gdx.physics.box2d.joints.WeldJointDef;
 import com.badlogic.gdx.utils.*;
 import com.badlogic.gdx.audio.*;
 import com.badlogic.gdx.assets.*;
@@ -65,6 +67,9 @@ public class PlatformController extends WorldController implements ContactListen
 
 	/** Mark set to handle more sophisticated collision callbacks */
 	protected ObjectSet<Fixture> sensorFixtures;
+
+	/** Array of all platforms*/
+	private Array<PolygonObstacle> platforms = new Array<PolygonObstacle>();
 
 	/**
 	 * Creates and initialize a new instance of the platformer game
@@ -173,6 +178,7 @@ public class PlatformController extends WorldController implements ContactListen
 			obj.setDrawScale(scale);
 			obj.setTexture(earthTile);
 			obj.setName(pname+ii);
+			platforms.add(obj);
 			addObject(obj);
 	    }
 
@@ -255,6 +261,25 @@ public class PlatformController extends WorldController implements ContactListen
 	    if (avatar.isJumping()) {
 	    	jumpId = playSound( jumpSound, jumpId, volume );
 	    }
+
+	    if (platforms != null) {
+			Vector2 worldPoint = new Vector2(16f, 9f);
+			for (PolygonObstacle platform : platforms) {
+				RotateAboutWorldPoint(platform.getBody(), 0.1f*dt, worldPoint);
+			}
+		}
+	}
+
+	private void RotateAboutWorldPoint(Body body, float amount, Vector2 worldPoint) {
+    	Transform bT = body.getTransform();
+    	Vector2 p = bT.getPosition().sub(worldPoint);
+    	float c = (float)Math.cos(amount);
+    	float s = (float)Math.sin(amount);
+    	float x = p.x * c - p.y * s;
+    	float y = p.x * s + p.y * c;
+    	Vector2 pos = new Vector2(x, y).add(worldPoint);
+    	float angle = bT.getRotation() + amount;
+		body.setTransform(pos, angle);
 	}
 
 	/**
