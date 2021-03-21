@@ -12,7 +12,6 @@ package edu.cornell.gdiac.physics.platform;
 
 import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.physics.box2d.joints.RevoluteJointDef;
-import com.badlogic.gdx.physics.box2d.joints.WeldJoint;
 import com.badlogic.gdx.physics.box2d.joints.WeldJointDef;
 import com.badlogic.gdx.utils.*;
 import com.badlogic.gdx.audio.*;
@@ -69,7 +68,8 @@ public class PlatformController extends WorldController implements ContactListen
 	/** Mark set to handle more sophisticated collision callbacks */
 	protected ObjectSet<Fixture> sensorFixtures;
 
-	private Stage gameStage;
+	/** Array of all platforms*/
+	private Array<PolygonObstacle> platforms = new Array<PolygonObstacle>();
 
 	/**
 	 * Creates and initialize a new instance of the platformer game
@@ -165,8 +165,7 @@ public class PlatformController extends WorldController implements ContactListen
 			obj.setName(wname+ii);
 			addObject(obj);
 	    }
-
-		/*
+	    
 	    String pname = "platform";
 		JsonValue platjv = constants.get("platforms");
 	    for (int ii = 0; ii < platjv.size; ii++) {
@@ -179,11 +178,9 @@ public class PlatformController extends WorldController implements ContactListen
 			obj.setDrawScale(scale);
 			obj.setTexture(earthTile);
 			obj.setName(pname+ii);
+			platforms.add(obj);
 			addObject(obj);
-
 	    }
-
-		 */
 
 	    // This world is heavier
 		world.setGravity( new Vector2(0,defaults.getFloat("gravity",0)) );
@@ -211,14 +208,6 @@ public class PlatformController extends WorldController implements ContactListen
 //		spinPlatform.setDrawScale(scale);
 //		spinPlatform.setTexture(barrierTexture);
 //		addObject(spinPlatform);
-
-		dwidth = barrierTexture.getRegionWidth()/scale.x;
-		dheight = barrierTexture.getRegionHeight()/scale.y;
-		Stage stage = new Stage(constants, dwidth, dheight, earthTile);
-		stage.setDrawScale(scale);
-		//stage.setTexture(earthTile);
-		gameStage = stage;
-		addObject(stage);
 
 		volume = constants.getFloat("volume", 1.0f);
 	}
@@ -273,8 +262,24 @@ public class PlatformController extends WorldController implements ContactListen
 	    	jumpId = playSound( jumpSound, jumpId, volume );
 	    }
 
-	    gameStage.rotate();
+	    if (platforms != null) {
+			Vector2 worldPoint = new Vector2(16f, 9f);
+			for (PolygonObstacle platform : platforms) {
+				RotateAboutWorldPoint(platform.getBody(), 0.1f*dt, worldPoint);
+			}
+		}
+	}
 
+	private void RotateAboutWorldPoint(Body body, float amount, Vector2 worldPoint) {
+    	Transform bT = body.getTransform();
+    	Vector2 p = bT.getPosition().sub(worldPoint);
+    	float c = (float)Math.cos(amount);
+    	float s = (float)Math.sin(amount);
+    	float x = p.x * c - p.y * s;
+    	float y = p.x * s + p.y * c;
+    	Vector2 pos = new Vector2(x, y).add(worldPoint);
+    	float angle = bT.getRotation() + amount;
+		body.setTransform(pos, angle);
 	}
 
 	/**
