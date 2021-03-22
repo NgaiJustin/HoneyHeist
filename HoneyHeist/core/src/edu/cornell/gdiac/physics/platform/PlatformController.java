@@ -168,6 +168,7 @@ public class PlatformController extends WorldController implements ContactListen
 	    
 	    String pname = "platform";
 		JsonValue platjv = constants.get("platforms");
+
 	    for (int ii = 0; ii < platjv.size; ii++) {
 	        PolygonObstacle obj;
 	    	obj = new PolygonObstacle(platjv.get(ii).asFloatArray(), 0, 0);
