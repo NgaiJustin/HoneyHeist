@@ -119,6 +119,21 @@ public class PlatformModel extends ComplexObstacle {
 	public void addRotation(float amount) { totalRotation += amount; }
 
 	public float getTotalRotation() { return totalRotation; }
+
+	/**
+	 * Updates the object's physics state (NOT GAME LOGIC).
+	 *
+	 * This method is called AFTER the collision resolution state. Therefore, it
+	 * should not be used to process actions or any other gameplay information.  Its
+	 * primary purpose is to adjust changes to the fixture, which have to take place
+	 * after collision.
+	 *
+	 * @param dt Timing values from parent loop
+	 */
+	public void update(float dt){
+
+	}
+
 	
 	public void setTexture(TextureRegion texture) {
 		this.texture = texture;
