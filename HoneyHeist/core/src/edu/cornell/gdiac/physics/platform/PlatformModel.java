@@ -15,54 +15,80 @@
 package edu.cornell.gdiac.physics.platform;
 
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.physics.box2d.Body;
+import com.badlogic.gdx.physics.box2d.BodyDef;
+import com.badlogic.gdx.physics.box2d.Transform;
 import com.badlogic.gdx.physics.box2d.World;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.physics.obstacle.BoxObstacle;
 import edu.cornell.gdiac.physics.obstacle.ComplexObstacle;
+import edu.cornell.gdiac.physics.obstacle.Obstacle;
+import edu.cornell.gdiac.physics.obstacle.PolygonObstacle;
 
 public class PlatformModel extends ComplexObstacle {
 	/** The initializing data (to avoid magic numbers) */
 	private final JsonValue data;
 
-	/** The primary spinner obstacle */
-	private BoxObstacle barrier;
+	/** Cache of the texture used by bodies in this Complex Obstacle */
+	protected TextureRegion texture;
+
 
 	/**
-	 * Creates a new spinner with the given physics data.
+	 * Creates a new platform model with the given data.
 	 *
 	 * The size is expressed in physics units NOT pixels.  In order for
 	 * drawing to work properly, you MUST set the drawScale. The drawScale
 	 * converts the physics units to pixels.
 	 *
-	 * @param data  	The physics constants for this rope bridge
-	 * @param width		The object width in physics units
-	 * @param height	The object width in physics units
+	 * @param data  	The physics constants and polygon information for the platforms in this model
 	 */
-	public PlatformModel(JsonValue data, float width, float height) {
-        super(data.get("pos").getFloat(0),data.get("pos").getFloat(1));
-        setName("spinner");
+	public PlatformModel(JsonValue data) {
+		super(0,0);
         this.data = data;
 
-        // Create the barrier
-		float x = data.get("pos").getFloat(0);
-		float y = data.get("pos").getFloat(1);
-        barrier = new BoxObstacle(x,y,width,height);
-        barrier.setName("barrier");
-        barrier.setDensity(data.getFloat("high_density", 0));
-        bodies.add(barrier);
-        
-		//#region INSERT CODE HERE
-        // Create a pin to anchor the barrier 
-        // Radius:  data.getFloat("radius")
-        // Density: data.getFloat("low_density")
-		// Name: "pin"
-        		
-        //#endregion
+		String pname = "platform";
+
+		for (int ii = 0; ii < data.size; ii++) {
+			PolygonObstacle obj;
+			obj = new PolygonObstacle(data.get(ii).asFloatArray(), 0, 0);
+			obj.setBodyType(BodyDef.BodyType.StaticBody);
+			obj.setDensity(data.getFloat( "density", 0.0f ));
+			obj.setFriction(data.getFloat( "friction", 0.0f ));
+			obj.setRestitution(data.getFloat( "restitution", 0.0f ));
+			obj.setName(pname+ii);
+			bodies.add(obj);
+		}
     }
-	
+
+
+	/**
+	 *  rotates all bodies contained in the platform model about the given point by
+	 *  the given amount of degrees in radians.
+	 *
+	 * @param amount	the amount in radians to be rotated
+	 * @param point		the point to rotate about
+	 */
+	public void RotateAboutPoint(float amount, Vector2 point) {
+		for(Object obj : bodies) {
+			Body body = ((PolygonObstacle)obj).getBody();
+			Transform bT = body.getTransform();
+			Vector2 p = bT.getPosition().sub(point);
+			float c = (float) Math.cos(amount);
+			float s = (float) Math.sin(amount);
+			float x = p.x * c - p.y * s;
+			float y = p.x * s + p.y * c;
+			Vector2 pos = new Vector2(x, y).add(point);
+			float angle = bT.getRotation() + amount;
+			body.setTransform(pos, angle);
+		}
+	}
+
+
 	/**
 	 * Creates the joints for this object.
-	 * 
+	 *
 	 * We implement our custom logic here.
 	 *
 	 * @param world Box2D world to store joints
@@ -81,10 +107,14 @@ public class PlatformModel extends ComplexObstacle {
 	}
 	
 	public void setTexture(TextureRegion texture) {
-		barrier.setTexture(texture);
+		this.texture = texture;
+		for(Obstacle obj : bodies) {
+			((PolygonObstacle) obj).setTexture(texture);
+		}
+
 	}
 	
 	public TextureRegion getTexture() {
-		return barrier.getTexture();
+		return texture;
 	}
 }
