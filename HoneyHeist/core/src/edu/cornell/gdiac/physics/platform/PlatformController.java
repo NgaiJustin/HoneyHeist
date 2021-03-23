@@ -64,12 +64,11 @@ public class PlatformController extends WorldController implements ContactListen
 	private DudeModel avatar;
 	/** Reference to the goalDoor (for collision detection) */
 	private BoxObstacle goalDoor;
+	/** Reference to the platform model */
+	private PlatformModel platforms;
 
 	/** Mark set to handle more sophisticated collision callbacks */
 	protected ObjectSet<Fixture> sensorFixtures;
-
-	/** Array of all platforms*/
-	private Array<PolygonObstacle> platforms = new Array<PolygonObstacle>();
 
 	/**
 	 * Creates and initialize a new instance of the platformer game
@@ -165,23 +164,12 @@ public class PlatformController extends WorldController implements ContactListen
 			obj.setName(wname+ii);
 			addObject(obj);
 	    }
-	    
-	    String pname = "platform";
-		JsonValue platjv = constants.get("platforms");
 
-	    for (int ii = 0; ii < platjv.size; ii++) {
-	        PolygonObstacle obj;
-	    	obj = new PolygonObstacle(platjv.get(ii).asFloatArray(), 0, 0);
-			obj.setBodyType(BodyDef.BodyType.StaticBody);
-			obj.setDensity(defaults.getFloat( "density", 0.0f ));
-			obj.setFriction(defaults.getFloat( "friction", 0.0f ));
-			obj.setRestitution(defaults.getFloat( "restitution", 0.0f ));
-			obj.setDrawScale(scale);
-			obj.setTexture(earthTile);
-			obj.setName(pname+ii);
-			platforms.add(obj);
-			addObject(obj);
-	    }
+	    // Create platforms
+		platforms = new PlatformModel(constants.get("platforms"));
+		platforms.setDrawScale(scale);
+		platforms.setTexture(earthTile);
+		addObject(platforms);
 
 	    // This world is heavier
 		world.setGravity( new Vector2(0,defaults.getFloat("gravity",0)) );
@@ -265,22 +253,8 @@ public class PlatformController extends WorldController implements ContactListen
 
 	    if (platforms != null) {
 			Vector2 worldPoint = new Vector2(16f, 9f);
-			for (PolygonObstacle platform : platforms) {
-				RotateAboutWorldPoint(platform.getBody(), 0.1f*dt, worldPoint);
-			}
+			platforms.RotateAboutPoint(0.1f*dt,worldPoint);
 		}
-	}
-
-	private void RotateAboutWorldPoint(Body body, float amount, Vector2 worldPoint) {
-    	Transform bT = body.getTransform();
-    	Vector2 p = bT.getPosition().sub(worldPoint);
-    	float c = (float)Math.cos(amount);
-    	float s = (float)Math.sin(amount);
-    	float x = p.x * c - p.y * s;
-    	float y = p.x * s + p.y * c;
-    	Vector2 pos = new Vector2(x, y).add(worldPoint);
-    	float angle = bT.getRotation() + amount;
-		body.setTransform(pos, angle);
 	}
 
 	/**
