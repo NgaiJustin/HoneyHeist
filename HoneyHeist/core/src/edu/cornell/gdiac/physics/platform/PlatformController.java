@@ -253,7 +253,7 @@ public class PlatformController extends WorldController implements ContactListen
 
 	    if (platforms != null) {
 			Vector2 worldPoint = new Vector2(16f, 9f);
-			platforms.RotateAboutPoint(0.1f*dt,worldPoint);
+			platforms.rotateAboutPoint(0.1f*dt,worldPoint);
 		}
 	}
 
