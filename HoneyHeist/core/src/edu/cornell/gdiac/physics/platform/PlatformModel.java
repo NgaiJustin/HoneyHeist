@@ -73,7 +73,7 @@ public class PlatformModel extends ComplexObstacle {
 	 * @param amount	the amount in radians to be rotated
 	 * @param point		the point to rotate about
 	 */
-	public void RotateAboutPoint(float amount, Vector2 point) {
+	public void rotateAboutPoint(float amount, Vector2 point) {
 		for(Object obj : bodies) {
 			Body body = ((PolygonObstacle)obj).getBody();
 			Transform bT = body.getTransform();
@@ -109,6 +109,13 @@ public class PlatformModel extends ComplexObstacle {
 		return true;
 	}
 
+
+	/**
+	 * adds the specified amount (in radians) to the total remaining
+	 * rotation of the platform model
+	 *
+	 * @param amount	the amount in radians to be added to total rotation
+	 */
 	public void addRotation(float amount) { totalRotation += amount; }
 
 	public float getTotalRotation() { return totalRotation; }
