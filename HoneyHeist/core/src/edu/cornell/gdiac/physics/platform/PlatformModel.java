@@ -34,6 +34,9 @@ public class PlatformModel extends ComplexObstacle {
 	/** Cache of the texture used by bodies in this Complex Obstacle */
 	protected TextureRegion texture;
 
+	/** Amount of degrees remaining to be rotated */
+	private float totalRotation;
+
 
 	/**
 	 * Creates a new platform model with the given data.
@@ -105,6 +108,10 @@ public class PlatformModel extends ComplexObstacle {
 
 		return true;
 	}
+
+	public void addRotation(float amount) { totalRotation += amount; }
+
+	public float getTotalRotation() { return totalRotation; }
 	
 	public void setTexture(TextureRegion texture) {
 		this.texture = texture;
