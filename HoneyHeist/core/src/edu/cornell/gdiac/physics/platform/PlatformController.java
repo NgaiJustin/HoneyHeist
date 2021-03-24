@@ -238,8 +238,8 @@ public class PlatformController extends WorldController implements ContactListen
 	public void update(float dt) {
 		// Process actions in object model
 		avatar.setMovement(InputController.getInstance().getHorizontal() *avatar.getForce());
-//		avatar.setJumping(InputController.getInstance().didPrimary());
-//		avatar.setShooting(InputController.getInstance().didSecondary());
+		//avatar.setJumping(InputController.getInstance().didPrimary());
+		//avatar.setShooting(InputController.getInstance().didSecondary());
 		
 		// Add a bullet if we fire
 		if (avatar.isShooting()) {
@@ -253,7 +253,12 @@ public class PlatformController extends WorldController implements ContactListen
 
 	    if (platforms != null) {
 			Vector2 worldPoint = new Vector2(16f, 9f);
-			platforms.rotateAboutPoint(0.1f*dt,worldPoint);
+			//platforms.rotateAboutPoint(0.1f*dt,worldPoint);
+			if (InputController.getInstance().didSecondary()){
+				platforms.startRotation(true, worldPoint);
+			} else if (InputController.getInstance().didPrimary()){
+				platforms.startRotation(false, worldPoint);
+			}
 		}
 	}
 
