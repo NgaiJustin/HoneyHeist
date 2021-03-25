@@ -254,9 +254,9 @@ public class PlatformController extends WorldController implements ContactListen
 	    if (platforms != null) {
 			Vector2 worldPoint = new Vector2(16f, 9f);
 			//platforms.rotateAboutPoint(0.1f*dt,worldPoint);
-			if (InputController.getInstance().didSecondary()){
+			if (InputController.getInstance().didRotate()){
 				platforms.startRotation(true, worldPoint);
-			} else if (InputController.getInstance().didPrimary()){
+			} else if (InputController.getInstance().didAntiRotate()){
 				platforms.startRotation(false, worldPoint);
 			}
 		}
