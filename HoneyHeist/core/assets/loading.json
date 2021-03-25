@@ -1,6 +1,6 @@
 {
 	"textures": {
-        "background": "shared/loading.png",
+        "background": "shared/loadingtemp.png",
 		"play": "shared/play.png",
         "progress": {
             "file":      "shared/progressbar.png",

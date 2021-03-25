@@ -15,9 +15,7 @@
 
 import com.badlogic.gdx.*;
 import edu.cornell.gdiac.util.*;
-import edu.cornell.gdiac.assets.*;
-import edu.cornell.gdiac.physics.rocket.*;
-import edu.cornell.gdiac.physics.ragdoll.*;
+import edu.cornell.gdiac.assets.*;;
 import edu.cornell.gdiac.physics.platform.*;
 
 /**
@@ -59,12 +57,9 @@ public class GDXRoot extends Game implements ScreenListener {
 		canvas  = new GameCanvas();
 		loading = new LoadingMode("assets.json",canvas,1);
 
-		// Initialize the three game worlds
-//		controllers = new WorldController[3];
+		// Initialize the game world
 		controllers = new WorldController[1];
-//		controllers[0] = new RocketController();
 		controllers[0] = new PlatformController();
-//		controllers[2] = new RagdollController();
 		current = 0;
 		loading.setScreenListener(this);
 		setScreen(loading);
@@ -85,7 +80,6 @@ public class GDXRoot extends Game implements ScreenListener {
 		canvas.dispose();
 		canvas = null;
 	
-		// Unload all of the resources
 		// Unload all of the resources
 		if (directory != null) {
 			directory.unloadAssets();
