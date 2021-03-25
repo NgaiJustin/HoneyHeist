@@ -11,8 +11,6 @@
 package edu.cornell.gdiac.physics.platform;
 
 import com.badlogic.gdx.math.*;
-import com.badlogic.gdx.physics.box2d.joints.RevoluteJointDef;
-import com.badlogic.gdx.physics.box2d.joints.WeldJointDef;
 import com.badlogic.gdx.utils.*;
 import com.badlogic.gdx.audio.*;
 import com.badlogic.gdx.assets.*;
@@ -64,8 +62,6 @@ public class PlatformController extends WorldController implements ContactListen
 	private DudeModel avatar;
 	/** Reference to the goalDoor (for collision detection) */
 	private BoxObstacle goalDoor;
-	/** Reference to the platform model */
-	private PlatformModel platforms;
 
 	/** Mark set to handle more sophisticated collision callbacks */
 	protected ObjectSet<Fixture> sensorFixtures;
@@ -164,12 +160,21 @@ public class PlatformController extends WorldController implements ContactListen
 			obj.setName(wname+ii);
 			addObject(obj);
 	    }
-
-	    // Create platforms
-		platforms = new PlatformModel(constants.get("platforms"));
-		platforms.setDrawScale(scale);
-		platforms.setTexture(earthTile);
-		addObject(platforms);
+	    
+	    String pname = "platform";
+		JsonValue platjv = constants.get("platforms");
+	    for (int ii = 0; ii < platjv.size; ii++) {
+	        PolygonObstacle obj;
+	    	obj = new PolygonObstacle(platjv.get(ii).asFloatArray(), 0, 0);
+			obj.setBodyType(BodyDef.BodyType.StaticBody);
+			obj.setDensity(defaults.getFloat( "density", 0.0f ));
+			obj.setFriction(defaults.getFloat( "friction", 0.0f ));
+			obj.setRestitution(defaults.getFloat( "restitution", 0.0f ));
+			obj.setDrawScale(scale);
+			obj.setTexture(earthTile);
+			obj.setName(pname+ii);
+			addObject(obj);
+	    }
 
 	    // This world is heavier
 		world.setGravity( new Vector2(0,defaults.getFloat("gravity",0)) );
@@ -238,8 +243,8 @@ public class PlatformController extends WorldController implements ContactListen
 	public void update(float dt) {
 		// Process actions in object model
 		avatar.setMovement(InputController.getInstance().getHorizontal() *avatar.getForce());
-		//avatar.setJumping(InputController.getInstance().didPrimary());
-		//avatar.setShooting(InputController.getInstance().didSecondary());
+//		avatar.setJumping(InputController.getInstance().didPrimary());
+//		avatar.setShooting(InputController.getInstance().didSecondary());
 		
 		// Add a bullet if we fire
 		if (avatar.isShooting()) {
@@ -250,16 +255,6 @@ public class PlatformController extends WorldController implements ContactListen
 	    if (avatar.isJumping()) {
 	    	jumpId = playSound( jumpSound, jumpId, volume );
 	    }
-
-	    if (platforms != null) {
-			Vector2 worldPoint = new Vector2(16f, 9f);
-			//platforms.rotateAboutPoint(0.1f*dt,worldPoint);
-			if (InputController.getInstance().didSecondary()){
-				platforms.startRotation(true, worldPoint);
-			} else if (InputController.getInstance().didPrimary()){
-				platforms.startRotation(false, worldPoint);
-			}
-		}
 	}
 
 	/**
