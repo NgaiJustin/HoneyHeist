@@ -34,23 +34,6 @@ public class PlatformModel extends ComplexObstacle {
 	/** Cache of the texture used by bodies in this Complex Obstacle */
 	protected TextureRegion texture;
 
-	/** Origin of the stage */
-	private Vector2 origin;
-
-	/** total radians for a single rotation */
-	float rotationAngle;
-
-	/** Amount of radians remaining to be rotated */
-	private float remainingAngle;
-
-	/** Whether the platforms are rotating or not */
-	private boolean isRotating = false;
-
-	/** Speed at which the platforms rotate in radians/second */
-	private float rotationSpeed;
-
-	/** Whether the rotation is clockwise or not */
-	private boolean isClockwise;
 
 
 	/**
@@ -92,6 +75,7 @@ public class PlatformModel extends ComplexObstacle {
 	 * @param amount	the amount in radians to be rotated
 	 * @param point		the point to rotate about
 	 */
+	@Override
 	public void rotateAboutPoint(float amount, Vector2 point) {
 		for(Object obj : bodies) {
 			Body body = ((PolygonObstacle)obj).getBody();
@@ -107,6 +91,30 @@ public class PlatformModel extends ComplexObstacle {
 		}
 	}
 
+	/**
+	 * Updates the object's physics state (NOT GAME LOGIC).
+	 *
+	 * This method is called AFTER the collision resolution state. Therefore, it
+	 * should not be used to process actions or any other gameplay information.  Its
+	 * primary purpose is to adjust changes to the fixture, which have to take place
+	 * after collision.
+	 *
+	 * @param dt Timing values from parent loop
+	 */
+	public void update(float dt) {
+		if (!isRotating) return;
+
+		float rotationAmount = rotationSpeed * dt;
+		if (rotationAmount > remainingAngle){
+			rotationAmount = remainingAngle;
+			isRotating = false;
+		}
+		remainingAngle -= rotationAmount;
+		if (!isClockwise) {
+			rotationAmount *= -1;
+		}
+		rotateAboutPoint(rotationAmount, origin);
+	}
 
 	/**
 	 * Creates the joints for this object.
@@ -126,58 +134,6 @@ public class PlatformModel extends ComplexObstacle {
 		//#endregion
 
 		return true;
-	}
-
-
-	/**
-	 * adds the specified amount (in radians) to the total remaining
-	 * rotation of the platform model
-	 *
-	 * @param amount	the amount in radians to be added to total rotation
-	 */
-	public void addRotation(float amount) { remainingAngle += amount; }
-
-	public float getRemainingAngle() { return remainingAngle; }
-
-	/**
-	 * Updates the object's physics state (NOT GAME LOGIC).
-	 *
-	 * This method is called AFTER the collision resolution state. Therefore, it
-	 * should not be used to process actions or any other gameplay information.  Its
-	 * primary purpose is to adjust changes to the fixture, which have to take place
-	 * after collision.
-	 *
-	 * @param dt Timing values from parent loop
-	 */
-	public void update(float dt){
-		if (!isRotating) return;
-
-
-		float rotationAmount = rotationSpeed * dt;
-		if (rotationAmount > remainingAngle){
-			rotationAmount = remainingAngle;
-			isRotating = false;
-		}
-		remainingAngle -= rotationAmount;
-		if (!isClockwise) {
-			rotationAmount *= -1;
-		}
-		rotateAboutPoint(rotationAmount, origin);
-
-	}
-
-	/**
-	 * Begins rotation of the stage.
-	 *
-	 * @param isClockwise true if rotating clockwise, false if rotating counterclockwise.
-	 */
-	public void startRotation(boolean isClockwise, Vector2 point){
-		if (isRotating) return;
-
-		origin = point;
-		isRotating = true;
-		this.isClockwise = isClockwise;
-		addRotation(rotationAngle);
 	}
 
 	
