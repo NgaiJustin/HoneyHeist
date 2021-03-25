@@ -336,7 +336,7 @@ public abstract class WorldController implements Screen {
 	 * This method disposes of the world and creates a new one.
 	 */
 	public abstract void reset();
-	
+
 	/**
 	 * Returns whether to process the update loop
 	 *
@@ -356,9 +356,9 @@ public abstract class WorldController implements Screen {
 		}
 
 		// Toggle debug
-		if (input.didDebug()) {
-			debug = !debug;
-		}
+//		if (input.didDebug()) {
+//			debug = !debug;
+//		}
 		
 		// Handle resets
 		if (input.didReset()) {
@@ -374,10 +374,10 @@ public abstract class WorldController implements Screen {
 			pause();
 			listener.exitScreen(this, EXIT_NEXT);
 			return false;
-		} else if (input.didRetreat()) {
-			pause();
-			listener.exitScreen(this, EXIT_PREV);
-			return false;
+//		} else if (input.didRetreat()) {
+//			pause();
+//			listener.exitScreen(this, EXIT_PREV);
+//			return false;
 		} else if (countdown > 0) {
 			countdown--;
 		} else if (countdown == 0) {
