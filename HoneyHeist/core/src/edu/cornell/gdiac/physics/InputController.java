@@ -200,22 +200,16 @@ public class InputController {
 	/**
 	 * Returns true if the clockwise rotation button was pressed.
 	 *
-	 * This is a sustained button. It will returns true as long as the player
-	 * holds it down.
-	 *
 	 * @return true if the clockwise rotation button was pressed.
 	 */
-	public boolean didRotate() { return rotationPressed; }
+	public boolean didRotate() { return rotationPressed && !rotationPrevious; }
 
 	/**
 	 * Returns true if the anti-clockwise rotation button was pressed.
 	 *
-	 * This is a sustained button. It will returns true as long as the player
-	 * holds it down.
-	 *
 	 * @return true if the anti-clockwise rotation button was pressed.
 	 */
-	public boolean didAntiRotate() { return anti_rotationPressed; }
+	public boolean didAntiRotate() { return anti_rotationPressed && !anti_rotationPrevious; }
 
 
 	/**
@@ -305,6 +299,8 @@ public class InputController {
 		exitPrevious = exitPressed;
 		nextPrevious = nextPressed;
 //		prevPrevious = prevPressed;
+		rotationPrevious = rotationPressed;
+		anti_rotationPrevious = anti_rotationPressed;
 		
 		// Check to see if a GamePad is connected
 		if (xbox != null && xbox.isConnected()) {
