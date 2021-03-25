@@ -60,7 +60,7 @@ public class LevelController extends WorldController implements ContactListener 
 	/** Physics constants for initialization */
 	private JsonValue constants;
 	/** Reference to the character avatar */
-	private DudeModel avatar;
+	private AntModel avatar;
 	/** Reference to the goalDoor (for collision detection) */
 	private BoxObstacle goalDoor;
 	/** Reference to the platform model */
@@ -181,7 +181,7 @@ public class LevelController extends WorldController implements ContactListener 
 		// Create dude
 		dwidth  = avatarTexture.getRegionWidth()/scale.x;
 		dheight = avatarTexture.getRegionHeight()/scale.y;
-		avatar = new DudeModel(constants.get("dude"), dwidth, dheight);
+		avatar = new AntModel(constants.get("dude"), dwidth, dheight);
 		avatar.setDrawScale(scale);
 		avatar.setTexture(avatarTexture);
 		addObject(avatar);
@@ -263,14 +263,14 @@ public class LevelController extends WorldController implements ContactListener 
 		//avatar.setShooting(InputController.getInstance().didSecondary());
 		
 		// Add a bullet if we fire
-		if (avatar.isShooting()) {
-			createBullet();
-		}
+		//if (avatar.isShooting()) {
+		//	createBullet();
+		//}
 		
 		avatar.applyForce();
-	    if (avatar.isJumping()) {
-	    	jumpId = playSound( jumpSound, jumpId, volume );
-	    }
+	    //if (avatar.isJumping()) {
+	    // 	jumpId = playSound( jumpSound, jumpId, volume );
+	    //}
 
 
 	    if (platforms != null) {
