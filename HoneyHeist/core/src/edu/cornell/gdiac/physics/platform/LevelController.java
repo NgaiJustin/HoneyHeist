@@ -10,21 +10,20 @@
  */
 package edu.cornell.gdiac.physics.platform;
 
-import com.badlogic.gdx.math.*;
-import com.badlogic.gdx.physics.box2d.joints.RevoluteJointDef;
-import com.badlogic.gdx.physics.box2d.joints.WeldJointDef;
-import com.badlogic.gdx.utils.*;
-import com.badlogic.gdx.audio.*;
-import com.badlogic.gdx.assets.*;
-import com.badlogic.gdx.graphics.*;
-import com.badlogic.gdx.graphics.g2d.*;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
-
+import com.badlogic.gdx.utils.JsonValue;
+import com.badlogic.gdx.utils.ObjectSet;
 import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.audio.SoundBuffer;
-import edu.cornell.gdiac.util.*;
-import edu.cornell.gdiac.physics.*;
-import edu.cornell.gdiac.physics.obstacle.*;
+import edu.cornell.gdiac.physics.InputController;
+import edu.cornell.gdiac.physics.WorldController;
+import edu.cornell.gdiac.physics.obstacle.BoxObstacle;
+import edu.cornell.gdiac.physics.obstacle.Obstacle;
+import edu.cornell.gdiac.physics.obstacle.PolygonObstacle;
+import edu.cornell.gdiac.physics.obstacle.WheelObstacle;
 
 /**
  * Gameplay specific controller for the platformer game.  
@@ -35,7 +34,7 @@ import edu.cornell.gdiac.physics.obstacle.*;
  * This is the purpose of our AssetState variable; it ensures that multiple instances
  * place nicely with the static assets.
  */
-public class PlatformController extends WorldController implements ContactListener {
+public class LevelController extends WorldController implements ContactListener {
 	/** Texture asset for character avatar */
 	private TextureRegion avatarTexture;
 	/** Texture asset for the spinning barrier */
@@ -70,18 +69,23 @@ public class PlatformController extends WorldController implements ContactListen
 	/** Mark set to handle more sophisticated collision callbacks */
 	protected ObjectSet<Fixture> sensorFixtures;
 
+	/** Origin of the world */
+	private Vector2 origin;
+
 	/**
 	 * Creates and initialize a new instance of the platformer game
 	 *
 	 * The game has default gravity and other settings
 	 */
-	public PlatformController() {
+	public LevelController() {
 		super(DEFAULT_WIDTH,DEFAULT_HEIGHT,DEFAULT_GRAVITY);
 		setDebug(false);
 		setComplete(false);
 		setFailure(false);
 		world.setContactListener(this);
 		sensorFixtures = new ObjectSet<Fixture>();
+		origin = new Vector2(bounds.width/2, bounds.height/2);
+		System.out.println(origin);
 	}
 
 	/**
@@ -200,6 +204,23 @@ public class PlatformController extends WorldController implements ContactListen
 
 		volume = constants.getFloat("volume", 1.0f);
 	}
+
+
+	/**
+	 * Start clockwise rotation.
+	 * Will only rotate once, and spamming will not queue more rotations.
+	 */
+	public void rotateClockwise(){
+		platforms.startRotation(true, origin);
+	}
+
+	/**
+	 * Start counterclockwise rotation.
+	 * Will only rotate once, and spamming will not queue more rotations.
+	 */
+	public void rotateCounterClockwise(){
+		platforms.startRotation(false, origin);
+	}
 	
 	/**
 	 * Returns whether to process the update loop
@@ -251,18 +272,18 @@ public class PlatformController extends WorldController implements ContactListen
 	    	jumpId = playSound( jumpSound, jumpId, volume );
 	    }
 
-	    /*
+
 	    if (platforms != null) {
-			Vector2 worldPoint = new Vector2(16f, 9f);
+			//Vector2 worldPoint = new Vector2(16f, 9f);
 			//platforms.rotateAboutPoint(0.1f*dt,worldPoint);
-			if (InputController.getInstance().didSecondary()){
-				platforms.startRotation(true, worldPoint);
-			} else if (InputController.getInstance().didPrimary()){
-				platforms.startRotation(false, worldPoint);
+			if (InputController.getInstance().didRotate()){
+				rotateClockwise();
+			} else if (InputController.getInstance().didAntiRotate()){
+				rotateCounterClockwise();
 			}
 		}
 
-	     */
+
 	}
 
 	/**
