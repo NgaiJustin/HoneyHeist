@@ -59,7 +59,7 @@ public class GDXRoot extends Game implements ScreenListener {
 
 		// Initialize the game world
 		controllers = new WorldController[1];
-		controllers[0] = new PlatformController();
+		controllers[0] = new LevelController();
 		current = 0;
 		loading.setScreenListener(this);
 		setScreen(loading);
