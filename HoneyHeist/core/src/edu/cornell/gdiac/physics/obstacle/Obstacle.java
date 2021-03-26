@@ -51,6 +51,20 @@ public abstract class Obstacle {
 	/** Drawing scale to convert physics units to pixels */
 	protected Vector2 drawScale;
 
+	//Rotation related information
+	/** Origin of the stage */
+	protected Vector2 stageCenter;
+	/** total radians for a single rotation */
+	protected float rotationAngle;
+	/** Amount of radians remaining to be rotated */
+	protected float remainingAngle;
+	/** Whether the platforms are rotating or not */
+	protected boolean isRotating = false;
+	/** Speed at which the platforms rotate in radians/second */
+	protected float rotationSpeed;
+	/** Whether the rotation is clockwise or not */
+	protected boolean isClockwise;
+
 	/// Track garbage collection status
 	/** Whether the object should be removed from the world on next pass */
 	private boolean toRemove;
@@ -949,6 +963,42 @@ public abstract class Obstacle {
 		drawScale = new Vector2(1,1);
 	}
 
+	/**
+	 *  rotates all bodies contained in the platform model about the given point by
+	 *  the given amount of degrees in radians.
+	 *
+	 * @param amount	the amount in radians to be rotated
+	 * @param point		the point to rotate about
+	 */
+	protected void rotateAboutPoint(float amount, Vector2 point) {
+		Body body = getBody();
+		assert(body != null);
+		Transform bT = body.getTransform();
+		Vector2 p = bT.getPosition().sub(point);
+		float c = (float) Math.cos(amount);
+		float s = (float) Math.sin(amount);
+		float x = p.x * c - p.y * s;
+		float y = p.x * s + p.y * c;
+		Vector2 pos = new Vector2(x, y).add(point);
+		float angle = bT.getRotation() + amount;
+		body.setTransform(pos, angle);
+	}
+
+	/**
+	 * adds the specified amount (in radians) to the total remaining
+	 * rotation of the platform model
+	 *
+	 * @param amount	the amount in radians to be added to total rotation
+	 */
+	protected void addRotation(float amount) { remainingAngle += amount; }
+
+	/**
+	 * returns the amount (in radians) of rotation remaining to be performed
+	 *
+	 * @return	the amount in radians remaining to be rotated
+	 */
+	public float getRemainingAngle() { return remainingAngle; }
+
 	/// Abstract Methods
 	/**
 	 * Creates the physics Body(s) for this object, adding them to the world.
@@ -980,7 +1030,20 @@ public abstract class Obstacle {
 	 *
 	 * @param dt Timing values from parent loop
 	 */
-	public void update(float delta) { 
+	public void update(float dt) {
+	}
+
+	/**
+	 * Begins rotation of the stage.
+	 *
+	 * @param isClockwise true if rotating clockwise, false if rotating counterclockwise.
+	 */
+	public void startRotation(boolean isClockwise, Vector2 point){
+		if (isRotating) return;
+		stageCenter = point;
+		isRotating = true;
+		this.isClockwise = isClockwise;
+		addRotation(rotationAngle);
 	}
 
 	/**
