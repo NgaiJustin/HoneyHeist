@@ -28,6 +28,8 @@ public class AntModel extends CapsuleObstacle {
     private float   movement;
     /** Which direction is the character facing */
     private boolean faceRight;
+    /** If the character is the "upside down" */
+    private boolean upsideDown;
     /** Whether our feet are on the ground */
     private boolean isGrounded;
     /** The physics shape of this object */
@@ -135,6 +137,14 @@ public class AntModel extends CapsuleObstacle {
     }
 
     /**
+     * Returns true if this character is upside down
+     *
+     * @return true if this character is upside down
+     */
+    public boolean isUpsideDown() {
+        return upsideDown;
+    }
+    /**
      * Creates a ant avatar with the given physics data
      *
      * @param data  	The physics constants for the player Ant
@@ -159,6 +169,7 @@ public class AntModel extends CapsuleObstacle {
         // Gameplay attributes
         isGrounded = false;
         faceRight = true;
+        upsideDown = false;
 
         setName("ant");
 
@@ -254,7 +265,10 @@ public class AntModel extends CapsuleObstacle {
      */
     public void draw(GameCanvas canvas) {
         float effect = faceRight ? 1.0f : -1.0f;
-        canvas.draw(texture, Color.WHITE,origin.x,origin.y,getX()*drawScale.x,getY()*drawScale.y,getAngle(),effect,1.0f);
+        if (!isGrounded()){
+            this.setAngle(0);
+        }
+        canvas.draw(texture, Color.WHITE,origin.x,origin.y,getX()*drawScale.x,getY()*drawScale.y,getAngle(), effect,1.0f);
     }
 
     /**
