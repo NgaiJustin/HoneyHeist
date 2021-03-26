@@ -999,6 +999,13 @@ public abstract class Obstacle {
 	 */
 	public float getRemainingAngle() { return remainingAngle; }
 
+	/**
+	 * returns a flag indicating whether or not the obstacle is currently rotating
+	 *
+	 * @return	true = currently rotating, false = not rotating
+	 */
+	public boolean getIsRotating() { return isRotating; }
+
 	/// Abstract Methods
 	/**
 	 * Creates the physics Body(s) for this object, adding them to the world.
