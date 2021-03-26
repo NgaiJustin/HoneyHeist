@@ -85,7 +85,6 @@ public class LevelController extends WorldController implements ContactListener 
 		world.setContactListener(this);
 		sensorFixtures = new ObjectSet<Fixture>();
 		origin = new Vector2(bounds.width/2, bounds.height/2);
-		System.out.println(origin);
 	}
 
 	/**
@@ -205,13 +204,30 @@ public class LevelController extends WorldController implements ContactListener 
 		volume = constants.getFloat("volume", 1.0f);
 	}
 
+	/**
+	 * Start rotation.
+	 *
+	 * @param isClockwise true if the rotation direction is clockwise, false if counterclockwise.
+	 * @param point The point the level rotates around.
+	 * @param antRotating true if the ant also needs to be rotated with the stage.
+	 */
+	public void rotate(boolean isClockwise, Vector2 point, boolean antRotating){
+		platforms.startRotation(isClockwise, origin);
+		if (antRotating){
+			avatar.setBodyType(BodyDef.BodyType.StaticBody);
+			System.out.println(origin);
+			avatar.startRotation(isClockwise, origin);
+		}
+	}
+
 
 	/**
 	 * Start clockwise rotation.
 	 * Will only rotate once, and spamming will not queue more rotations.
 	 */
 	public void rotateClockwise(){
-		platforms.startRotation(true, origin);
+		//platforms.startRotation(true, origin);
+		rotate(true, origin, avatar.isGrounded());
 	}
 
 	/**
@@ -219,7 +235,8 @@ public class LevelController extends WorldController implements ContactListener 
 	 * Will only rotate once, and spamming will not queue more rotations.
 	 */
 	public void rotateCounterClockwise(){
-		platforms.startRotation(false, origin);
+		//platforms.startRotation(false, origin);
+		rotate(false, origin, avatar.isGrounded());
 	}
 	
 	/**
