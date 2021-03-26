@@ -238,6 +238,17 @@ public class LevelController extends WorldController implements ContactListener 
 		//platforms.startRotation(false, origin);
 		rotate(false, origin, avatar.isGrounded());
 	}
+
+	/**
+	 * Moves the ant based on the direction given
+	 *
+	 * @param direction		-1 = left, 1 = right, 0 = still
+	 */
+	public void moveAnt(float direction) { avatar.setMovement(direction*avatar.getForce());}
+
+	public PlatformModel getPlatforms() {return platforms;}
+
+	public AntModel getAvatar() {return avatar;}
 	
 	/**
 	 * Returns whether to process the update loop
@@ -275,7 +286,7 @@ public class LevelController extends WorldController implements ContactListener 
 	 */
 	public void update(float dt) {
 		// Process actions in object model
-		avatar.setMovement(InputController.getInstance().getHorizontal() *avatar.getForce());
+		moveAnt(InputController.getInstance().getHorizontal());
 		//avatar.setJumping(InputController.getInstance().didPrimary());
 		//avatar.setShooting(InputController.getInstance().didSecondary());
 		
