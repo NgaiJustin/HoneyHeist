@@ -227,7 +227,7 @@ public class LevelController extends WorldController implements ContactListener 
 	 */
 	public void rotateClockwise(){
 		//platforms.startRotation(true, origin);
-		rotate(true, origin, avatar.isGrounded());
+		rotate(true, origin, avatar.isGrounded()&&!platforms.getIsRotating());
 	}
 
 	/**
@@ -236,7 +236,7 @@ public class LevelController extends WorldController implements ContactListener 
 	 */
 	public void rotateCounterClockwise(){
 		//platforms.startRotation(false, origin);
-		rotate(false, origin, avatar.isGrounded());
+		rotate(false, origin, avatar.isGrounded()&&!platforms.getIsRotating());
 	}
 
 	/**
