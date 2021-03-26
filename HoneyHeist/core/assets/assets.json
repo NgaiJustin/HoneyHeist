@@ -6,7 +6,9 @@
             "wrapV": "repeated"
         },
         "shared:goal":   "shared/goaldoor.png",
-        "platform:dude":  "platform/ant.png",
+        "platform:ant":  "platform/ant.png",
+        "platform:sleeperBee":  "platform/sleeperBee.png",
+        "platform:chaserBee":  "platform/chaserBee.png",
         "platform:rope":  "platform/ropebridge.png",
         "platform:barrier": "platform/barrier.png",
         "platform:bullet":  "platform/bullet.png",
