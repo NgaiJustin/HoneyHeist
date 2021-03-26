@@ -53,7 +53,7 @@ public abstract class Obstacle {
 
 	//Rotation related information
 	/** Origin of the stage */
-	protected Vector2 origin;
+	protected Vector2 stageCenter;
 	/** total radians for a single rotation */
 	protected float rotationAngle;
 	/** Amount of radians remaining to be rotated */
@@ -1040,7 +1040,7 @@ public abstract class Obstacle {
 	 */
 	public void startRotation(boolean isClockwise, Vector2 point){
 		if (isRotating) return;
-		origin = point;
+		stageCenter = point;
 		isRotating = true;
 		this.isClockwise = isClockwise;
 		addRotation(rotationAngle);

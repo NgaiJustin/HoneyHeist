@@ -2,10 +2,7 @@ package edu.cornell.gdiac.physics.platform;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.physics.box2d.Fixture;
-import com.badlogic.gdx.physics.box2d.FixtureDef;
-import com.badlogic.gdx.physics.box2d.PolygonShape;
-import com.badlogic.gdx.physics.box2d.World;
+import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.physics.GameCanvas;
 import edu.cornell.gdiac.physics.obstacle.CapsuleObstacle;
@@ -164,6 +161,10 @@ public class AntModel extends CapsuleObstacle {
         faceRight = true;
 
         setName("ant");
+
+        //Probably replace the following code with json data
+        rotationAngle = (float) Math.PI/3;
+        rotationSpeed = (float) Math.PI/3;
     }
 
     /**
@@ -201,6 +202,24 @@ public class AntModel extends CapsuleObstacle {
         sensorFixture.setUserData(getSensorName());
 
         return true;
+    }
+
+    public void update(float dt){
+        if (!isRotating) {
+            return;
+        }
+
+        float rotationAmount = rotationSpeed * dt;
+        if (rotationAmount > remainingAngle){
+            rotationAmount = remainingAngle;
+            isRotating = false;
+            setBodyType(BodyDef.BodyType.DynamicBody);
+        }
+        remainingAngle -= rotationAmount;
+        if (!isClockwise) {
+            rotationAmount *= -1;
+        }
+        rotateAboutPoint(rotationAmount, stageCenter);
     }
 
     /**

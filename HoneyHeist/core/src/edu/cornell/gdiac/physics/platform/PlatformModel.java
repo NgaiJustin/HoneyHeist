@@ -113,7 +113,7 @@ public class PlatformModel extends ComplexObstacle {
 		if (!isClockwise) {
 			rotationAmount *= -1;
 		}
-		rotateAboutPoint(rotationAmount, origin);
+		rotateAboutPoint(rotationAmount, stageCenter);
 	}
 
 	/**
