@@ -10,21 +10,9 @@
  */
 package edu.cornell.gdiac.physics.platform;
 
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.JsonValue;
-import com.badlogic.gdx.utils.ObjectSet;
-import edu.cornell.gdiac.assets.AssetDirectory;
-import edu.cornell.gdiac.audio.SoundBuffer;
-import edu.cornell.gdiac.physics.InputController;
-import edu.cornell.gdiac.physics.WorldController;
 import edu.cornell.gdiac.physics.obstacle.BoxObstacle;
-import edu.cornell.gdiac.physics.obstacle.Obstacle;
-import edu.cornell.gdiac.physics.obstacle.PolygonObstacle;
-import org.graalvm.compiler.core.common.type.ArithmeticOpTable;
 
 /**
  * A class holding all game objects contained within a level,
