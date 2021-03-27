@@ -19,13 +19,10 @@ import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.ObjectSet;
 import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.audio.SoundBuffer;
-import edu.cornell.gdiac.physics.GameCanvas;
 import edu.cornell.gdiac.physics.InputController;
 import edu.cornell.gdiac.physics.WorldController;
 import edu.cornell.gdiac.physics.obstacle.BoxObstacle;
 import edu.cornell.gdiac.physics.obstacle.Obstacle;
-import edu.cornell.gdiac.physics.obstacle.PolygonObstacle;
-import org.graalvm.compiler.core.common.type.ArithmeticOpTable;
 
 /**
  * Gameplay specific controller for the platformer game.
