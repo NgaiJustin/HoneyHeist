@@ -213,6 +213,20 @@ public class LevelController extends WorldController implements ContactListener 
         platforms.setTexture(earthTile);
         addObject(platforms);
 
+        //Create test platform from new json data
+        //DELETE THIS
+        JsonValue platformdata = constants.get("testPlatform");
+        PolygonObstacle obj = new PolygonObstacle(platformPointsFromJson(platformdata), 0, 0);
+        obj.setBodyType(BodyDef.BodyType.StaticBody);
+        obj.setDensity(defaults.getFloat("density", 0.0f));
+        obj.setFriction(defaults.getFloat("friction", 0.0f));
+        obj.setRestitution(defaults.getFloat("restitution", 0.0f));
+        obj.setDrawScale(scale);
+        obj.setTexture(earthTile);
+        obj.setName("testPlatform");
+        addObject(obj);
+
+
         // This world is heavier
         world.setGravity(new Vector2(0, defaults.getFloat("gravity", 0)));
 
@@ -271,7 +285,6 @@ public class LevelController extends WorldController implements ContactListener 
 		platforms.startRotation(isClockwise, origin);
 		if (antRotating){
 			avatar.setBodyType(BodyDef.BodyType.StaticBody);
-			System.out.println(origin);
 			avatar.startRotation(isClockwise, origin);
 		}
 	}
@@ -570,4 +583,29 @@ public class LevelController extends WorldController implements ContactListener 
             fireSound.stop(fireId);
         }
     }
+
+    public float[] platformPointsFromJson(JsonValue platformData){
+        JsonValue pos = platformData.get("position");
+        JsonValue scale = platformData.get("scale");
+        float x = pos.getFloat("x");
+        float y = pos.getFloat("y");
+        float width = scale.getFloat("width");
+        float w = width/2;
+        float height = scale.getFloat("height");
+        float h = height/2;
+        float rot = platformData.getFloat("local_rotation") * 2 * (float)Math.PI/360;
+        float[] points = new float[]{-w, h, -w, -h, w, -h, w, h};
+        float cos = (float)Math.cos(rot);
+        float sin = (float)Math.sin(rot);
+
+        float temp;
+        for (int i=0; i<points.length; i+=2){
+            temp = points[i]*cos - points[i+1]*sin + x;
+            points[i+1] = points[i]*sin + points[i+1]*cos + y;
+            points[i] = temp;
+        }
+
+        return points;
+    }
+
 }
