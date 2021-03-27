@@ -181,6 +181,10 @@ public abstract class AbstractBeeModel extends CapsuleObstacle {
         faceRight = true;
 
         setName("bee");
+
+        //Probably replace the following code with json data
+        rotationAngle = (float) Math.PI/3;
+        rotationSpeed = (float) Math.PI/3;
     }
 
     /**
@@ -223,11 +227,11 @@ public abstract class AbstractBeeModel extends CapsuleObstacle {
         if (!isRotating) {
             return;
         }
-
         float rotationAmount = rotationSpeed * dt;
         if (rotationAmount > remainingAngle) {
             rotationAmount = remainingAngle;
             isRotating = false;
+            System.out.println("REVERT PLEASE");
             setBodyType(BodyDef.BodyType.DynamicBody);
         }
         remainingAngle -= rotationAmount;
@@ -269,6 +273,10 @@ public abstract class AbstractBeeModel extends CapsuleObstacle {
      */
     public void draw(GameCanvas canvas) {
         float effect = faceRight ? 1.0f : -1.0f;
+        // Reset Bee rotation if falling
+        if (!isGrounded()){
+            this.setAngle(0);
+        }
         canvas.draw(texture, Color.WHITE, origin.x, origin.y, getX() * drawScale.x, getY() * drawScale.y, getAngle(), effect, 1.0f);
     }
 
@@ -281,5 +289,7 @@ public abstract class AbstractBeeModel extends CapsuleObstacle {
         super.drawDebug(canvas);
         canvas.drawPhysics(sensorShape, Color.RED, getX(), getY(), getAngle(), drawScale.x, drawScale.y);
     }
+
+
 
 }
