@@ -452,4 +452,28 @@ public class LevelController extends WorldController implements ContactListener 
 			fireSound.stop(fireId);
 		}
 	}
+
+    public float[] platformPointsFromJson(JsonValue platformData){
+        JsonValue pos = platformData.get("position");
+        JsonValue scale = platformData.get("scale");
+        float x = pos.getFloat("x");
+        float y = pos.getFloat("y");
+        float width = scale.getFloat("width");
+        float w = width/2;
+        float height = scale.getFloat("height");
+        float h = height/2;
+        float rot = platformData.getFloat("local_rotation") * 2 * (float)Math.PI/360;
+        float[] points = new float[]{-w, h, -w, -h, w, -h, w, h};
+        float cos = (float)Math.cos(rot);
+        float sin = (float)Math.sin(rot);
+
+        float temp;
+        for (int i=0; i<points.length; i+=2){
+            temp = points[i]*cos - points[i+1]*sin + x;
+            points[i+1] = points[i]*sin + points[i+1]*cos + y;
+            points[i] = temp;
+        }
+
+        return points;
+    }
 }
