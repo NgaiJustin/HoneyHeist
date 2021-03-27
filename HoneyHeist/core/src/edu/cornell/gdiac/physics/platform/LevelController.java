@@ -230,8 +230,6 @@ public class LevelController extends WorldController implements ContactListener 
         chaserBee = new ChaserBeeModel(constants.get("chaserBee"), dwidth, dheight);
         chaserBee.setDrawScale(scale);
         chaserBee.setTexture(chaserBeeTexture);
-        // TEMPORARILY set chaserBee to static (until rotation bug is fixed)
-        chaserBee.setBodyType(BodyDef.BodyType.StaticBody);
         addObject(chaserBee);
 
         // Create one sleeper bee
@@ -267,10 +265,9 @@ public class LevelController extends WorldController implements ContactListener 
 	 * Start rotation.
 	 *
 	 * @param isClockwise true if the rotation direction is clockwise, false if counterclockwise.
-	 * @param point The point the level rotates around.
 	 * @param antRotating true if the ant also needs to be rotated with the stage.
 	 */
-	public void rotate(boolean isClockwise, Vector2 point, boolean antRotating){
+	public void rotate(boolean isClockwise, boolean antRotating){
 		platforms.startRotation(isClockwise, origin);
 		if (antRotating){
 			avatar.setBodyType(BodyDef.BodyType.StaticBody);
@@ -283,12 +280,15 @@ public class LevelController extends WorldController implements ContactListener 
      * Start rotation for a single enemy chaserBee
      *
      * @param isClockwise true if the rotation direction is clockwise, false if counterclockwise.
-     * @param point       The point the level rotates around.
      */
-    public void lockChaserBee(boolean isClockwise, Vector2 point, ChaserBeeModel bee) {
-        chaserBee.setBodyType(BodyDef.BodyType.StaticBody);
-        chaserBee.startRotation(isClockwise, origin);
-        System.out.println("Bee stuck");
+    public void rotateChaserBee(boolean isClockwise, boolean platformCheck, ChaserBeeModel bee) {
+        System.out.println("Bee is grounded status: " + bee.isGrounded());
+        System.out.println("Platform rotation status: " + bee.isGrounded());
+        if(bee.isGrounded() && platformCheck) {
+            chaserBee.setBodyType(BodyDef.BodyType.StaticBody);
+            System.out.println("Bee stuck");
+            chaserBee.startRotation(isClockwise, origin);
+        }
     }
 
 
@@ -298,10 +298,12 @@ public class LevelController extends WorldController implements ContactListener 
      */
     public void rotateClockwise() {
         //platforms.startRotation(true, origin);
-        rotate(true, origin, avatar.isGrounded()&&!platforms.getIsRotating());
+        boolean platformNotRotating = !platforms.getIsRotating();
 
-//        // ChaserBee also affected by rotation, just like player
-//        lockChaserBee(true, origin, chaserBee);
+        rotate(true, avatar.isGrounded()&&platformNotRotating);
+
+        // Iterate over the list of bees
+        rotateChaserBee(true, platformNotRotating, chaserBee);
     }
 
     /**
@@ -310,10 +312,12 @@ public class LevelController extends WorldController implements ContactListener 
      */
     public void rotateCounterClockwise() {
         //platforms.startRotation(false, origin);
-        rotate(false, origin, avatar.isGrounded()&&!platforms.getIsRotating());
+        boolean platformNotRotating = !platforms.getIsRotating();
 
-//        // ChaserBee also affected by rotation, just like player
-//        lockChaserBee(false, origin, chaserBee);
+        rotate(false, avatar.isGrounded()&&platformNotRotating);
+
+        // Iterate over the list of bees
+        rotateChaserBee(false, platformNotRotating, chaserBee);
     }
 
     /**
@@ -484,6 +488,12 @@ public class LevelController extends WorldController implements ContactListener 
                 avatar.setGrounded(true);
                 sensorFixtures.add(avatar == bd1 ? fix2 : fix1); // Could have more than one ground
             }
+            // ITERATE OVER ALL CHASER BEES
+            if ((chaserBee.getSensorName().equals(fd2) && chaserBee != bd1) ||
+                    (chaserBee.getSensorName().equals(fd1) && chaserBee != bd2)) {
+                chaserBee.setGrounded(true);
+                sensorFixtures.add(chaserBee == bd1 ? fix2 : fix1); // Could have more than one ground
+            }
             // Check for win condition
             if ((bd1 == avatar && bd2 == goalDoor) ||
                     (bd1 == goalDoor && bd2 == avatar)) {
@@ -520,6 +530,13 @@ public class LevelController extends WorldController implements ContactListener 
             sensorFixtures.remove(avatar == bd1 ? fix2 : fix1);
             if (sensorFixtures.size == 0) {
                 avatar.setGrounded(false);
+            }
+        }
+        if ((chaserBee.getSensorName().equals(fd2) && chaserBee != bd1) ||
+                (chaserBee.getSensorName().equals(fd1) && chaserBee != bd2)) {
+            sensorFixtures.remove(chaserBee == bd1 ? fix2 : fix1);
+            if (sensorFixtures.size == 0) {
+                chaserBee.setGrounded(false);
             }
         }
     }
