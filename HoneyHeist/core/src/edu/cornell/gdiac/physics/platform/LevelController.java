@@ -14,15 +14,18 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.ObjectSet;
 import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.audio.SoundBuffer;
+import edu.cornell.gdiac.physics.GameCanvas;
 import edu.cornell.gdiac.physics.InputController;
 import edu.cornell.gdiac.physics.WorldController;
 import edu.cornell.gdiac.physics.obstacle.BoxObstacle;
 import edu.cornell.gdiac.physics.obstacle.Obstacle;
 import edu.cornell.gdiac.physics.obstacle.PolygonObstacle;
+import org.graalvm.compiler.core.common.type.ArithmeticOpTable;
 
 /**
  * Gameplay specific controller for the platformer game.
@@ -46,12 +49,6 @@ public class LevelController extends WorldController implements ContactListener 
      * Texture asset for testEnemy avatar
      */
     private TextureRegion sleeperBeeTexture;
-//	/** Texture asset for the spinning barrier */
-//	private TextureRegion barrierTexture;
-//	/** Texture asset for the bullet */
-//	private TextureRegion bulletTexture;
-//	/** Texture asset for the bridge plank */
-//	private TextureRegion bridgeTexture;
 
     /**
      * The jump sound.  We only want to play once.
@@ -72,42 +69,20 @@ public class LevelController extends WorldController implements ContactListener 
      * The default sound volume
      */
     private float volume;
-
-    // Physics objects for the game
     /**
      * Physics constants for initialization
      */
     private JsonValue constants;
     /**
-     * Reference to the character avatar
+     * Reference to the level model
      */
-    private AntModel avatar;
-    /**
-     * Reference to the chaserBee model
-     */
-    private ChaserBeeModel chaserBee;
-    /**
-     * Reference to the sleeperBee model
-     */
-    private SleeperBeeModel sleeperBee;
-    /**
-     * Reference to the goalDoor (for collision detection)
-     */
-    private BoxObstacle goalDoor;
-    /**
-     * Reference to the platform model
-     */
-    private PlatformModel platforms;
+    private LevelModel level;
+
 
     /**
      * Mark set to handle more sophisticated collision callbacks
      */
     protected ObjectSet<Fixture> sensorFixtures;
-
-    /**
-     * Origin of the world
-     */
-    private Vector2 origin;
 
     /**
      * Creates and initialize a new instance of the platformer game
@@ -121,7 +96,8 @@ public class LevelController extends WorldController implements ContactListener 
         setFailure(false);
         world.setContactListener(this);
         sensorFixtures = new ObjectSet<Fixture>();
-        origin = new Vector2(bounds.width / 2, bounds.height / 2);
+        level = new LevelModel();
+        level.setOrigin(new Vector2(bounds.width / 2, bounds.height / 2));
     }
 
     /**
@@ -136,9 +112,6 @@ public class LevelController extends WorldController implements ContactListener 
         avatarTexture = new TextureRegion(directory.getEntry("platform:ant", Texture.class));
         chaserBeeTexture = new TextureRegion(directory.getEntry("platform:chaserBee", Texture.class));
         sleeperBeeTexture = new TextureRegion(directory.getEntry("platform:sleeperBee", Texture.class));
-//		barrierTexture = new TextureRegion(directory.getEntry("platform:barrier",Texture.class));
-//		bulletTexture = new TextureRegion(directory.getEntry("platform:bullet",Texture.class));
-//		bridgeTexture = new TextureRegion(directory.getEntry("platform:rope",Texture.class));
 
         jumpSound = directory.getEntry("platform:jump", SoundBuffer.class);
         fireSound = directory.getEntry("platform:pew", SoundBuffer.class);
@@ -173,14 +146,15 @@ public class LevelController extends WorldController implements ContactListener 
     /**
      * Lays out the game geography.
      */
-    private void populateLevel() {
+    public void populateLevel() {
         // Add level goal
         float dwidth = goalTile.getRegionWidth() / scale.x;
         float dheight = goalTile.getRegionHeight() / scale.y;
 
         JsonValue goal = constants.get("goal");
         JsonValue goalpos = goal.get("pos");
-        goalDoor = new BoxObstacle(goalpos.getFloat(0), goalpos.getFloat(1), dwidth, dheight);
+
+        BoxObstacle goalDoor = new BoxObstacle(goalpos.getFloat(0), goalpos.getFloat(1), dwidth, dheight);
         goalDoor.setBodyType(BodyDef.BodyType.StaticBody);
         goalDoor.setDensity(goal.getFloat("density", 0));
         goalDoor.setFriction(goal.getFloat("friction", 0));
@@ -190,28 +164,16 @@ public class LevelController extends WorldController implements ContactListener 
         goalDoor.setTexture(goalTile);
         goalDoor.setName("goal");
         addObject(goalDoor);
+        level.setGoalDoor(goalDoor);
 
-        String wname = "wall";
-        JsonValue walljv = constants.get("walls");
         JsonValue defaults = constants.get("defaults");
-        for (int ii = 0; ii < walljv.size; ii++) {
-            PolygonObstacle obj;
-            obj = new PolygonObstacle(walljv.get(ii).asFloatArray(), 0, 0);
-            obj.setBodyType(BodyDef.BodyType.StaticBody);
-            obj.setDensity(defaults.getFloat("density", 0.0f));
-            obj.setFriction(defaults.getFloat("friction", 0.0f));
-            obj.setRestitution(defaults.getFloat("restitution", 0.0f));
-            obj.setDrawScale(scale);
-            obj.setTexture(earthTile);
-            obj.setName(wname + ii);
-            addObject(obj);
-        }
 
         // Create platforms
-        platforms = new PlatformModel(constants.get("platforms"));
+        PlatformModel platforms = new PlatformModel(constants.get("platforms"));
         platforms.setDrawScale(scale);
         platforms.setTexture(earthTile);
         addObject(platforms);
+        level.setPlatforms(platforms);
 
         // This world is heavier
         world.setGravity(new Vector2(0, defaults.getFloat("gravity", 0)));
@@ -219,91 +181,69 @@ public class LevelController extends WorldController implements ContactListener 
         // Create player (ant)
         dwidth = avatarTexture.getRegionWidth() / scale.x;
         dheight = avatarTexture.getRegionHeight() / scale.y;
-        avatar = new AntModel(constants.get("player"), dwidth, dheight);
+        AntModel avatar = new AntModel(constants.get("player"), dwidth, dheight);
         avatar.setDrawScale(scale);
         avatar.setTexture(avatarTexture);
         addObject(avatar);
+        level.setAvatar(avatar);
 
         // Create one chaser bee
         dwidth = chaserBeeTexture.getRegionWidth() / scale.x;
         dheight = chaserBeeTexture.getRegionHeight() / scale.y;
-        chaserBee = new ChaserBeeModel(constants.get("chaserBee"), dwidth, dheight);
+        ChaserBeeModel chaserBee = new ChaserBeeModel(constants.get("chaserBee"), dwidth, dheight);
         chaserBee.setDrawScale(scale);
         chaserBee.setTexture(chaserBeeTexture);
+        Array<AbstractBeeModel> bees = new Array<AbstractBeeModel>();
+        bees.add(chaserBee);
         addObject(chaserBee);
 
         // Create one sleeper bee
         dwidth = sleeperBeeTexture.getRegionWidth() / scale.x;
         dheight = sleeperBeeTexture.getRegionHeight() / scale.y;
-        sleeperBee = new SleeperBeeModel(constants.get("sleeperBee"), dwidth, dheight);
+        SleeperBeeModel sleeperBee = new SleeperBeeModel(constants.get("sleeperBee"), dwidth, dheight);
         sleeperBee.setDrawScale(scale);
         sleeperBee.setTexture(sleeperBeeTexture);
         // Sleeper bee doesn't move
         sleeperBee.setBodyType(BodyDef.BodyType.StaticBody);
+        bees.add(sleeperBee);
         addObject(sleeperBee);
-
-        // Create rope bridge
-//		dwidth  = bridgeTexture.getRegionWidth()/scale.x;
-//		dheight = bridgeTexture.getRegionHeight()/scale.y;
-//		RopeBridge bridge = new RopeBridge(constants.get("bridge"), dwidth, dheight);
-//		bridge.setTexture(bridgeTexture);
-//		bridge.setDrawScale(scale);
-//		addObject(bridge);
-
-        // Create spinning platform
-//		dwidth  = barrierTexture.getRegionWidth()/scale.x;
-//		dheight = barrierTexture.getRegionHeight()/scale.y;
-//		Spinner spinPlatform = new Spinner(constants.get("spinner"),dwidth,dheight);
-//		spinPlatform.setDrawScale(scale);
-//		spinPlatform.setTexture(barrierTexture);
-//		addObject(spinPlatform);
+        level.setBees(bees);
 
         volume = constants.getFloat("volume", 1.0f);
     }
 
-	/**
-	 * Start rotation.
-	 *
-	 * @param isClockwise true if the rotation direction is clockwise, false if counterclockwise.
-	 * @param antRotating true if the ant also needs to be rotated with the stage.
-	 */
-	public void rotate(boolean isClockwise, boolean antRotating){
-		platforms.startRotation(isClockwise, origin);
-		if (antRotating){
-			avatar.setBodyType(BodyDef.BodyType.StaticBody);
-			System.out.println(origin);
-			avatar.startRotation(isClockwise, origin);
-		}
-	}
-
     /**
-     * Start rotation for a single enemy chaserBee
+     * Start rotation.
      *
      * @param isClockwise true if the rotation direction is clockwise, false if counterclockwise.
+     * @param platformNotRotating true if the platform model isn't rotating when the rotate function is called.
      */
-    public void rotateChaserBee(boolean isClockwise, boolean platformCheck, ChaserBeeModel bee) {
-        System.out.println("Bee is grounded status: " + bee.isGrounded());
-        System.out.println("Platform rotation status: " + bee.isGrounded());
-        if(bee.isGrounded() && platformCheck) {
-            chaserBee.setBodyType(BodyDef.BodyType.StaticBody);
-            System.out.println("Bee stuck");
-            chaserBee.startRotation(isClockwise, origin);
+    public void rotate(boolean isClockwise, boolean platformNotRotating){
+        PlatformModel platforms = level.getPlatforms();
+        AntModel avatar = level.getAvatar();
+        Array<AbstractBeeModel> bees = level.getBees();
+        Vector2 origin = level.getOrigin();
+
+        platforms.startRotation(isClockwise, origin);
+        if (avatar.isGrounded()&&platformNotRotating){
+            avatar.setBodyType(BodyDef.BodyType.StaticBody);
+            System.out.println(origin);
+            avatar.startRotation(isClockwise, origin);
+        }
+        for(AbstractBeeModel bee : bees){
+            if(bee.isGrounded() && platformNotRotating) {
+                bee.setBodyType(BodyDef.BodyType.StaticBody);
+                bee.startRotation(isClockwise, origin);
+            }
         }
     }
-
 
     /**
      * Start clockwise rotation.
      * Will only rotate once, and spamming will not queue more rotations.
      */
     public void rotateClockwise() {
-        //platforms.startRotation(true, origin);
-        boolean platformNotRotating = !platforms.getIsRotating();
-
-        rotate(true, avatar.isGrounded()&&platformNotRotating);
-
-        // Iterate over the list of bees
-        rotateChaserBee(true, platformNotRotating, chaserBee);
+        rotate(true, !level.getPlatforms().getIsRotating());
     }
 
     /**
@@ -311,13 +251,7 @@ public class LevelController extends WorldController implements ContactListener 
      * Will only rotate once, and spamming will not queue more rotations.
      */
     public void rotateCounterClockwise() {
-        //platforms.startRotation(false, origin);
-        boolean platformNotRotating = !platforms.getIsRotating();
-
-        rotate(false, avatar.isGrounded()&&platformNotRotating);
-
-        // Iterate over the list of bees
-        rotateChaserBee(false, platformNotRotating, chaserBee);
+        rotate(false, !level.getPlatforms().getIsRotating());
     }
 
     /**
@@ -326,7 +260,7 @@ public class LevelController extends WorldController implements ContactListener 
      * @param direction -1 = left, 1 = right, 0 = still
      */
     public void moveAnt(float direction) {
-        avatar.setMovement(direction * avatar.getForce());
+        level.getAvatar().setMovement(direction * level.getAvatar().getForce());
     }
 
     /**
@@ -336,15 +270,6 @@ public class LevelController extends WorldController implements ContactListener 
      */
     public void moveChaserBee(float direction, ChaserBeeModel bee) {
         bee.setMovement(direction * bee.getForce());
-    }
-
-
-    public PlatformModel getPlatforms() {
-        return platforms;
-    }
-
-    public AntModel getAvatar() {
-        return avatar;
     }
 
     /**
@@ -362,7 +287,7 @@ public class LevelController extends WorldController implements ContactListener 
             return false;
         }
 
-        if (!isFailure() && avatar.getY() < -1) {
+        if (!isFailure() && level.getAvatar().getY() < -1) {
             setFailure(true);
             return false;
         }
@@ -383,72 +308,26 @@ public class LevelController extends WorldController implements ContactListener 
     public void update(float dt) {
         // Process actions in object model
         moveAnt(InputController.getInstance().getHorizontal());
-        //avatar.setJumping(InputController.getInstance().didPrimary());
-        //avatar.setShooting(InputController.getInstance().didSecondary());
 
-        // Add a bullet if we fire
-        //if (avatar.isShooting()) {
-        //	createBullet();
-        //}
-
-        avatar.applyForce();
-        //if (avatar.isJumping()) {
-        // 	jumpId = playSound( jumpSound, jumpId, volume );
-        //}
+        level.getAvatar().applyForce();
 
         // Process AI action
         // 1. Loop over all chaser bee,
         // 2. For each bee, moveChaserBee(...);
         // TO BE IMPLEMENTED
-        chaserBee.applyForce();
+        for(AbstractBeeModel bee : level.getBees()){
+            bee.applyForce();
+        }
 
-        if (platforms != null) {
-            //Vector2 worldPoint = new Vector2(16f, 9f);
-            //platforms.rotateAboutPoint(0.1f*dt,worldPoint);
-            if (InputController.getInstance().didRotate()) {
-                rotateClockwise();
-            } else if (InputController.getInstance().didAntiRotate()) {
-                rotateCounterClockwise();
-            }
+
+        if (InputController.getInstance().didRotate()) {
+            rotateClockwise();
+        } else if (InputController.getInstance().didAntiRotate()) {
+            rotateCounterClockwise();
         }
 
 
     }
-
-//	/** Add a new bullet to the world and send it in the right direction. */
-//	private void createBullet() {
-//		JsonValue bulletjv = constants.get("bullet");
-//		float offset = bulletjv.getFloat("offset",0);
-//		offset *= (avatar.isFacingRight() ? 1 : -1);
-//		float radius = bulletTexture.getRegionWidth()/(2.0f*scale.x);
-//		WheelObstacle bullet = new WheelObstacle(avatar.getX()+offset, avatar.getY(), radius);
-//
-//	    bullet.setName("bullet");
-//		bullet.setDensity(bulletjv.getFloat("density", 0));
-//	    bullet.setDrawScale(scale);
-//	    bullet.setTexture(bulletTexture);
-//	    bullet.setBullet(true);
-//	    bullet.setGravityScale(0);
-//
-//		// Compute position and velocity
-//		float speed = bulletjv.getFloat( "speed", 0 );
-//		speed  *= (avatar.isFacingRight() ? 1 : -1);
-//		bullet.setVX(speed);
-//		addQueuedObject(bullet);
-//
-//		fireId = playSound( fireSound, fireId );
-//	}
-
-//	/**
-//	 * Remove a new bullet from the world.
-//	 *
-//	 * @param  bullet   the bullet to remove
-//	 */
-//	public void removeBullet(Obstacle bullet) {
-//	    bullet.markRemoved(true);
-//	    plopId = playSound( plopSound, plopId );
-//	}
-
 
     /**
      * Callback method for the start of a collision
@@ -469,18 +348,13 @@ public class LevelController extends WorldController implements ContactListener 
         Object fd1 = fix1.getUserData();
         Object fd2 = fix2.getUserData();
 
+        AntModel avatar = level.getAvatar();
+        Array<AbstractBeeModel> bees = level.getBees();
+        BoxObstacle goalDoor = level.getGoalDoor();
+
         try {
             Obstacle bd1 = (Obstacle) body1.getUserData();
             Obstacle bd2 = (Obstacle) body2.getUserData();
-
-//			// Test bullet collision with world
-//			if (bd1.getName().equals("bullet") && bd2 != avatar) {
-//		        removeBullet(bd1);
-//			}
-
-//			if (bd2.getName().equals("bullet") && bd1 != avatar) {
-//		        removeBullet(bd2);
-//			}
 
             // See if we have landed on the ground.
             if ((avatar.getSensorName().equals(fd2) && avatar != bd1) ||
@@ -489,10 +363,12 @@ public class LevelController extends WorldController implements ContactListener 
                 sensorFixtures.add(avatar == bd1 ? fix2 : fix1); // Could have more than one ground
             }
             // ITERATE OVER ALL CHASER BEES
-            if ((chaserBee.getSensorName().equals(fd2) && chaserBee != bd1) ||
-                    (chaserBee.getSensorName().equals(fd1) && chaserBee != bd2)) {
-                chaserBee.setGrounded(true);
-                sensorFixtures.add(chaserBee == bd1 ? fix2 : fix1); // Could have more than one ground
+            for(AbstractBeeModel bee : bees) {
+                if ((bee.getSensorName().equals(fd2) && bee != bd1) ||
+                        (bee.getSensorName().equals(fd1) && bee != bd2)) {
+                    bee.setGrounded(true);
+                    sensorFixtures.add(bee == bd1 ? fix2 : fix1); // Could have more than one ground
+                }
             }
             // Check for win condition
             if ((bd1 == avatar && bd2 == goalDoor) ||
@@ -525,6 +401,9 @@ public class LevelController extends WorldController implements ContactListener 
         Object bd1 = body1.getUserData();
         Object bd2 = body2.getUserData();
 
+        AntModel avatar = level.getAvatar();
+        Array<AbstractBeeModel> bees = level.getBees();
+
         if ((avatar.getSensorName().equals(fd2) && avatar != bd1) ||
                 (avatar.getSensorName().equals(fd1) && avatar != bd2)) {
             sensorFixtures.remove(avatar == bd1 ? fix2 : fix1);
@@ -532,11 +411,13 @@ public class LevelController extends WorldController implements ContactListener 
                 avatar.setGrounded(false);
             }
         }
-        if ((chaserBee.getSensorName().equals(fd2) && chaserBee != bd1) ||
-                (chaserBee.getSensorName().equals(fd1) && chaserBee != bd2)) {
-            sensorFixtures.remove(chaserBee == bd1 ? fix2 : fix1);
-            if (sensorFixtures.size == 0) {
-                chaserBee.setGrounded(false);
+        for(AbstractBeeModel bee : bees) {
+            if ((bee.getSensorName().equals(fd2) && bee != bd1) ||
+                    (bee.getSensorName().equals(fd1) && bee != bd2)) {
+                sensorFixtures.remove(bee == bd1 ? fix2 : fix1);
+                if (sensorFixtures.size == 0) {
+                    bee.setGrounded(false);
+                }
             }
         }
     }
