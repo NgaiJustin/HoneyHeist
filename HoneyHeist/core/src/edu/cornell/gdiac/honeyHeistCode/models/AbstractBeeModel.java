@@ -1,11 +1,11 @@
-package edu.cornell.gdiac.physics.platform;
+package edu.cornell.gdiac.honeyHeistCode.models;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.JsonValue;
-import edu.cornell.gdiac.physics.GameCanvas;
-import edu.cornell.gdiac.physics.obstacle.CapsuleObstacle;
+import edu.cornell.gdiac.honeyHeistCode.GameCanvas;
+import edu.cornell.gdiac.honeyHeistCode.obstacle.CapsuleObstacle;
 
 /**
  * Model class for Enemy (Bee) in HoneyHeist.

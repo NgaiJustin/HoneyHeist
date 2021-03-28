@@ -1,16 +1,16 @@
-package edu.cornell.gdiac.physics.platform;
+package edu.cornell.gdiac.honeyHeistCode.models;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.JsonValue;
-import edu.cornell.gdiac.physics.GameCanvas;
-import edu.cornell.gdiac.physics.obstacle.CapsuleObstacle;
+import edu.cornell.gdiac.honeyHeistCode.GameCanvas;
+import edu.cornell.gdiac.honeyHeistCode.obstacle.CapsuleObstacle;
 
 /**
  *  Model class for player in HoneyHeist.
  */
-public class AntModel extends CapsuleObstacle {
+public class Player extends CapsuleObstacle {
 
     /** The initializing data (to avoid magic numbers) */
     private final JsonValue data;
@@ -141,7 +141,7 @@ public class AntModel extends CapsuleObstacle {
      * @param width		The object width in physics units
      * @param height	The object width in physics units
      */
-    public AntModel(JsonValue data, float width, float height){
+    public Player(JsonValue data, float width, float height){
         super(	data.get("pos").getFloat(0),
                 data.get("pos").getFloat(1),
                 width*data.get("shrink").getFloat( 0 ),
