@@ -10,6 +10,7 @@
  */
 package edu.cornell.gdiac.physics.platform;
 
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
@@ -19,6 +20,7 @@ import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.ObjectSet;
 import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.audio.SoundBuffer;
+import edu.cornell.gdiac.physics.GameplayController;
 import edu.cornell.gdiac.physics.InputController;
 import edu.cornell.gdiac.physics.WorldController;
 import edu.cornell.gdiac.physics.obstacle.BoxObstacle;
@@ -33,7 +35,7 @@ import edu.cornell.gdiac.physics.obstacle.Obstacle;
  * This is the purpose of our AssetState variable; it ensures that multiple instances
  * place nicely with the static assets.
  */
-public class LevelController extends WorldController implements ContactListener {
+public class LevelController extends GameplayController implements ContactListener {
     /**
      * Texture asset for player avatar
      */
@@ -87,7 +89,7 @@ public class LevelController extends WorldController implements ContactListener 
      * The game has default gravity and other settings
      */
     public LevelController() {
-        super(DEFAULT_WIDTH, DEFAULT_HEIGHT, DEFAULT_GRAVITY);
+//        super(DEFAULT_WIDTH, DEFAULT_HEIGHT, DEFAULT_GRAVITY);
         setDebug(false);
         setComplete(false);
         setFailure(false);
@@ -105,6 +107,7 @@ public class LevelController extends WorldController implements ContactListener 
      *
      * @param directory Reference to global asset manager.
      */
+    @Override
     public void gatherAssets(AssetDirectory directory) {
         avatarTexture = new TextureRegion(directory.getEntry("platform:ant", Texture.class));
         chaserBeeTexture = new TextureRegion(directory.getEntry("platform:chaserBee", Texture.class));

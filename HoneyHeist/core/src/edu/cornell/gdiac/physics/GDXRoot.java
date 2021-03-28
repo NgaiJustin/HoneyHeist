@@ -15,7 +15,7 @@
 
 import com.badlogic.gdx.*;
 import edu.cornell.gdiac.util.*;
-import edu.cornell.gdiac.assets.*;;
+import edu.cornell.gdiac.assets.*;
 import edu.cornell.gdiac.physics.platform.*;
 
 /**
@@ -36,8 +36,11 @@ public class GDXRoot extends Game implements ScreenListener {
 	private LoadingMode loading;
 	/** Player mode for the the game proper (CONTROLLER CLASS) */
 	private int current;
-	/** List of all WorldControllers */
-	private WorldController[] controllers;
+//	/** List of all WorldControllers */
+//	private WorldController[] controllers;
+	// new editing
+	/** GameplayController */
+	private GameplayController controller;
 	
 	/**
 	 * Creates a new game from the configuration settings.
@@ -58,8 +61,11 @@ public class GDXRoot extends Game implements ScreenListener {
 		loading = new LoadingMode("assets.json",canvas,1);
 
 		// Initialize the game world
-		controllers = new WorldController[1];
-		controllers[0] = new LevelController();
+//		controllers = new WorldController[1];
+//		controllers = new GameplayController[1];
+//		controllers[0] = new LevelController();
+//		controller = new LevelController();
+		controller = new GameplayController();
 		current = 0;
 		loading.setScreenListener(this);
 		setScreen(loading);
@@ -73,9 +79,12 @@ public class GDXRoot extends Game implements ScreenListener {
 	public void dispose() {
 		// Call dispose on our children
 		setScreen(null);
-		for(int ii = 0; ii < controllers.length; ii++) {
-			controllers[ii].dispose();
-		}
+		// new editing
+//		for(int ii = 0; ii < controllers.length; ii++) {
+//			controllers[ii].dispose();
+//		}
+		controller.dispose();
+		// new editing ends
 
 		canvas.dispose();
 		canvas = null;
@@ -113,26 +122,44 @@ public class GDXRoot extends Game implements ScreenListener {
 	 */
 	public void exitScreen(Screen screen, int exitCode) {
 		if (screen == loading) {
-			for(int ii = 0; ii < controllers.length; ii++) {
-				directory = loading.getAssets();
-				controllers[ii].gatherAssets(directory);
-				controllers[ii].setScreenListener(this);
-				controllers[ii].setCanvas(canvas);
-			}
-			controllers[current].reset();
-			setScreen(controllers[current]);
+			// new editing start
+//			for(int ii = 0; ii < controllers.length; ii++) {
+//				directory = loading.getAssets();
+//				controllers[ii].gatherAssets(directory);
+//				controllers[ii].setScreenListener(this);
+//				controllers[ii].setCanvas(canvas);
+//			}
+//			controllers[current].reset();
+//			setScreen(controllers[current]);
+			directory = loading.getAssets();
+			controller.gatherAssets(directory);
+			controller.setScreenListener(this);
+			controller.setCanvas(canvas);
+			controller.reset();
+			setScreen(controller);
+			// new editing end
 			
 			loading.dispose();
 			loading = null;
-		} else if (exitCode == WorldController.EXIT_NEXT) {
-			current = (current+1) % controllers.length;
-			controllers[current].reset();
-			setScreen(controllers[current]);
-		} else if (exitCode == WorldController.EXIT_PREV) {
-			current = (current+controllers.length-1) % controllers.length;
-			controllers[current].reset();
-			setScreen(controllers[current]);
-		} else if (exitCode == WorldController.EXIT_QUIT) {
+
+			// new editing start
+//		} else if (exitCode == WorldController.EXIT_NEXT) {
+		} else if (exitCode == GameplayController.EXIT_NEXT) {
+//			current = (current+1) % controllers.length;
+//			controllers[current].reset();
+//			setScreen(controllers[current]);
+			controller.reset();
+			setScreen(controller);
+//		} else if (exitCode == WorldController.EXIT_PREV) {
+		} else if (exitCode == GameplayController.EXIT_PREV) {
+//			current = (current+controllers.length-1) % controllers.length;
+//			controllers[current].reset();
+//			setScreen(controllers[current]);
+			controller.reset();
+			setScreen(controller);
+//		} else if (exitCode == WorldController.EXIT_QUIT) {
+		// new editing end
+		} else if (exitCode == GameplayController.EXIT_QUIT) {
 			// We quit the main application
 			Gdx.app.exit();
 		}
