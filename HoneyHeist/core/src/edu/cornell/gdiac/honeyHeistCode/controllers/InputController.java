@@ -11,7 +11,7 @@
  * Based on original PhysicsDemo Lab by Don Holden, 2007
  * LibGDX version, 2/6/2015
  */
-package edu.cornell.gdiac.physics;
+package edu.cornell.gdiac.honeyHeistCode.controllers;
 
 import com.badlogic.gdx.*;
 import com.badlogic.gdx.math.*;
@@ -367,7 +367,7 @@ public class InputController {
 //		prevPressed  = xbox.getLBumper();
         rotationPressed = xbox.getA();
         anti_rotationPressed = xbox.getY();
-		debugPressed  = xbox.getY();
+//		debugPressed  = xbox.getY();
 
         // Increase animation frame, but only if trying to move
         horizontal = xbox.getLeftX();
@@ -407,7 +407,7 @@ public class InputController {
 //		rightPressed = (secondary && rightPressed) || (Gdx.input.isKeyPressed(Input.Keys.RIGHT));
         nextPressed = (secondary && nextPressed) || (Gdx.input.isKeyPressed(Input.Keys.N));
         exitPressed = (secondary && exitPressed) || (Gdx.input.isKeyPressed(Input.Keys.ESCAPE));
-
+        debugPressed = (secondary && debugPressed) || (Gdx.input.isKeyPressed(Input.Keys.X));
         // Directional controls
         horizontal = (secondary ? horizontal : 0.0f);
         if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {

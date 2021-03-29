@@ -14,7 +14,7 @@
  * Based on original PhysicsDemo Lab by Don Holden, 2007
  * LibGDX version, 2/6/2015
  */
-package edu.cornell.gdiac.physics.obstacle;
+package edu.cornell.gdiac.honeyHeistCode.obstacle;
 
 import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.graphics.Color;
@@ -22,7 +22,7 @@ import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
 
-import edu.cornell.gdiac.physics.GameCanvas;
+import edu.cornell.gdiac.honeyHeistCode.GameCanvas;
 
 /**
  * Base model class to support collisions.

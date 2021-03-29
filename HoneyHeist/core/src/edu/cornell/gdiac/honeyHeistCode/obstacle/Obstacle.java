@@ -15,13 +15,13 @@
  * Based on original PhysicsDemo Lab by Don Holden, 2007
  * LibGDX version, 2/6/2015
  */
-package edu.cornell.gdiac.physics.obstacle;
+package edu.cornell.gdiac.honeyHeistCode.obstacle;
 
 import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
 
-import edu.cornell.gdiac.physics.*;  // For GameCanvas
+import edu.cornell.gdiac.honeyHeistCode.*;  // For GameCanvas
 
 /**
  * Base model class to support collisions.
@@ -64,6 +64,12 @@ public abstract class Obstacle {
 	protected float rotationSpeed;
 	/** Whether the rotation is clockwise or not */
 	protected boolean isClockwise;
+	/** Whether the ant is sticking */
+	protected boolean sticking;
+	/** The amount of time that the ant should stick during rotations */
+	protected final float maxStickTime = 0.5f;
+	/** The amount of time that the ant has been sticking */
+	protected float stickTime;
 
 	/// Track garbage collection status
 	/** Whether the object should be removed from the world on next pass */
@@ -1047,8 +1053,10 @@ public abstract class Obstacle {
 	 */
 	public void startRotation(boolean isClockwise, Vector2 point){
 		if (isRotating) return;
+		setBodyType(BodyDef.BodyType.StaticBody);
 		stageCenter = point;
 		isRotating = true;
+		sticking = true;
 		this.isClockwise = isClockwise;
 		addRotation(rotationAngle);
 	}

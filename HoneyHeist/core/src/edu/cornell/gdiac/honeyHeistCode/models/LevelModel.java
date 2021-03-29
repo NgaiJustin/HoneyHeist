@@ -8,22 +8,11 @@
  * Based on original PhysicsDemo Lab by Don Holden, 2007
  * Updated asset version, 2/6/2021
  */
-package edu.cornell.gdiac.physics.platform;
+package edu.cornell.gdiac.honeyHeistCode.models;
 
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.JsonValue;
-import com.badlogic.gdx.utils.ObjectSet;
-import edu.cornell.gdiac.assets.AssetDirectory;
-import edu.cornell.gdiac.audio.SoundBuffer;
-import edu.cornell.gdiac.physics.InputController;
-import edu.cornell.gdiac.physics.WorldController;
-import edu.cornell.gdiac.physics.obstacle.BoxObstacle;
-import edu.cornell.gdiac.physics.obstacle.Obstacle;
-import edu.cornell.gdiac.physics.obstacle.PolygonObstacle;
+import edu.cornell.gdiac.honeyHeistCode.obstacle.BoxObstacle;
 
 /**
  * A class holding all game objects contained within a level,
@@ -36,7 +25,7 @@ public class LevelModel {
     /**
      * Reference to the character avatar
      */
-    private AntModel avatar;
+    private PlayerModel playerModel;
     /**
      * Reference to the list of bees
      */
@@ -59,31 +48,36 @@ public class LevelModel {
      * <p>
      * The game has default gravity and other settings
      */
-    public LevelModel() {
-        bees = new Array<AbstractBeeModel>();
+    public LevelModel(PlayerModel playerModel, Array<AbstractBeeModel> bees, BoxObstacle goalDoor,
+                      PlatformModel platforms, Vector2 origin) {
+        this.playerModel = playerModel;
+        this.bees = bees;
+        this.goalDoor = goalDoor;
+        this.platforms = platforms;
+        this.origin = origin;
     }
 
     public PlatformModel getPlatforms() {
         return platforms;
     }
 
-    public void setPlatforms(PlatformModel platforms) { this.platforms = platforms; }
+//    public void setPlatforms(PlatformModel platforms) { this.platforms = platforms; }
 
-    public AntModel getAvatar() {
-        return avatar;
+    public PlayerModel getPlayer() {
+        return playerModel;
     }
 
-    public void setAvatar(AntModel avatar) { this.avatar = avatar; }
+//    public void setPlayer(PlayerModel playerModel) { this.playerModel = playerModel; }
 
     public Array<AbstractBeeModel> getBees() {return bees;}
 
-    public void setBees(Array<AbstractBeeModel> bees) { this.bees = bees; }
+//    public void setBees(Array<AbstractBeeModel> bees) { this.bees = bees; }
 
     public BoxObstacle getGoalDoor() {return goalDoor;}
 
-    public void setGoalDoor(BoxObstacle goalDoor) { this.goalDoor = goalDoor; }
+//    public void setGoalDoor(BoxObstacle goalDoor) { this.goalDoor = goalDoor; }
 
     public Vector2 getOrigin() {return origin;}
 
-    public void setOrigin(Vector2 origin) { this.origin = origin; }
+//    public void setOrigin(Vector2 origin) { this.origin = origin; }
 }

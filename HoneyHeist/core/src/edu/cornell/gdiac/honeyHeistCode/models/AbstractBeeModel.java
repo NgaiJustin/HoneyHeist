@@ -1,11 +1,11 @@
-package edu.cornell.gdiac.physics.platform;
+package edu.cornell.gdiac.honeyHeistCode.models;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.JsonValue;
-import edu.cornell.gdiac.physics.GameCanvas;
-import edu.cornell.gdiac.physics.obstacle.CapsuleObstacle;
+import edu.cornell.gdiac.honeyHeistCode.GameCanvas;
+import edu.cornell.gdiac.honeyHeistCode.obstacle.CapsuleObstacle;
 
 /**
  * Model class for Enemy (Bee) in HoneyHeist.
@@ -44,7 +44,7 @@ public abstract class AbstractBeeModel extends CapsuleObstacle {
     /**
      * Whether our feet are on the ground
      */
-    private boolean isGrounded;
+    protected boolean isGrounded;
     /**
      * The physics shape of this object
      */
@@ -225,14 +225,26 @@ public abstract class AbstractBeeModel extends CapsuleObstacle {
 
     public void update(float dt) {
         if (!isRotating) {
+            if(stickTime>0){
+                stickTime -= dt;
+            }
+            else{
+                if(sticking){
+                    setBodyType(BodyDef.BodyType.DynamicBody);
+                    sticking = false;
+                    isGrounded = false;
+                    body.getFixtureList().clear();
+                    this.setAngle(0);
+                }
+            }
             return;
         }
+
         float rotationAmount = rotationSpeed * dt;
-        if (rotationAmount > remainingAngle) {
+        if (rotationAmount > remainingAngle){
             rotationAmount = remainingAngle;
             isRotating = false;
-            System.out.println("REVERT PLEASE");
-            setBodyType(BodyDef.BodyType.DynamicBody);
+            stickTime = maxStickTime;
         }
         remainingAngle -= rotationAmount;
         if (!isClockwise) {
@@ -274,9 +286,9 @@ public abstract class AbstractBeeModel extends CapsuleObstacle {
     public void draw(GameCanvas canvas) {
         float effect = faceRight ? 1.0f : -1.0f;
         // Reset Bee rotation if falling
-        if (!isGrounded()){
-            this.setAngle(0);
-        }
+        //if (!isGrounded()){
+        //    this.setAngle(0);
+        //}
         canvas.draw(texture, Color.WHITE, origin.x, origin.y, getX() * drawScale.x, getY() * drawScale.y, getAngle(), effect, 1.0f);
     }
 

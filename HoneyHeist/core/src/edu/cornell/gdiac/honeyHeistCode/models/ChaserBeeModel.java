@@ -1,8 +1,8 @@
-package edu.cornell.gdiac.physics.platform;
+package edu.cornell.gdiac.honeyHeistCode.models;
 
 import com.badlogic.gdx.utils.JsonValue;
 
-public class SleeperBeeModel extends AbstractBeeModel{
+public class ChaserBeeModel extends AbstractBeeModel{
     /**
      * Creates a bee avatar with the given physics data
      *
@@ -10,7 +10,7 @@ public class SleeperBeeModel extends AbstractBeeModel{
      * @param width  The object width in physics units
      * @param height The object width in physics units
      */
-    public SleeperBeeModel(JsonValue data, float width, float height) {
+    public ChaserBeeModel(JsonValue data, float width, float height) {
         super(data, width, height);
     }
 }
