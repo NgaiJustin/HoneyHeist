@@ -99,9 +99,6 @@ public class LevelController extends WorldController implements ContactListener 
         setFailure(false);
         world.setContactListener(this);
         sensorFixtures = new ObjectSet<Fixture>();
-        level = new LevelModel();
-        aIControllers = new Array<AIController>();
-        level.setOrigin(new Vector2(bounds.width / 2, bounds.height / 2));
     }
 
     /**
@@ -241,10 +238,6 @@ public class LevelController extends WorldController implements ContactListener 
         bees.add(chaserBee);
         addObject(chaserBee);
 
-        //Adds AI Controller for chaserBee
-        AIController chaserBeeAIController = new AIController(level, avatar.getPosition(), chaserBee);
-        aIControllers.add(chaserBeeAIController);
-
         // Create one sleeper bee
         dwidth = sleeperBeeTexture.getRegionWidth() / scale.x;
         dheight = sleeperBeeTexture.getRegionHeight() / scale.y;
@@ -256,6 +249,11 @@ public class LevelController extends WorldController implements ContactListener 
         bees.add(sleeperBee);
         addObject(sleeperBee);
         level = new LevelModel(avatar,bees,goalDoor,platforms,new Vector2(bounds.width / 2, bounds.height / 2));
+
+        aIControllers = new Array<AIController>();
+        //Adds AI Controller for chaserBee
+        AIController chaserBeeAIController = new AIController(level, avatar.getPosition(), chaserBee);
+        aIControllers.add(chaserBeeAIController);
 
         volume = constants.getFloat("volume", 1.0f);
     }
@@ -430,8 +428,8 @@ public class LevelController extends WorldController implements ContactListener 
                 }
             }
             // Check for win condition
-            if ((bd1 == avatar && bd2.getClass().getSuperclass() == AbstractBeeModel.class) ||
-                    (bd1.getClass().getSuperclass() == AbstractBeeModel.class && bd2 == avatar)) {
+            if (!isFailure() &&((bd1 == avatar && bd2.getClass().getSuperclass() == AbstractBeeModel.class) ||
+                    (bd1.getClass().getSuperclass() == AbstractBeeModel.class && bd2 == avatar))) {
                 setFailure(true);
             }
             if ((bd1 == avatar && bd2 == goalDoor) ||
