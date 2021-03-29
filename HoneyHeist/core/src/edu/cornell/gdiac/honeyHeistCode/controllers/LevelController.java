@@ -19,7 +19,7 @@ import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.ObjectSet;
 import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.audio.SoundBuffer;
-import edu.cornell.gdiac.honeyHeistCode.WorldController;
+import edu.cornell.gdiac.honeyHeistCode.GameplayController;
 import edu.cornell.gdiac.honeyHeistCode.models.*;
 import edu.cornell.gdiac.honeyHeistCode.obstacle.BoxObstacle;
 import edu.cornell.gdiac.honeyHeistCode.obstacle.Obstacle;
@@ -33,7 +33,7 @@ import edu.cornell.gdiac.honeyHeistCode.obstacle.Obstacle;
  * This is the purpose of our AssetState variable; it ensures that multiple instances
  * place nicely with the static assets.
  */
-public class LevelController extends WorldController implements ContactListener {
+public class LevelController extends GameplayController implements ContactListener {
     /**
      * Texture asset for player avatar
      */
