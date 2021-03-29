@@ -181,15 +181,21 @@ public class LevelController extends WorldController implements ContactListener 
          */
 
         // Create the hexagon level
+        /*
         JsonValue c = constants.get("testPlatform2");
         float r = c.getFloat("radius");
         float l = c.getFloat("length");
         float h = c.getFloat("height");
+        h = 2 * r / (float)Math.sqrt(3) + l/(float)Math.sqrt(3);
         for (int i=0; i<6; i++){
             float theta = (float)Math.PI/3 * i + (float)Math.PI/6;
             float x = r * (float)Math.cos(theta) + 16;
             float y = r * (float)Math.sin(theta) + 9;
             float[] points = platformPointsFromPoint(x, y, l, h, theta);
+            for (int j=0; j<points.length; j++){
+                System.out.print(points[j] + ", ");
+            }
+            System.out.println("");
             PolygonObstacle obj;
             obj = new PolygonObstacle(points, 0, 0);
             obj.setBodyType(BodyDef.BodyType.StaticBody);
@@ -202,8 +208,10 @@ public class LevelController extends WorldController implements ContactListener 
             addObject(obj);
         }
 
+         */
+
         // Create platforms
-        PlatformModel platforms = new PlatformModel(constants.get("platforms"));
+        PlatformModel platforms = new PlatformModel(constants.get("platforms2"));
         platforms.setDrawScale(scale);
         platforms.setTexture(earthTile);
         addObject(platforms);
