@@ -48,31 +48,36 @@ public class LevelModel {
      * <p>
      * The game has default gravity and other settings
      */
-    public LevelModel() {
-        bees = new Array<AbstractBeeModel>();
+    public LevelModel(PlayerModel playerModel, Array<AbstractBeeModel> bees, BoxObstacle goalDoor,
+                      PlatformModel platforms, Vector2 origin) {
+        this.playerModel = playerModel;
+        this.bees = bees;
+        this.goalDoor = goalDoor;
+        this.platforms = platforms;
+        this.origin = origin;
     }
 
     public PlatformModel getPlatforms() {
         return platforms;
     }
 
-    public void setPlatforms(PlatformModel platforms) { this.platforms = platforms; }
+//    public void setPlatforms(PlatformModel platforms) { this.platforms = platforms; }
 
     public PlayerModel getPlayer() {
         return playerModel;
     }
 
-    public void setPlayer(PlayerModel playerModel) { this.playerModel = playerModel; }
+//    public void setPlayer(PlayerModel playerModel) { this.playerModel = playerModel; }
 
     public Array<AbstractBeeModel> getBees() {return bees;}
 
-    public void setBees(Array<AbstractBeeModel> bees) { this.bees = bees; }
+//    public void setBees(Array<AbstractBeeModel> bees) { this.bees = bees; }
 
     public BoxObstacle getGoalDoor() {return goalDoor;}
 
-    public void setGoalDoor(BoxObstacle goalDoor) { this.goalDoor = goalDoor; }
+//    public void setGoalDoor(BoxObstacle goalDoor) { this.goalDoor = goalDoor; }
 
     public Vector2 getOrigin() {return origin;}
 
-    public void setOrigin(Vector2 origin) { this.origin = origin; }
+//    public void setOrigin(Vector2 origin) { this.origin = origin; }
 }
