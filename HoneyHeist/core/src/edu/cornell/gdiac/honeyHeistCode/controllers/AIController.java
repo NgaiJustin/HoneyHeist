@@ -6,12 +6,14 @@ will have an AI Controller assigned to them.
 
 It is dependent on Level Model in order for the character to get information about the level.
  */
-package edu.cornell.gdiac.physics.platform;
+package edu.cornell.gdiac.honeyHeistCode.controllers;
 
 import com.badlogic.gdx.math.Vector2;
-import edu.cornell.gdiac.physics.obstacle.ComplexObstacle;
-import edu.cornell.gdiac.physics.obstacle.Obstacle;
-import edu.cornell.gdiac.physics.obstacle.PolygonObstacle;
+import edu.cornell.gdiac.honeyHeistCode.models.ChaserBeeModel;
+import edu.cornell.gdiac.honeyHeistCode.models.LevelModel;
+import edu.cornell.gdiac.honeyHeistCode.models.PlatformModel;
+import edu.cornell.gdiac.honeyHeistCode.obstacle.Obstacle;
+
 import java.util.Random;
 
 
@@ -30,7 +32,8 @@ public class AIController {
     private LevelModel levelModel;
     private FSMState state;
     private long ticks;
-    private Vector2 lineToPlayer;
+    private Vector2 target;
+    private Vector2 lineToTarget;
     private Vector2 direction;
 
     Random random = new Random();
@@ -43,12 +46,13 @@ public class AIController {
 	 * @param levelModel the level that the enemy is in.
 	 * @param controlledEnemy the enemy that this AI Controller controlls.
 	 */
-	public AIController(LevelModel levelModel, ChaserBeeModel controlledEnemy) {
+	public AIController(LevelModel levelModel, Vector2 target, ChaserBeeModel controlledEnemy) {
 		this.levelModel = levelModel;
+		this.target = target;
         this.controlledEnemy = controlledEnemy;
 		state = FSMState.WANDER;
 		ticks = 0;
-        lineToPlayer = new Vector2();
+        lineToTarget = new Vector2();
         direction = new Vector2();
 	}
 
@@ -68,12 +72,12 @@ public class AIController {
 	}
 
     private void updateLineToPlayer() {
-        lineToPlayer.set(levelModel.getAvatar().getPosition());
-        lineToPlayer.sub(controlledEnemy.getPosition());
+        lineToTarget.set(levelModel.getPlayer().getPosition());
+        lineToTarget.sub(controlledEnemy.getPosition());
     }
 
 	private void updateFSMState() {
-		float distanceToPlayer = controlledEnemy.getPosition().dst(levelModel.getAvatar().getPosition());
+		float distanceToPlayer = controlledEnemy.getPosition().dst(levelModel.getPlayer().getPosition());
 		switch (this.state) {
 			case WANDER:
 				if (distanceToPlayer < CHASE_RADIUS) {
@@ -94,7 +98,7 @@ public class AIController {
 				break;
 
 			case CHASE:
-				setDirectionToGoTowardsPlayer();
+				setDirectionToGoTowardsTarget();
 				break;
 		}
 	}
@@ -109,10 +113,10 @@ public class AIController {
 	}
 
 	/**
-	 * Set the direction vector to go towards the player.
+	 * Set the direction vector to go towards the specified target.
 	 */
-	private void setDirectionToGoTowardsPlayer() {
-		direction.set(lineToPlayer);
+	private void setDirectionToGoTowardsTarget() {
+		direction.set(lineToTarget);
 		direction.nor();
 	}
 

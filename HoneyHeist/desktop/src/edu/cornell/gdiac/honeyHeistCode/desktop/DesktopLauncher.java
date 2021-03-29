@@ -10,10 +10,10 @@
  * Based on original Optimization Lab by Don Holden, 2007
  * LibGDX version, 2/2/2015
  */
-package edu.cornell.gdiac.physics.desktop;
+package edu.cornell.gdiac.honeyHeistCode.desktop;
 
 import edu.cornell.gdiac.backend.*;
-import edu.cornell.gdiac.physics.GDXRoot;
+import edu.cornell.gdiac.honeyHeistCode.GDXRoot;
 
 /**
  * The main class of the game.

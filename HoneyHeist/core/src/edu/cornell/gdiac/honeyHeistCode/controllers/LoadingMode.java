@@ -20,7 +20,7 @@
  * Based on original PhysicsDemo Lab by Don Holden, 2007
  * Updated asset version, 2/6/2021
  */
-package edu.cornell.gdiac.physics;
+package edu.cornell.gdiac.honeyHeistCode.controllers;
 
 import com.badlogic.gdx.*;
 import com.badlogic.gdx.graphics.*;
@@ -31,6 +31,7 @@ import com.badlogic.gdx.controllers.ControllerListener;
 import com.badlogic.gdx.controllers.ControllerMapping;
 
 import edu.cornell.gdiac.assets.*;
+import edu.cornell.gdiac.honeyHeistCode.GameCanvas;
 import edu.cornell.gdiac.util.*;
 
 /**

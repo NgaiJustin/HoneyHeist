@@ -1,45 +1,64 @@
-package edu.cornell.gdiac.physics.platform;
+package edu.cornell.gdiac.honeyHeistCode.models;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.JsonValue;
-import edu.cornell.gdiac.physics.GameCanvas;
-import edu.cornell.gdiac.physics.obstacle.CapsuleObstacle;
+import edu.cornell.gdiac.honeyHeistCode.GameCanvas;
+import edu.cornell.gdiac.honeyHeistCode.obstacle.CapsuleObstacle;
 
 /**
- *  Model class for player in HoneyHeist.
+ * Model class for Enemy (Bee) in HoneyHeist.
  */
-public class AntModel extends CapsuleObstacle {
+public abstract class AbstractBeeModel extends CapsuleObstacle {
 
-    /** The initializing data (to avoid magic numbers) */
+    /**
+     * The initializing data (to avoid magic numbers)
+     */
     private final JsonValue data;
-
-    /** The factor to multiply by the input */
+    /**
+     * The factor to multiply by the input
+     */
     private final float force;
-    /** The amount to slow the character down */
+    /**
+     * The amount to slow the character down
+     */
     private final float damping;
-    /** The maximum character speed */
+    /**
+     * The maximum character speed
+     */
     private final float maxspeed;
-    /** Identifier to allow us to track the sensor in ContactListener */
+    /**
+     * Identifier to allow us to track the sensor in ContactListener
+     */
     private final String sensorName;
 
-    /** The current horizontal movement of the character */
-    private float   movement;
-    /** Which direction is the character facing */
+    /**
+     * The current horizontal movement of the character
+     */
+    private float movement;
+    /**
+     * Which direction is the character facing
+     */
     private boolean faceRight;
-    /** Whether our feet are on the ground */
+    /**
+     * Whether our feet are on the ground
+     */
     private boolean isGrounded;
-    /** The physics shape of this object */
+    /**
+     * The physics shape of this object
+     */
     private PolygonShape sensorShape;
 
-    /** Cache for internal force calculations */
+    /**
+     * Cache for internal force calculations
+     */
     private final Vector2 forceCache = new Vector2();
 
 
     /**
      * Returns left/right movement of this character.
-     *
+     * <p>
      * This is the result of input times ant's force.
      *
      * @return left/right movement of this character.
@@ -50,13 +69,14 @@ public class AntModel extends CapsuleObstacle {
 
     /**
      * Sets left/right movement of this character.
-     *
+     * <p>
      * This is the result of input times ant's force.
      *
      * @param value left/right movement of this character.
      */
     public void setMovement(float value) {
         movement = value;
+
         // Change facing if appropriate
         if (movement < 0) {
             faceRight = false;
@@ -66,16 +86,16 @@ public class AntModel extends CapsuleObstacle {
     }
 
     /**
-     * Returns true if the ant is on the ground.
+     * Returns true if the bee is on the ground.
      *
-     * @return true if the ant is on the ground.
+     * @return true if the bee is on the ground.
      */
     public boolean isGrounded() {
         return isGrounded;
     }
 
     /**
-     * Sets whether the ant is on the ground.
+     * Sets whether the bee is on the ground.
      *
      * @param value whether the ant is on the ground.
      */
@@ -85,30 +105,30 @@ public class AntModel extends CapsuleObstacle {
 
     /**
      * Returns how much force to apply to get the ant moving
-     *
+     * <p>
      * Multiply this by the input to get the movement value.
      *
-     * @return how much force to apply to get the ant moving
+     * @return how much force to apply to get the bee moving
      */
     public float getForce() {
         return force;
     }
 
     /**
-     * Returns how hard the brakes are applied to get the ant to stop moving
+     * Returns how hard the brakes are applied to get the bee to stop moving
      *
-     * @return how hard the brakes are applied to get the ant to stop moving
+     * @return how hard the brakes are applied to get the bee to stop moving
      */
     public float getDamping() {
         return damping;
     }
 
     /**
-     * Returns the upper limit on dude left-right movement.
-     *
+     * Returns the upper limit on bee's left-right movement.
+     * <p>
      * This does NOT apply to vertical movement.
      *
-     * @return the upper limit on dude left-right movement.
+     * @return the upper limit on bee's left-right movement.
      */
     public float getMaxSpeed() {
         return maxspeed;
@@ -116,7 +136,7 @@ public class AntModel extends CapsuleObstacle {
 
     /**
      * Returns the name of the ground sensor
-     *
+     * <p>
      * This is used by ContactListener
      *
      * @return the name of the ground sensor
@@ -135,17 +155,17 @@ public class AntModel extends CapsuleObstacle {
     }
 
     /**
-     * Creates a ant avatar with the given physics data
+     * Creates a bee avatar with the given physics data
      *
-     * @param data  	The physics constants for the player Ant
-     * @param width		The object width in physics units
-     * @param height	The object width in physics units
+     * @param data   The physics constants for the player Ant
+     * @param width  The object width in physics units
+     * @param height The object width in physics units
      */
-    public AntModel(JsonValue data, float width, float height){
-        super(	data.get("pos").getFloat(0),
+    public AbstractBeeModel(JsonValue data, float width, float height) {
+        super(data.get("pos").getFloat(0),
                 data.get("pos").getFloat(1),
-                width*data.get("shrink").getFloat( 0 ),
-                height*data.get("shrink").getFloat( 1 ));
+                width * data.get("shrink").getFloat(0),
+                height * data.get("shrink").getFloat(1));
         setDensity(data.getFloat("density", 0));
         setFriction(data.getFloat("friction", 0));
         setFixedRotation(true);
@@ -153,14 +173,14 @@ public class AntModel extends CapsuleObstacle {
         maxspeed = data.getFloat("maxspeed", 0);
         damping = data.getFloat("damping", 0);
         force = data.getFloat("force", 0);
-        sensorName = "AntGroundSensor";
+        sensorName = "BeeGroundSensor";
         this.data = data;
 
         // Gameplay attributes
         isGrounded = false;
         faceRight = true;
 
-        setName("ant");
+        setName("bee");
 
         //Probably replace the following code with json data
         rotationAngle = (float) Math.PI/3;
@@ -169,15 +189,14 @@ public class AntModel extends CapsuleObstacle {
 
     /**
      * Creates the physics Body(s) for this object, adding them to the world.
-     *
+     * <p>
      * This method overrides the base method to keep your ship from spinning.
      *
      * @param world Box2D world to store body
-     *
      * @return true if object allocation succeeded
      */
     public boolean activatePhysics(World world) {
-        // create the box from our superclass
+        // Create the box from our superclass
         if (!super.activatePhysics(world)) {
             return false;
         }
@@ -189,30 +208,30 @@ public class AntModel extends CapsuleObstacle {
         // collisions with the world but has no collision response.
         Vector2 sensorCenter = new Vector2(0, -getHeight() / 2);
         FixtureDef sensorDef = new FixtureDef();
-        sensorDef.density = data.getFloat("density",0);
+        sensorDef.density = data.getFloat("density", 0);
         sensorDef.isSensor = true;
         sensorShape = new PolygonShape();
         JsonValue sensorjv = data.get("sensor");
-        sensorShape.setAsBox(sensorjv.getFloat("shrink",0)*getWidth(),
-                sensorjv.getFloat("height",0), sensorCenter, 0.0f);
+        sensorShape.setAsBox(sensorjv.getFloat("shrink", 0) * getWidth() / 2.0f,
+                sensorjv.getFloat("height", 0), sensorCenter, 0.0f);
         sensorDef.shape = sensorShape;
 
         // Ground sensor to represent our feet
-        Fixture sensorFixture = body.createFixture( sensorDef );
+        Fixture sensorFixture = body.createFixture(sensorDef);
         sensorFixture.setUserData(getSensorName());
 
         return true;
     }
 
-    public void update(float dt){
+    public void update(float dt) {
         if (!isRotating) {
             return;
         }
-
         float rotationAmount = rotationSpeed * dt;
-        if (rotationAmount > remainingAngle){
+        if (rotationAmount > remainingAngle) {
             rotationAmount = remainingAngle;
             isRotating = false;
+            System.out.println("REVERT PLEASE");
             setBodyType(BodyDef.BodyType.DynamicBody);
         }
         remainingAngle -= rotationAmount;
@@ -223,8 +242,8 @@ public class AntModel extends CapsuleObstacle {
     }
 
     /**
-     * Applies the force to the body of this dude
-     *
+     * Applies the force to the body of this bee
+     * <p>
      * This method should be called after the force attribute is set.
      */
     public void applyForce() {
@@ -234,16 +253,16 @@ public class AntModel extends CapsuleObstacle {
 
         // Don't want to be moving. Damp out player motion
         if (getMovement() == 0f) {
-            forceCache.set(-getDamping()*getVX(),0);
-            body.applyForce(forceCache,getPosition(),true);
+            forceCache.set(-getDamping() * getVX(), 0);
+            body.applyForce(forceCache, getPosition(), true);
         }
 
         // Velocity too high, clamp it
         if (Math.abs(getVX()) >= getMaxSpeed()) {
-            setVX(Math.signum(getVX())*getMaxSpeed());
+            setVX(Math.signum(getVX()) * getMaxSpeed());
         } else {
-            forceCache.set(getMovement(),0);
-            body.applyForce(forceCache,getPosition(),true);
+            forceCache.set(getMovement(), 0);
+            body.applyForce(forceCache, getPosition(), true);
         }
     }
 
@@ -254,11 +273,11 @@ public class AntModel extends CapsuleObstacle {
      */
     public void draw(GameCanvas canvas) {
         float effect = faceRight ? 1.0f : -1.0f;
-        // Reset Ant rotation if falling
+        // Reset Bee rotation if falling
         if (!isGrounded()){
             this.setAngle(0);
         }
-        canvas.draw(texture, Color.WHITE,origin.x,origin.y,getX()*drawScale.x,getY()*drawScale.y,getAngle(), effect,1.0f);
+        canvas.draw(texture, Color.WHITE, origin.x, origin.y, getX() * drawScale.x, getY() * drawScale.y, getAngle(), effect, 1.0f);
     }
 
     /**
@@ -268,7 +287,9 @@ public class AntModel extends CapsuleObstacle {
      */
     public void drawDebug(GameCanvas canvas) {
         super.drawDebug(canvas);
-        canvas.drawPhysics(sensorShape,Color.RED,getX(),getY(),getAngle(),drawScale.x,drawScale.y);
+        canvas.drawPhysics(sensorShape, Color.RED, getX(), getY(), getAngle(), drawScale.x, drawScale.y);
     }
+
+
 
 }
