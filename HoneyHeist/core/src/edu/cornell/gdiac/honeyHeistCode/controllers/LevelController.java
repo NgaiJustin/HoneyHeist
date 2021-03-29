@@ -23,6 +23,7 @@ import edu.cornell.gdiac.honeyHeistCode.WorldController;
 import edu.cornell.gdiac.honeyHeistCode.models.*;
 import edu.cornell.gdiac.honeyHeistCode.obstacle.BoxObstacle;
 import edu.cornell.gdiac.honeyHeistCode.obstacle.Obstacle;
+import edu.cornell.gdiac.honeyHeistCode.obstacle.PolygonObstacle;
 
 /**
  * Gameplay specific controller for the platformer game.
@@ -93,8 +94,6 @@ public class LevelController extends WorldController implements ContactListener 
         setFailure(false);
         world.setContactListener(this);
         sensorFixtures = new ObjectSet<Fixture>();
-        level = new LevelModel();
-        level.setOrigin(new Vector2(bounds.width / 2, bounds.height / 2));
     }
 
     /**
@@ -161,7 +160,6 @@ public class LevelController extends WorldController implements ContactListener 
         goalDoor.setTexture(goalTile);
         goalDoor.setName("goal");
         addObject(goalDoor);
-        level.setGoalDoor(goalDoor);
 
         JsonValue defaults = constants.get("defaults");
 
@@ -170,7 +168,6 @@ public class LevelController extends WorldController implements ContactListener 
         platforms.setDrawScale(scale);
         platforms.setTexture(earthTile);
         addObject(platforms);
-        level.setPlatforms(platforms);
 
         // This world is heavier
         world.setGravity(new Vector2(0, defaults.getFloat("gravity", 0)));
@@ -182,7 +179,6 @@ public class LevelController extends WorldController implements ContactListener 
         avatar.setDrawScale(scale);
         avatar.setTexture(avatarTexture);
         addObject(avatar);
-        level.setPlayer(avatar);
 
         // Create one chaser bee
         dwidth = chaserBeeTexture.getRegionWidth() / scale.x;
@@ -204,7 +200,7 @@ public class LevelController extends WorldController implements ContactListener 
         sleeperBee.setBodyType(BodyDef.BodyType.StaticBody);
         bees.add(sleeperBee);
         addObject(sleeperBee);
-        level.setBees(bees);
+        level = new LevelModel(avatar,bees,goalDoor,platforms,new Vector2(bounds.width / 2, bounds.height / 2));
 
         volume = constants.getFloat("volume", 1.0f);
     }
@@ -223,13 +219,10 @@ public class LevelController extends WorldController implements ContactListener 
 
         platforms.startRotation(isClockwise, origin);
         if (avatar.isGrounded()&&platformNotRotating){
-            avatar.setBodyType(BodyDef.BodyType.StaticBody);
-            System.out.println(origin);
             avatar.startRotation(isClockwise, origin);
         }
         for(AbstractBeeModel bee : bees){
             if(bee.isGrounded() && platformNotRotating) {
-                bee.setBodyType(BodyDef.BodyType.StaticBody);
                 bee.startRotation(isClockwise, origin);
             }
         }
@@ -354,20 +347,24 @@ public class LevelController extends WorldController implements ContactListener 
             Obstacle bd2 = (Obstacle) body2.getUserData();
 
             // See if we have landed on the ground.
-            if ((avatar.getSensorName().equals(fd2) && avatar != bd1) ||
-                    (avatar.getSensorName().equals(fd1) && avatar != bd2)) {
+            if ((avatar.getSensorName().equals(fd2) && avatar != bd1)&&(bd1.getClass() == PolygonObstacle.class) ||
+                    (avatar.getSensorName().equals(fd1) && avatar != bd2)&&(bd2.getClass() == PolygonObstacle.class)) {
                 avatar.setGrounded(true);
                 sensorFixtures.add(avatar == bd1 ? fix2 : fix1); // Could have more than one ground
             }
             // ITERATE OVER ALL CHASER BEES
             for(AbstractBeeModel bee : bees) {
-                if ((bee.getSensorName().equals(fd2) && bee != bd1) ||
-                        (bee.getSensorName().equals(fd1) && bee != bd2)) {
+                if ((bee.getSensorName().equals(fd2) && bee != bd1)&&(bd1.getClass() == PolygonObstacle.class) ||
+                        (bee.getSensorName().equals(fd1) && bee != bd2)&&(bd2.getClass() == PolygonObstacle.class)) {
                     bee.setGrounded(true);
                     sensorFixtures.add(bee == bd1 ? fix2 : fix1); // Could have more than one ground
                 }
             }
             // Check for win condition
+            if ((bd1 == avatar && bd2.getClass().getSuperclass() == AbstractBeeModel.class) ||
+                    (bd1.getClass().getSuperclass() == AbstractBeeModel.class && bd2 == avatar)) {
+                setFailure(true);
+            }
             if ((bd1 == avatar && bd2 == goalDoor) ||
                     (bd1 == goalDoor && bd2 == avatar)) {
                 setComplete(true);
@@ -401,16 +398,16 @@ public class LevelController extends WorldController implements ContactListener 
         PlayerModel avatar = level.getPlayer();
         Array<AbstractBeeModel> bees = level.getBees();
 
-        if ((avatar.getSensorName().equals(fd2) && avatar != bd1) ||
-                (avatar.getSensorName().equals(fd1) && avatar != bd2)) {
+        if ((avatar.getSensorName().equals(fd2) && avatar != bd1)&&(bd1.getClass() == PolygonObstacle.class)  ||
+                (avatar.getSensorName().equals(fd1) && avatar != bd2)&&(bd2.getClass() == PolygonObstacle.class)) {
             sensorFixtures.remove(avatar == bd1 ? fix2 : fix1);
             if (sensorFixtures.size == 0) {
                 avatar.setGrounded(false);
             }
         }
         for(AbstractBeeModel bee : bees) {
-            if ((bee.getSensorName().equals(fd2) && bee != bd1) ||
-                    (bee.getSensorName().equals(fd1) && bee != bd2)) {
+            if ((bee.getSensorName().equals(fd2) && bee != bd1)&&(bd1.getClass() == PolygonObstacle.class) ||
+                    (bee.getSensorName().equals(fd1) && bee != bd2)&&(bd2.getClass() == PolygonObstacle.class)) {
                 sensorFixtures.remove(bee == bd1 ? fix2 : fix1);
                 if (sensorFixtures.size == 0) {
                     bee.setGrounded(false);
