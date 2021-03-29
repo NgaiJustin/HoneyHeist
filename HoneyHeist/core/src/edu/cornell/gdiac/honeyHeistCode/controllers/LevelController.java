@@ -178,7 +178,7 @@ public class LevelController extends WorldController implements ContactListener 
         // Create player (ant)
         dwidth = avatarTexture.getRegionWidth() / scale.x;
         dheight = avatarTexture.getRegionHeight() / scale.y;
-        Player avatar = new Player(constants.get("player"), dwidth, dheight);
+        PlayerModel avatar = new PlayerModel(constants.get("player"), dwidth, dheight);
         avatar.setDrawScale(scale);
         avatar.setTexture(avatarTexture);
         addObject(avatar);
@@ -217,7 +217,7 @@ public class LevelController extends WorldController implements ContactListener 
      */
     public void rotate(boolean isClockwise, boolean platformNotRotating){
         PlatformModel platforms = level.getPlatforms();
-        Player avatar = level.getPlayer();
+        PlayerModel avatar = level.getPlayer();
         Array<AbstractBeeModel> bees = level.getBees();
         Vector2 origin = level.getOrigin();
 
@@ -345,7 +345,7 @@ public class LevelController extends WorldController implements ContactListener 
         Object fd1 = fix1.getUserData();
         Object fd2 = fix2.getUserData();
 
-        Player avatar = level.getPlayer();
+        PlayerModel avatar = level.getPlayer();
         Array<AbstractBeeModel> bees = level.getBees();
         BoxObstacle goalDoor = level.getGoalDoor();
 
@@ -398,7 +398,7 @@ public class LevelController extends WorldController implements ContactListener 
         Object bd1 = body1.getUserData();
         Object bd2 = body2.getUserData();
 
-        Player avatar = level.getPlayer();
+        PlayerModel avatar = level.getPlayer();
         Array<AbstractBeeModel> bees = level.getBees();
 
         if ((avatar.getSensorName().equals(fd2) && avatar != bd1) ||

@@ -10,7 +10,7 @@ import edu.cornell.gdiac.honeyHeistCode.obstacle.CapsuleObstacle;
 /**
  *  Model class for player in HoneyHeist.
  */
-public class Player extends CapsuleObstacle {
+public class PlayerModel extends CapsuleObstacle {
 
     /** The initializing data (to avoid magic numbers) */
     private final JsonValue data;
@@ -141,7 +141,7 @@ public class Player extends CapsuleObstacle {
      * @param width		The object width in physics units
      * @param height	The object width in physics units
      */
-    public Player(JsonValue data, float width, float height){
+    public PlayerModel(JsonValue data, float width, float height){
         super(	data.get("pos").getFloat(0),
                 data.get("pos").getFloat(1),
                 width*data.get("shrink").getFloat( 0 ),

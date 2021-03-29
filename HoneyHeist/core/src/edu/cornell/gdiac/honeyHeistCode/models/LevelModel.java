@@ -25,7 +25,7 @@ public class LevelModel {
     /**
      * Reference to the character avatar
      */
-    private Player player;
+    private PlayerModel playerModel;
     /**
      * Reference to the list of bees
      */
@@ -58,11 +58,11 @@ public class LevelModel {
 
     public void setPlatforms(PlatformModel platforms) { this.platforms = platforms; }
 
-    public Player getPlayer() {
-        return player;
+    public PlayerModel getPlayer() {
+        return playerModel;
     }
 
-    public void setPlayer(Player player) { this.player = player; }
+    public void setPlayer(PlayerModel playerModel) { this.playerModel = playerModel; }
 
     public Array<AbstractBeeModel> getBees() {return bees;}
 
