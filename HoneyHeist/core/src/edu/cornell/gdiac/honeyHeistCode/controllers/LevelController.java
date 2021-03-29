@@ -77,6 +77,11 @@ public class LevelController extends WorldController implements ContactListener 
 
 
     /**
+     * Reference to the AI Controllers
+     */
+    private Array<AIController> aIControllers;
+
+    /**
      * Mark set to handle more sophisticated collision callbacks
      */
     protected ObjectSet<Fixture> sensorFixtures;
@@ -94,6 +99,7 @@ public class LevelController extends WorldController implements ContactListener 
         world.setContactListener(this);
         sensorFixtures = new ObjectSet<Fixture>();
         level = new LevelModel();
+        aIControllers = new Array<AIController>();
         level.setOrigin(new Vector2(bounds.width / 2, bounds.height / 2));
     }
 
@@ -194,6 +200,10 @@ public class LevelController extends WorldController implements ContactListener 
         bees.add(chaserBee);
         addObject(chaserBee);
 
+        //Adds AI Controller for chaserBee
+        AIController chaserBeeAIController = new AIController(level, avatar.getPosition(), chaserBee);
+        aIControllers.add(chaserBeeAIController);
+
         // Create one sleeper bee
         dwidth = sleeperBeeTexture.getRegionWidth() / scale.x;
         dheight = sleeperBeeTexture.getRegionHeight() / scale.y;
@@ -270,6 +280,19 @@ public class LevelController extends WorldController implements ContactListener 
     }
 
     /**
+     * TO BE LATER DEPRECATED
+     *
+     */
+    private void moveChaserBeeFromStoredAIControllers() {
+        for (AIController aIController: aIControllers) {
+            aIController.updateAIController();
+            AbstractBeeModel bee = aIController.getControlledCharacter();
+            System.out.println(aIController.getMovementHorizontalDirection1orNeg1());
+            bee.setMovement(aIController.getMovementHorizontalDirection1orNeg1() * bee.getForce());
+        }
+    }
+
+    /**
      * Returns whether to process the update loop
      * <p>
      * At the start of the update loop, we check if it is time
@@ -312,6 +335,7 @@ public class LevelController extends WorldController implements ContactListener 
         // 1. Loop over all chaser bee,
         // 2. For each bee, moveChaserBee(...);
         // TO BE IMPLEMENTED
+        moveChaserBeeFromStoredAIControllers();
         for(AbstractBeeModel bee : level.getBees()){
             bee.applyForce();
         }
