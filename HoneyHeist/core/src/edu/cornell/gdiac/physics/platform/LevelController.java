@@ -166,7 +166,7 @@ public class LevelController extends WorldController implements ContactListener 
         level.setGoalDoor(goalDoor);
 
         JsonValue defaults = constants.get("defaults");
-
+        /*
         PolygonObstacle obj;
         obj = new PolygonObstacle(platformPointsFromJson(constants.get("testPlatform")), 0, 0);
         obj.setBodyType(BodyDef.BodyType.StaticBody);
@@ -177,6 +177,30 @@ public class LevelController extends WorldController implements ContactListener 
         obj.setDrawScale(scale);
         obj.setTexture(earthTile);
         addObject(obj);
+
+         */
+
+        // Create the hexagon level
+        JsonValue c = constants.get("testPlatform2");
+        float r = c.getFloat("radius");
+        float l = c.getFloat("length");
+        float h = c.getFloat("height");
+        for (int i=0; i<6; i++){
+            float theta = (float)Math.PI/3 * i + (float)Math.PI/6;
+            float x = r * (float)Math.cos(theta) + 16;
+            float y = r * (float)Math.sin(theta) + 9;
+            float[] points = platformPointsFromPoint(x, y, l, h, theta);
+            PolygonObstacle obj;
+            obj = new PolygonObstacle(points, 0, 0);
+            obj.setBodyType(BodyDef.BodyType.StaticBody);
+            obj.setDensity(defaults.getFloat( "density", 0.0f ));
+            obj.setFriction(defaults.getFloat( "friction", 0.0f ));
+            obj.setRestitution(defaults.getFloat( "restitution", 0.0f ));
+            obj.setName("testPlatform");
+            obj.setDrawScale(scale);
+            obj.setTexture(earthTile);
+            addObject(obj);
+        }
 
         // Create platforms
         PlatformModel platforms = new PlatformModel(constants.get("platforms"));
@@ -489,7 +513,7 @@ public class LevelController extends WorldController implements ContactListener 
     public float[] platformPointsFromPoint(float x, float y, float width, float height, float rotation){
         float w = width/2;
         float h = height/2;
-        float rot = rotation * 2 * (float)Math.PI/360;
+        float rot = rotation; /* rotation * 2 * (float)Math.PI/360; */
         float[] points = new float[]{-w, h, -w, -h, w, -h, w, h};
         float cos = (float)Math.cos(rot);
         float sin = (float)Math.sin(rot);

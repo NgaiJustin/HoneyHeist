@@ -81,5 +81,10 @@
 		"position": {"x": 16.0, "y": 9.0},
 		"scale": {"width": 5.0, "height": 1.0},
 		"local_rotation": -30.0
+	},
+	"testPlatform2": {
+		"radius" : 8.0,
+		"length" : 0.5,
+		"height" : 9.0
 	}
 }
