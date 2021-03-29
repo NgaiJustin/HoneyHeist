@@ -25,7 +25,6 @@ import edu.cornell.gdiac.physics.WorldController;
 import edu.cornell.gdiac.physics.obstacle.BoxObstacle;
 import edu.cornell.gdiac.physics.obstacle.Obstacle;
 import edu.cornell.gdiac.physics.obstacle.PolygonObstacle;
-import org.graalvm.compiler.core.common.type.ArithmeticOpTable;
 
 /**
  * Gameplay specific controller for the platformer game.
@@ -167,6 +166,17 @@ public class LevelController extends WorldController implements ContactListener 
         level.setGoalDoor(goalDoor);
 
         JsonValue defaults = constants.get("defaults");
+
+        PolygonObstacle obj;
+        obj = new PolygonObstacle(platformPointsFromJson(constants.get("testPlatform")), 0, 0);
+        obj.setBodyType(BodyDef.BodyType.StaticBody);
+        obj.setDensity(defaults.getFloat( "density", 0.0f ));
+        obj.setFriction(defaults.getFloat( "friction", 0.0f ));
+        obj.setRestitution(defaults.getFloat( "restitution", 0.0f ));
+        obj.setName("testPlatform");
+        obj.setDrawScale(scale);
+        obj.setTexture(earthTile);
+        addObject(obj);
 
         // Create platforms
         PlatformModel platforms = new PlatformModel(constants.get("platforms"));
@@ -473,6 +483,23 @@ public class LevelController extends WorldController implements ContactListener 
             points[i] = temp;
         }
 
+        return points;
+    }
+
+    public float[] platformPointsFromPoint(float x, float y, float width, float height, float rotation){
+        float w = width/2;
+        float h = height/2;
+        float rot = rotation * 2 * (float)Math.PI/360;
+        float[] points = new float[]{-w, h, -w, -h, w, -h, w, h};
+        float cos = (float)Math.cos(rot);
+        float sin = (float)Math.sin(rot);
+
+        float temp;
+        for (int i=0; i<points.length; i+=2){
+            temp = points[i]*cos - points[i+1]*sin + x;
+            points[i+1] = points[i]*sin+points[i+1]*cos + y;
+            points[i] = temp;
+        }
         return points;
     }
 }

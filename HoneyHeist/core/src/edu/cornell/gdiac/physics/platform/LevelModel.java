@@ -24,7 +24,6 @@ import edu.cornell.gdiac.physics.WorldController;
 import edu.cornell.gdiac.physics.obstacle.BoxObstacle;
 import edu.cornell.gdiac.physics.obstacle.Obstacle;
 import edu.cornell.gdiac.physics.obstacle.PolygonObstacle;
-import org.graalvm.compiler.core.common.type.ArithmeticOpTable;
 
 /**
  * A class holding all game objects contained within a level,

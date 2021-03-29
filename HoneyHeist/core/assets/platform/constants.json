@@ -79,7 +79,7 @@
 	"testPlatform": {
 		"type": "normal",
 		"position": {"x": 16.0, "y": 9.0},
-		"scale": {"width": 2.0, "height": 1.0},
-		"local_rotation": 30.0
+		"scale": {"width": 5.0, "height": 1.0},
+		"local_rotation": -30.0
 	}
 }
