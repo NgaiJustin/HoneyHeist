@@ -1,4 +1,4 @@
-package edu.cornell.gdiac.physics;
+package edu.cornell.gdiac.honeyHeistCode;
 
 import java.util.Iterator;
 import java.util.logging.Level;
@@ -13,9 +13,11 @@ import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.graphics.g2d.freetype.*;
 import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.audio.SoundBuffer;
-import edu.cornell.gdiac.physics.platform.*;
+import edu.cornell.gdiac.honeyHeistCode.controllers.AIController;
+import edu.cornell.gdiac.honeyHeistCode.controllers.InputController;
+import edu.cornell.gdiac.honeyHeistCode.controllers.LevelController;
 import edu.cornell.gdiac.util.*;
-import edu.cornell.gdiac.physics.obstacle.*;
+import edu.cornell.gdiac.honeyHeistCode.obstacle.*;
 
 /**
  * Base class for a world-specific controller.

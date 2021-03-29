@@ -9,12 +9,12 @@
  * Based on original PhysicsDemo Lab by Don Holden, 2007
  * LibGDX version, 2/6/2015
  */
-package edu.cornell.gdiac.physics.obstacle;
+package edu.cornell.gdiac.honeyHeistCode.obstacle;
 
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.physics.box2d.*;
 
-import edu.cornell.gdiac.physics.*;  // For GameCanvas
+import edu.cornell.gdiac.honeyHeistCode.*;  // For GameCanvas
 
 /**
  * Circle-shaped model to support collisions.

@@ -8,7 +8,7 @@
  * Based on original PhysicsDemo Lab by Don Holden, 2007
  * Updated asset version, 2/6/2021
  */
-package edu.cornell.gdiac.physics.platform;
+package edu.cornell.gdiac.honeyHeistCode.controllers;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.graphics.Texture;
@@ -20,11 +20,11 @@ import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.ObjectSet;
 import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.audio.SoundBuffer;
-import edu.cornell.gdiac.physics.GameplayController;
-import edu.cornell.gdiac.physics.InputController;
-import edu.cornell.gdiac.physics.WorldController;
-import edu.cornell.gdiac.physics.obstacle.BoxObstacle;
-import edu.cornell.gdiac.physics.obstacle.Obstacle;
+import edu.cornell.gdiac.honeyHeistCode.GameplayController;
+import edu.cornell.gdiac.honeyHeistCode.WorldController;
+import edu.cornell.gdiac.honeyHeistCode.models.*;
+import edu.cornell.gdiac.honeyHeistCode.obstacle.BoxObstacle;
+import edu.cornell.gdiac.honeyHeistCode.obstacle.Obstacle;
 
 /**
  * Gameplay specific controller for the platformer game.
@@ -181,11 +181,11 @@ public class LevelController extends GameplayController implements ContactListen
         // Create player (ant)
         dwidth = avatarTexture.getRegionWidth() / scale.x;
         dheight = avatarTexture.getRegionHeight() / scale.y;
-        AntModel avatar = new AntModel(constants.get("player"), dwidth, dheight);
+        PlayerModel avatar = new PlayerModel(constants.get("player"), dwidth, dheight);
         avatar.setDrawScale(scale);
         avatar.setTexture(avatarTexture);
         addObject(avatar);
-        level.setAvatar(avatar);
+        level.setPlayer(avatar);
 
         // Create one chaser bee
         dwidth = chaserBeeTexture.getRegionWidth() / scale.x;
@@ -220,7 +220,7 @@ public class LevelController extends GameplayController implements ContactListen
      */
     public void rotate(boolean isClockwise, boolean platformNotRotating){
         PlatformModel platforms = level.getPlatforms();
-        AntModel avatar = level.getAvatar();
+        PlayerModel avatar = level.getPlayer();
         Array<AbstractBeeModel> bees = level.getBees();
         Vector2 origin = level.getOrigin();
 
@@ -260,7 +260,7 @@ public class LevelController extends GameplayController implements ContactListen
      * @param direction -1 = left, 1 = right, 0 = still
      */
     public void moveAnt(float direction) {
-        level.getAvatar().setMovement(direction * level.getAvatar().getForce());
+        level.getPlayer().setMovement(direction * level.getPlayer().getForce());
     }
 
     /**
@@ -287,7 +287,7 @@ public class LevelController extends GameplayController implements ContactListen
             return false;
         }
 
-        if (!isFailure() && level.getAvatar().getY() < -1) {
+        if (!isFailure() && level.getPlayer().getY() < -1) {
             setFailure(true);
             return false;
         }
@@ -309,7 +309,7 @@ public class LevelController extends GameplayController implements ContactListen
         // Process actions in object model
         moveAnt(InputController.getInstance().getHorizontal());
 
-        level.getAvatar().applyForce();
+        level.getPlayer().applyForce();
 
         // Process AI action
         // 1. Loop over all chaser bee,
@@ -348,7 +348,7 @@ public class LevelController extends GameplayController implements ContactListen
         Object fd1 = fix1.getUserData();
         Object fd2 = fix2.getUserData();
 
-        AntModel avatar = level.getAvatar();
+        PlayerModel avatar = level.getPlayer();
         Array<AbstractBeeModel> bees = level.getBees();
         BoxObstacle goalDoor = level.getGoalDoor();
 
@@ -401,7 +401,7 @@ public class LevelController extends GameplayController implements ContactListen
         Object bd1 = body1.getUserData();
         Object bd2 = body2.getUserData();
 
-        AntModel avatar = level.getAvatar();
+        PlayerModel avatar = level.getPlayer();
         Array<AbstractBeeModel> bees = level.getBees();
 
         if ((avatar.getSensorName().equals(fd2) && avatar != bd1) ||
