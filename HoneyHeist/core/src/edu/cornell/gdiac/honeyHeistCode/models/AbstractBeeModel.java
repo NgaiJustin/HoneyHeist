@@ -287,6 +287,14 @@ public abstract class AbstractBeeModel extends CapsuleObstacle {
             forceCache.set(getMovement(), 0);
             body.applyForce(forceCache, getPosition(), true);
         }
+
+        if (isGrounded&&(Math.abs(getVY()) >= getMaxSpeed())) {
+            setVY(Math.signum(getVY()) * getMaxSpeed());
+        }
+
+        if(!isGrounded){
+            setVY(Math.min(0f,getVY()));
+        }
     }
 
     /**
