@@ -193,7 +193,7 @@ public class PlayerModel extends CapsuleObstacle {
         sensorDef.isSensor = true;
         sensorShape = new PolygonShape();
         JsonValue sensorjv = data.get("sensor");
-        sensorShape.setAsBox(sensorjv.getFloat("shrink",0)*getWidth(),
+        sensorShape.setAsBox(sensorjv.getFloat("shrink",0)*getWidth()/1.4f,
                 sensorjv.getFloat("height",0), sensorCenter, 0.0f);
         sensorDef.shape = sensorShape;
 
@@ -206,6 +206,17 @@ public class PlayerModel extends CapsuleObstacle {
 
     public void update(float dt){
         if (!isRotating) {
+            if(stickTime>0){
+                stickTime -= dt;
+            }
+            else{
+                if(sticking){
+                    setBodyType(BodyDef.BodyType.DynamicBody);
+                    sticking = false;
+                    isGrounded = false;
+                    this.setAngle(0);
+                }
+            }
             return;
         }
 
@@ -213,7 +224,7 @@ public class PlayerModel extends CapsuleObstacle {
         if (rotationAmount > remainingAngle){
             rotationAmount = remainingAngle;
             isRotating = false;
-            setBodyType(BodyDef.BodyType.DynamicBody);
+            stickTime = maxStickTime;
         }
         remainingAngle -= rotationAmount;
         if (!isClockwise) {
@@ -245,6 +256,14 @@ public class PlayerModel extends CapsuleObstacle {
             forceCache.set(getMovement(),0);
             body.applyForce(forceCache,getPosition(),true);
         }
+
+        if (isGrounded&&(Math.abs(getVY()) >= getMaxSpeed())) {
+            setVY(Math.signum(getVY()) * getMaxSpeed());
+        }
+
+        if(!isGrounded){
+            setVY(Math.min(0f,getVY()));
+        }
     }
 
     /**
@@ -255,9 +274,9 @@ public class PlayerModel extends CapsuleObstacle {
     public void draw(GameCanvas canvas) {
         float effect = faceRight ? 1.0f : -1.0f;
         // Reset Ant rotation if falling
-        if (!isGrounded()){
-            this.setAngle(0);
-        }
+        //if (body.getType() == BodyDef.BodyType.DynamicBody){
+        //    this.setAngle(0);
+        //}
         canvas.draw(texture, Color.WHITE,origin.x,origin.y,getX()*drawScale.x,getY()*drawScale.y,getAngle(), effect,1.0f);
     }
 

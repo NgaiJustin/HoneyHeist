@@ -64,6 +64,12 @@ public abstract class Obstacle {
 	protected float rotationSpeed;
 	/** Whether the rotation is clockwise or not */
 	protected boolean isClockwise;
+	/** Whether the ant is sticking */
+	protected boolean sticking;
+	/** The amount of time that the ant should stick during rotations */
+	protected final float maxStickTime = 0.5f;
+	/** The amount of time that the ant has been sticking */
+	protected float stickTime;
 
 	/// Track garbage collection status
 	/** Whether the object should be removed from the world on next pass */
@@ -1047,8 +1053,10 @@ public abstract class Obstacle {
 	 */
 	public void startRotation(boolean isClockwise, Vector2 point){
 		if (isRotating) return;
+		setBodyType(BodyDef.BodyType.StaticBody);
 		stageCenter = point;
 		isRotating = true;
+		sticking = true;
 		this.isClockwise = isClockwise;
 		addRotation(rotationAngle);
 	}

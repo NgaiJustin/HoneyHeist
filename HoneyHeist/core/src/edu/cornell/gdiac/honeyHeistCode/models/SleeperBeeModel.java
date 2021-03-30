@@ -1,5 +1,6 @@
 package edu.cornell.gdiac.honeyHeistCode.models;
 
+import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.utils.JsonValue;
 
 public class SleeperBeeModel extends AbstractBeeModel{
@@ -12,5 +13,24 @@ public class SleeperBeeModel extends AbstractBeeModel{
      */
     public SleeperBeeModel(JsonValue data, float width, float height) {
         super(data, width, height);
+        isGrounded = true;
+    }
+
+    public void update(float dt) {
+        if (!isRotating) {
+            return;
+        }
+
+        float rotationAmount = rotationSpeed * dt;
+        if (rotationAmount > remainingAngle){
+            rotationAmount = remainingAngle;
+            isRotating = false;
+            stickTime = maxStickTime;
+        }
+        remainingAngle -= rotationAmount;
+        if (!isClockwise) {
+            rotationAmount *= -1;
+        }
+        rotateAboutPoint(rotationAmount, stageCenter);
     }
 }

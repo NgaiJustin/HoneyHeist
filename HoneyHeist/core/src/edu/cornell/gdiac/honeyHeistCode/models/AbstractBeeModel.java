@@ -4,6 +4,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.JsonValue;
+import com.badlogic.gdx.utils.ObjectSet;
 import edu.cornell.gdiac.honeyHeistCode.GameCanvas;
 import edu.cornell.gdiac.honeyHeistCode.obstacle.CapsuleObstacle;
 
@@ -44,7 +45,11 @@ public abstract class AbstractBeeModel extends CapsuleObstacle {
     /**
      * Whether our feet are on the ground
      */
-    private boolean isGrounded;
+    protected boolean isGrounded;
+    /**
+     * Sensor fixtures for isGrounded detection
+     */
+    protected ObjectSet<Fixture> sensorFixtures;
     /**
      * The physics shape of this object
      */
@@ -134,6 +139,10 @@ public abstract class AbstractBeeModel extends CapsuleObstacle {
         return maxspeed;
     }
 
+    public ObjectSet<Fixture> getSensorFixtures() {
+        return sensorFixtures;
+    }
+
     /**
      * Returns the name of the ground sensor
      * <p>
@@ -185,6 +194,8 @@ public abstract class AbstractBeeModel extends CapsuleObstacle {
         //Probably replace the following code with json data
         rotationAngle = (float) Math.PI/3;
         rotationSpeed = (float) Math.PI/3;
+
+        sensorFixtures = new ObjectSet<Fixture>();
     }
 
     /**
@@ -225,14 +236,25 @@ public abstract class AbstractBeeModel extends CapsuleObstacle {
 
     public void update(float dt) {
         if (!isRotating) {
+            if(stickTime>0){
+                stickTime -= dt;
+            }
+            else{
+                if(sticking){
+                    setBodyType(BodyDef.BodyType.DynamicBody);
+                    sticking = false;
+                    isGrounded = false;
+                    this.setAngle(0);
+                }
+            }
             return;
         }
+
         float rotationAmount = rotationSpeed * dt;
-        if (rotationAmount > remainingAngle) {
+        if (rotationAmount > remainingAngle){
             rotationAmount = remainingAngle;
             isRotating = false;
-            System.out.println("REVERT PLEASE");
-            setBodyType(BodyDef.BodyType.DynamicBody);
+            stickTime = maxStickTime;
         }
         remainingAngle -= rotationAmount;
         if (!isClockwise) {
@@ -264,6 +286,14 @@ public abstract class AbstractBeeModel extends CapsuleObstacle {
             forceCache.set(getMovement(), 0);
             body.applyForce(forceCache, getPosition(), true);
         }
+
+        if (isGrounded&&(Math.abs(getVY()) >= getMaxSpeed())) {
+            setVY(Math.signum(getVY()) * getMaxSpeed());
+        }
+
+        if(!isGrounded){
+            setVY(Math.min(0f,getVY()));
+        }
     }
 
     /**
@@ -274,9 +304,9 @@ public abstract class AbstractBeeModel extends CapsuleObstacle {
     public void draw(GameCanvas canvas) {
         float effect = faceRight ? 1.0f : -1.0f;
         // Reset Bee rotation if falling
-        if (!isGrounded()){
-            this.setAngle(0);
-        }
+        //if (!isGrounded()){
+        //    this.setAngle(0);
+        //}
         canvas.draw(texture, Color.WHITE, origin.x, origin.y, getX() * drawScale.x, getY() * drawScale.y, getAngle(), effect, 1.0f);
     }
 
