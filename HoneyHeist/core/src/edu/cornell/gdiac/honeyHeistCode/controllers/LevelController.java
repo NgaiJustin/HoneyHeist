@@ -136,6 +136,7 @@ public class LevelController extends WorldController implements ContactListener 
         objects.clear();
         addQueue.clear();
         world.dispose();
+        sensorFixtures.clear();
 
         world = new World(gravity, false);
         world.setContactListener(this);
@@ -255,6 +256,7 @@ public class LevelController extends WorldController implements ContactListener 
         AIController chaserBeeAIController = new AIController(level, avatar.getPosition(), chaserBee);
         aIControllers.add(chaserBeeAIController);
 
+
         volume = constants.getFloat("volume", 1.0f);
     }
 
@@ -323,7 +325,7 @@ public class LevelController extends WorldController implements ContactListener 
         for (AIController aIController: aIControllers) {
             aIController.updateAIController();
             AbstractBeeModel bee = aIController.getControlledCharacter();
-            System.out.println(aIController.getMovementHorizontalDirection1orNeg1());
+            //System.out.println(aIController.getMovementHorizontalDirection1orNeg1());
             bee.setMovement(aIController.getMovementHorizontalDirection1orNeg1() * bee.getForce());
         }
     }
@@ -414,8 +416,11 @@ public class LevelController extends WorldController implements ContactListener 
             Obstacle bd2 = (Obstacle) body2.getUserData();
 
             // See if we have landed on the ground.
-            if ((avatar.getSensorName().equals(fd2) && avatar != bd1)&&(bd1.getClass() == PolygonObstacle.class) ||
-                    (avatar.getSensorName().equals(fd1) && avatar != bd2)&&(bd2.getClass() == PolygonObstacle.class)) {
+            if (((avatar.getSensorName().equals(fd2) && avatar != bd1) && (bd1.getClass() == PolygonObstacle.class) &&
+                        !sensorFixtures.contains(fix1)) ||
+                ((avatar.getSensorName().equals(fd1)&& avatar != bd2) && (bd2.getClass() == PolygonObstacle.class) &&
+                        !sensorFixtures.contains(fix2))) {
+
                 avatar.setGrounded(true);
                 sensorFixtures.add(avatar == bd1 ? fix2 : fix1); // Could have more than one ground
             }
@@ -424,12 +429,13 @@ public class LevelController extends WorldController implements ContactListener 
                 if ((bee.getSensorName().equals(fd2) && bee != bd1)&&(bd1.getClass() == PolygonObstacle.class) ||
                         (bee.getSensorName().equals(fd1) && bee != bd2)&&(bd2.getClass() == PolygonObstacle.class)) {
                     bee.setGrounded(true);
-                    sensorFixtures.add(bee == bd1 ? fix2 : fix1); // Could have more than one ground
+                    bee.getSensorFixtures().add(bee == bd1 ? fix2 : fix1); // Could have more than one ground
                 }
             }
             // Check for win condition
-            if (!isFailure() &&((bd1 == avatar && bd2.getClass().getSuperclass() == AbstractBeeModel.class) ||
-                    (bd1.getClass().getSuperclass() == AbstractBeeModel.class && bd2 == avatar))) {
+            if (!isFailure() && !isComplete() &&
+                    (bd1 == avatar && bd2.getClass().getSuperclass() == AbstractBeeModel.class) ||
+                    (bd1.getClass().getSuperclass() == AbstractBeeModel.class && bd2 == avatar)) {
                 setFailure(true);
             }
             if ((bd1 == avatar && bd2 == goalDoor) ||
@@ -465,18 +471,18 @@ public class LevelController extends WorldController implements ContactListener 
         PlayerModel avatar = level.getPlayer();
         Array<AbstractBeeModel> bees = level.getBees();
 
-        if ((avatar.getSensorName().equals(fd2) && avatar != bd1)&&(bd1.getClass() == PolygonObstacle.class)  ||
-                (avatar.getSensorName().equals(fd1) && avatar != bd2)&&(bd2.getClass() == PolygonObstacle.class)) {
+        if (((avatar.getSensorName().equals(fd2) && avatar != bd1)&&(bd1.getClass() == PolygonObstacle.class))  ||
+                ((avatar.getSensorName().equals(fd1) && avatar != bd2)&&(bd2.getClass() == PolygonObstacle.class))) {
             sensorFixtures.remove(avatar == bd1 ? fix2 : fix1);
             if (sensorFixtures.size == 0) {
                 avatar.setGrounded(false);
             }
         }
         for(AbstractBeeModel bee : bees) {
-            if ((bee.getSensorName().equals(fd2) && bee != bd1)&&(bd1.getClass() == PolygonObstacle.class) ||
-                    (bee.getSensorName().equals(fd1) && bee != bd2)&&(bd2.getClass() == PolygonObstacle.class)) {
-                sensorFixtures.remove(bee == bd1 ? fix2 : fix1);
-                if (sensorFixtures.size == 0) {
+            if (((bee.getSensorName().equals(fd2) && bee != bd1)&&(bd1.getClass() == PolygonObstacle.class)) ||
+                    ((bee.getSensorName().equals(fd1) && bee != bd2)&&(bd2.getClass() == PolygonObstacle.class))) {
+                bee.getSensorFixtures().remove(bee == bd1 ? fix2 : fix1);
+                if (bee.getSensorFixtures().size == 0) {
                     bee.setGrounded(false);
                 }
             }
