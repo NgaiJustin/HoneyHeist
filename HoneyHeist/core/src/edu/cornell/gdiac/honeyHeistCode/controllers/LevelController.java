@@ -78,6 +78,11 @@ public class LevelController extends WorldController implements ContactListener 
 
 
     /**
+     * Reference to the AI Controllers
+     */
+    private Array<AIController> aIControllers;
+
+    /**
      * Mark set to handle more sophisticated collision callbacks
      */
     protected ObjectSet<Fixture> sensorFixtures;
@@ -262,6 +267,10 @@ public class LevelController extends WorldController implements ContactListener 
         addObject(sleeperBee);
         level = new LevelModel(avatar,bees,goalDoor,platforms,new Vector2(bounds.width / 2, bounds.height / 2));
 
+        aIControllers = new Array<AIController>();
+        //Adds AI Controller for chaserBee
+        AIController chaserBeeAIController = new AIController(level, avatar.getPosition(), chaserBee, AIController.CharacterType.GROUNDED_CHARACTER);
+        aIControllers.add(chaserBeeAIController);
 
         volume = constants.getFloat("volume", 1.0f);
     }
@@ -324,6 +333,19 @@ public class LevelController extends WorldController implements ContactListener 
     }
 
     /**
+     * TO BE LATER DEPRECATED
+     *
+     */
+    private void moveChaserBeeFromStoredAIControllers() {
+        for (AIController aIController: aIControllers) {
+            aIController.updateAIController();
+            AbstractBeeModel bee = aIController.getControlledCharacter();
+            System.out.println(aIController.getMovementHorizontalDirection());
+            bee.setMovement(aIController.getMovementHorizontalDirection() * bee.getForce());
+        }
+    }
+
+    /**
      * Returns whether to process the update loop
      * <p>
      * At the start of the update loop, we check if it is time
@@ -366,6 +388,7 @@ public class LevelController extends WorldController implements ContactListener 
         // 1. Loop over all chaser bee,
         // 2. For each bee, moveChaserBee(...);
         // TO BE IMPLEMENTED
+        moveChaserBeeFromStoredAIControllers();
         for(AbstractBeeModel bee : level.getBees()){
             bee.applyForce();
         }
@@ -422,8 +445,8 @@ public class LevelController extends WorldController implements ContactListener 
                 }
             }
             // Check for win condition
-            if ((bd1 == avatar && bd2.getClass().getSuperclass() == AbstractBeeModel.class) ||
-                    (bd1.getClass().getSuperclass() == AbstractBeeModel.class && bd2 == avatar)) {
+            if (!isFailure() &&((bd1 == avatar && bd2.getClass().getSuperclass() == AbstractBeeModel.class) ||
+                    (bd1.getClass().getSuperclass() == AbstractBeeModel.class && bd2 == avatar))) {
                 setFailure(true);
             }
             if ((bd1 == avatar && bd2 == goalDoor) ||
