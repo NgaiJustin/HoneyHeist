@@ -19,7 +19,7 @@ import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.ObjectSet;
 import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.audio.SoundBuffer;
-import edu.cornell.gdiac.honeyHeistCode.WorldController;
+import edu.cornell.gdiac.honeyHeistCode.GameplayController;
 import edu.cornell.gdiac.honeyHeistCode.models.*;
 import edu.cornell.gdiac.honeyHeistCode.obstacle.BoxObstacle;
 import edu.cornell.gdiac.honeyHeistCode.obstacle.Obstacle;
@@ -34,7 +34,7 @@ import edu.cornell.gdiac.honeyHeistCode.obstacle.PolygonObstacle;
  * This is the purpose of our AssetState variable; it ensures that multiple instances
  * place nicely with the static assets.
  */
-public class LevelController extends WorldController implements ContactListener {
+public class LevelController extends GameplayController implements ContactListener {
     /**
      * Texture asset for player avatar
      */
@@ -183,37 +183,40 @@ public class LevelController extends WorldController implements ContactListener 
          */
 
         // Create the hexagon level
+
         /*
         JsonValue c = constants.get("testPlatform2");
-        float r = c.getFloat("radius");
-        float l = c.getFloat("length");
-        float h = c.getFloat("height");
-        h = 2 * r / (float)Math.sqrt(3) + l/(float)Math.sqrt(3);
-        for (int i=0; i<6; i++){
-            float theta = (float)Math.PI/3 * i + (float)Math.PI/6;
-            float x = r * (float)Math.cos(theta) + 16;
-            float y = r * (float)Math.sin(theta) + 9;
-            float[] points = platformPointsFromPoint(x, y, l, h, theta);
-            for (int j=0; j<points.length; j++){
-                System.out.print(points[j] + ", ");
+        for (int a=1; a<=4; a++) {
+            float r = 2*a;
+            float l = 0.5f;
+            //float h = c.getFloat("height");
+            float h = 2 * r / (float) Math.sqrt(3) + l / (float) Math.sqrt(3);
+            for (int i = 0; i < 6; i++) {
+                float theta = (float) Math.PI / 3 * i + (float) Math.PI / 6;
+                float x = r * (float) Math.cos(theta) + 16;
+                float y = r * (float) Math.sin(theta) + 9;
+                float[] points = platformPointsFromPoint(x, y, l, h, theta);
+                for (int j = 0; j < points.length; j++) {
+                    System.out.print(points[j] + ", ");
+                }
+                System.out.println("");
+                PolygonObstacle obj;
+                obj = new PolygonObstacle(points, 0, 0);
+                obj.setBodyType(BodyDef.BodyType.StaticBody);
+                obj.setDensity(defaults.getFloat("density", 0.0f));
+                obj.setFriction(defaults.getFloat("friction", 0.0f));
+                obj.setRestitution(defaults.getFloat("restitution", 0.0f));
+                obj.setName("testPlatform");
+                obj.setDrawScale(scale);
+                obj.setTexture(earthTile);
+                addObject(obj);
             }
-            System.out.println("");
-            PolygonObstacle obj;
-            obj = new PolygonObstacle(points, 0, 0);
-            obj.setBodyType(BodyDef.BodyType.StaticBody);
-            obj.setDensity(defaults.getFloat( "density", 0.0f ));
-            obj.setFriction(defaults.getFloat( "friction", 0.0f ));
-            obj.setRestitution(defaults.getFloat( "restitution", 0.0f ));
-            obj.setName("testPlatform");
-            obj.setDrawScale(scale);
-            obj.setTexture(earthTile);
-            addObject(obj);
         }
+        */
 
-         */
 
         // Create platforms
-        PlatformModel platforms = new PlatformModel(constants.get("platforms2"));
+        PlatformModel platforms = new PlatformModel(constants.get("mediumLevel"));
         platforms.setDrawScale(scale);
         platforms.setTexture(earthTile);
         addObject(platforms);
@@ -229,15 +232,29 @@ public class LevelController extends WorldController implements ContactListener 
         avatar.setTexture(avatarTexture);
         addObject(avatar);
 
-        // Create one chaser bee
+        // Create chaser bees
+
+        Array<AbstractBeeModel> bees = new Array<AbstractBeeModel>();
         dwidth = chaserBeeTexture.getRegionWidth() / scale.x;
         dheight = chaserBeeTexture.getRegionHeight() / scale.y;
         ChaserBeeModel chaserBee = new ChaserBeeModel(constants.get("chaserBee"), dwidth, dheight);
         chaserBee.setDrawScale(scale);
         chaserBee.setTexture(chaserBeeTexture);
-        Array<AbstractBeeModel> bees = new Array<AbstractBeeModel>();
         bees.add(chaserBee);
         addObject(chaserBee);
+
+        chaserBee = new ChaserBeeModel(constants.get("chaserBee2"), dwidth, dheight);
+        chaserBee.setDrawScale(scale);
+        chaserBee.setTexture(chaserBeeTexture);
+        bees.add(chaserBee);
+        addObject(chaserBee);
+
+        chaserBee = new ChaserBeeModel(constants.get("chaserBee3"), dwidth, dheight);
+        chaserBee.setDrawScale(scale);
+        chaserBee.setTexture(chaserBeeTexture);
+        bees.add(chaserBee);
+        addObject(chaserBee);
+
 
         // Create one sleeper bee
         dwidth = sleeperBeeTexture.getRegionWidth() / scale.x;
@@ -253,12 +270,13 @@ public class LevelController extends WorldController implements ContactListener 
 
         aIControllers = new Array<AIController>();
         //Adds AI Controller for chaserBee
-        AIController chaserBeeAIController = new AIController(level, avatar.getPosition(), chaserBee);
+        AIController chaserBeeAIController = new AIController(level, avatar.getPosition(), chaserBee, AIController.CharacterType.GROUNDED_CHARACTER);
         aIControllers.add(chaserBeeAIController);
 
 
         volume = constants.getFloat("volume", 1.0f);
     }
+
 
     /**
      * Start rotation.
@@ -325,8 +343,8 @@ public class LevelController extends WorldController implements ContactListener 
         for (AIController aIController: aIControllers) {
             aIController.updateAIController();
             AbstractBeeModel bee = aIController.getControlledCharacter();
-            //System.out.println(aIController.getMovementHorizontalDirection1orNeg1());
-            bee.setMovement(aIController.getMovementHorizontalDirection1orNeg1() * bee.getForce());
+            System.out.println(aIController.getMovementHorizontalDirection());
+            bee.setMovement(aIController.getMovementHorizontalDirection() * bee.getForce());
         }
     }
 
