@@ -23,6 +23,7 @@ import edu.cornell.gdiac.honeyHeistCode.GameplayController;
 import edu.cornell.gdiac.honeyHeistCode.models.*;
 import edu.cornell.gdiac.honeyHeistCode.obstacle.BoxObstacle;
 import edu.cornell.gdiac.honeyHeistCode.obstacle.Obstacle;
+import edu.cornell.gdiac.honeyHeistCode.obstacle.PolygonObstacle;
 
 /**
  * Gameplay specific controller for the platformer game.
@@ -77,6 +78,11 @@ public class LevelController extends GameplayController implements ContactListen
 
 
     /**
+     * Reference to the AI Controllers
+     */
+    private Array<AIController> aIControllers;
+
+    /**
      * Mark set to handle more sophisticated collision callbacks
      */
     protected ObjectSet<Fixture> sensorFixtures;
@@ -93,8 +99,6 @@ public class LevelController extends GameplayController implements ContactListen
         setFailure(false);
         world.setContactListener(this);
         sensorFixtures = new ObjectSet<Fixture>();
-        level = new LevelModel();
-        level.setOrigin(new Vector2(bounds.width / 2, bounds.height / 2));
     }
 
     /**
@@ -161,16 +165,57 @@ public class LevelController extends GameplayController implements ContactListen
         goalDoor.setTexture(goalTile);
         goalDoor.setName("goal");
         addObject(goalDoor);
-        level.setGoalDoor(goalDoor);
 
         JsonValue defaults = constants.get("defaults");
+        /*
+        PolygonObstacle obj;
+        obj = new PolygonObstacle(platformPointsFromJson(constants.get("testPlatform")), 0, 0);
+        obj.setBodyType(BodyDef.BodyType.StaticBody);
+        obj.setDensity(defaults.getFloat( "density", 0.0f ));
+        obj.setFriction(defaults.getFloat( "friction", 0.0f ));
+        obj.setRestitution(defaults.getFloat( "restitution", 0.0f ));
+        obj.setName("testPlatform");
+        obj.setDrawScale(scale);
+        obj.setTexture(earthTile);
+        addObject(obj);
+
+         */
+
+        // Create the hexagon level
+        /*
+        JsonValue c = constants.get("testPlatform2");
+        float r = c.getFloat("radius");
+        float l = c.getFloat("length");
+        float h = c.getFloat("height");
+        h = 2 * r / (float)Math.sqrt(3) + l/(float)Math.sqrt(3);
+        for (int i=0; i<6; i++){
+            float theta = (float)Math.PI/3 * i + (float)Math.PI/6;
+            float x = r * (float)Math.cos(theta) + 16;
+            float y = r * (float)Math.sin(theta) + 9;
+            float[] points = platformPointsFromPoint(x, y, l, h, theta);
+            for (int j=0; j<points.length; j++){
+                System.out.print(points[j] + ", ");
+            }
+            System.out.println("");
+            PolygonObstacle obj;
+            obj = new PolygonObstacle(points, 0, 0);
+            obj.setBodyType(BodyDef.BodyType.StaticBody);
+            obj.setDensity(defaults.getFloat( "density", 0.0f ));
+            obj.setFriction(defaults.getFloat( "friction", 0.0f ));
+            obj.setRestitution(defaults.getFloat( "restitution", 0.0f ));
+            obj.setName("testPlatform");
+            obj.setDrawScale(scale);
+            obj.setTexture(earthTile);
+            addObject(obj);
+        }
+
+         */
 
         // Create platforms
-        PlatformModel platforms = new PlatformModel(constants.get("platforms"));
+        PlatformModel platforms = new PlatformModel(constants.get("platforms2"));
         platforms.setDrawScale(scale);
         platforms.setTexture(earthTile);
         addObject(platforms);
-        level.setPlatforms(platforms);
 
         // This world is heavier
         world.setGravity(new Vector2(0, defaults.getFloat("gravity", 0)));
@@ -182,7 +227,6 @@ public class LevelController extends GameplayController implements ContactListen
         avatar.setDrawScale(scale);
         avatar.setTexture(avatarTexture);
         addObject(avatar);
-        level.setPlayer(avatar);
 
         // Create one chaser bee
         dwidth = chaserBeeTexture.getRegionWidth() / scale.x;
@@ -204,7 +248,12 @@ public class LevelController extends GameplayController implements ContactListen
         sleeperBee.setBodyType(BodyDef.BodyType.StaticBody);
         bees.add(sleeperBee);
         addObject(sleeperBee);
-        level.setBees(bees);
+        level = new LevelModel(avatar,bees,goalDoor,platforms,new Vector2(bounds.width / 2, bounds.height / 2));
+
+        aIControllers = new Array<AIController>();
+        //Adds AI Controller for chaserBee
+        AIController chaserBeeAIController = new AIController(level, avatar.getPosition(), chaserBee);
+        aIControllers.add(chaserBeeAIController);
 
         volume = constants.getFloat("volume", 1.0f);
     }
@@ -223,13 +272,10 @@ public class LevelController extends GameplayController implements ContactListen
 
         platforms.startRotation(isClockwise, origin);
         if (avatar.isGrounded()&&platformNotRotating){
-            avatar.setBodyType(BodyDef.BodyType.StaticBody);
-            System.out.println(origin);
             avatar.startRotation(isClockwise, origin);
         }
         for(AbstractBeeModel bee : bees){
             if(bee.isGrounded() && platformNotRotating) {
-                bee.setBodyType(BodyDef.BodyType.StaticBody);
                 bee.startRotation(isClockwise, origin);
             }
         }
@@ -267,6 +313,19 @@ public class LevelController extends GameplayController implements ContactListen
      */
     public void moveChaserBee(float direction, ChaserBeeModel bee) {
         bee.setMovement(direction * bee.getForce());
+    }
+
+    /**
+     * TO BE LATER DEPRECATED
+     *
+     */
+    private void moveChaserBeeFromStoredAIControllers() {
+        for (AIController aIController: aIControllers) {
+            aIController.updateAIController();
+            AbstractBeeModel bee = aIController.getControlledCharacter();
+            System.out.println(aIController.getMovementHorizontalDirection1orNeg1());
+            bee.setMovement(aIController.getMovementHorizontalDirection1orNeg1() * bee.getForce());
+        }
     }
 
     /**
@@ -312,6 +371,7 @@ public class LevelController extends GameplayController implements ContactListen
         // 1. Loop over all chaser bee,
         // 2. For each bee, moveChaserBee(...);
         // TO BE IMPLEMENTED
+        moveChaserBeeFromStoredAIControllers();
         for(AbstractBeeModel bee : level.getBees()){
             bee.applyForce();
         }
@@ -354,20 +414,24 @@ public class LevelController extends GameplayController implements ContactListen
             Obstacle bd2 = (Obstacle) body2.getUserData();
 
             // See if we have landed on the ground.
-            if ((avatar.getSensorName().equals(fd2) && avatar != bd1) ||
-                    (avatar.getSensorName().equals(fd1) && avatar != bd2)) {
+            if ((avatar.getSensorName().equals(fd2) && avatar != bd1)&&(bd1.getClass() == PolygonObstacle.class) ||
+                    (avatar.getSensorName().equals(fd1) && avatar != bd2)&&(bd2.getClass() == PolygonObstacle.class)) {
                 avatar.setGrounded(true);
                 sensorFixtures.add(avatar == bd1 ? fix2 : fix1); // Could have more than one ground
             }
             // ITERATE OVER ALL CHASER BEES
             for(AbstractBeeModel bee : bees) {
-                if ((bee.getSensorName().equals(fd2) && bee != bd1) ||
-                        (bee.getSensorName().equals(fd1) && bee != bd2)) {
+                if ((bee.getSensorName().equals(fd2) && bee != bd1)&&(bd1.getClass() == PolygonObstacle.class) ||
+                        (bee.getSensorName().equals(fd1) && bee != bd2)&&(bd2.getClass() == PolygonObstacle.class)) {
                     bee.setGrounded(true);
                     sensorFixtures.add(bee == bd1 ? fix2 : fix1); // Could have more than one ground
                 }
             }
             // Check for win condition
+            if (!isFailure() &&((bd1 == avatar && bd2.getClass().getSuperclass() == AbstractBeeModel.class) ||
+                    (bd1.getClass().getSuperclass() == AbstractBeeModel.class && bd2 == avatar))) {
+                setFailure(true);
+            }
             if ((bd1 == avatar && bd2 == goalDoor) ||
                     (bd1 == goalDoor && bd2 == avatar)) {
                 setComplete(true);
@@ -401,16 +465,16 @@ public class LevelController extends GameplayController implements ContactListen
         PlayerModel avatar = level.getPlayer();
         Array<AbstractBeeModel> bees = level.getBees();
 
-        if ((avatar.getSensorName().equals(fd2) && avatar != bd1) ||
-                (avatar.getSensorName().equals(fd1) && avatar != bd2)) {
+        if ((avatar.getSensorName().equals(fd2) && avatar != bd1)&&(bd1.getClass() == PolygonObstacle.class)  ||
+                (avatar.getSensorName().equals(fd1) && avatar != bd2)&&(bd2.getClass() == PolygonObstacle.class)) {
             sensorFixtures.remove(avatar == bd1 ? fix2 : fix1);
             if (sensorFixtures.size == 0) {
                 avatar.setGrounded(false);
             }
         }
         for(AbstractBeeModel bee : bees) {
-            if ((bee.getSensorName().equals(fd2) && bee != bd1) ||
-                    (bee.getSensorName().equals(fd1) && bee != bd2)) {
+            if ((bee.getSensorName().equals(fd2) && bee != bd1)&&(bd1.getClass() == PolygonObstacle.class) ||
+                    (bee.getSensorName().equals(fd1) && bee != bd2)&&(bd2.getClass() == PolygonObstacle.class)) {
                 sensorFixtures.remove(bee == bd1 ? fix2 : fix1);
                 if (sensorFixtures.size == 0) {
                     bee.setGrounded(false);
@@ -447,5 +511,46 @@ public class LevelController extends GameplayController implements ContactListen
         if (fireSound.isPlaying(fireId)) {
             fireSound.stop(fireId);
         }
+    }
+
+    public float[] platformPointsFromJson(JsonValue platformData){
+        JsonValue pos = platformData.get("position");
+        JsonValue scale = platformData.get("scale");
+        float x = pos.getFloat("x");
+        float y = pos.getFloat("y");
+        float width = scale.getFloat("width");
+        float w = width/2;
+        float height = scale.getFloat("height");
+        float h = height/2;
+        float rot = platformData.getFloat("local_rotation") * 2 * (float)Math.PI/360;
+        float[] points = new float[]{-w, h, -w, -h, w, -h, w, h};
+        float cos = (float)Math.cos(rot);
+        float sin = (float)Math.sin(rot);
+
+        float temp;
+        for (int i=0; i<points.length; i+=2){
+            temp = points[i]*cos - points[i+1]*sin + x;
+            points[i+1] = points[i]*sin + points[i+1]*cos + y;
+            points[i] = temp;
+        }
+
+        return points;
+    }
+
+    public float[] platformPointsFromPoint(float x, float y, float width, float height, float rotation){
+        float w = width/2;
+        float h = height/2;
+        float rot = rotation; /* rotation * 2 * (float)Math.PI/360; */
+        float[] points = new float[]{-w, h, -w, -h, w, -h, w, h};
+        float cos = (float)Math.cos(rot);
+        float sin = (float)Math.sin(rot);
+
+        float temp;
+        for (int i=0; i<points.length; i+=2){
+            temp = points[i]*cos - points[i+1]*sin + x;
+            points[i+1] = points[i]*sin+points[i+1]*cos + y;
+            points[i] = temp;
+        }
+        return points;
     }
 }

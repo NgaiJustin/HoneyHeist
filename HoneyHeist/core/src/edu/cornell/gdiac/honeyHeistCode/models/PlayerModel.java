@@ -206,6 +206,18 @@ public class PlayerModel extends CapsuleObstacle {
 
     public void update(float dt){
         if (!isRotating) {
+            if(stickTime>0){
+                stickTime -= dt;
+            }
+            else{
+                if(sticking){
+                    setBodyType(BodyDef.BodyType.DynamicBody);
+                    sticking = false;
+                    isGrounded = false;
+                    body.getFixtureList().clear();
+                    this.setAngle(0);
+                }
+            }
             return;
         }
 
@@ -213,7 +225,7 @@ public class PlayerModel extends CapsuleObstacle {
         if (rotationAmount > remainingAngle){
             rotationAmount = remainingAngle;
             isRotating = false;
-            setBodyType(BodyDef.BodyType.DynamicBody);
+            stickTime = maxStickTime;
         }
         remainingAngle -= rotationAmount;
         if (!isClockwise) {
@@ -255,9 +267,9 @@ public class PlayerModel extends CapsuleObstacle {
     public void draw(GameCanvas canvas) {
         float effect = faceRight ? 1.0f : -1.0f;
         // Reset Ant rotation if falling
-        if (!isGrounded()){
-            this.setAngle(0);
-        }
+        //if (body.getType() == BodyDef.BodyType.DynamicBody){
+        //    this.setAngle(0);
+        //}
         canvas.draw(texture, Color.WHITE,origin.x,origin.y,getX()*drawScale.x,getY()*drawScale.y,getAngle(), effect,1.0f);
     }
 

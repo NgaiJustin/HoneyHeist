@@ -9,14 +9,27 @@ It is dependent on Level Model in order for the character to get information abo
 package edu.cornell.gdiac.honeyHeistCode.controllers;
 
 import com.badlogic.gdx.math.Vector2;
-import edu.cornell.gdiac.honeyHeistCode.models.ChaserBeeModel;
+import edu.cornell.gdiac.honeyHeistCode.models.AbstractBeeModel;
 import edu.cornell.gdiac.honeyHeistCode.models.LevelModel;
 import edu.cornell.gdiac.honeyHeistCode.models.PlatformModel;
 import edu.cornell.gdiac.honeyHeistCode.obstacle.Obstacle;
 
 import java.util.Random;
 
-
+/**
+ * This is the AI Controller which is responsible for character pathfinding and decision making.
+ * The AI Controller will calculate a decision/pathfinding towards a "target" (currently specified as a Vector2)
+ * and return a vector which is the direction in which the controlled character should move.
+ * The AI Controlled supports getting the direction as a Vector2 through getDirection(). It also supports getting the
+ * character it is controlling through getControlledCharacter(). Both will be needed in order to pass on the information to
+ * Level Controller.
+ * Currently, there is only one behavior that the AI Controller supports which is returning the direction of the target.
+ *
+ * If you want only horizontal or vertical directions, there are function that support that.
+ *
+ * If you want the AIController to target the player, you will need to put the position vector of the player into target.
+ * Since that vector 2 is a reference, it should update with the movement of the player during runtime.
+ */
 public class AIController {
     /**
 	 * Enumeration to encode the finite state machine.
@@ -28,11 +41,14 @@ public class AIController {
 		CHASE
 	}
 
-    private ChaserBeeModel controlledEnemy;
+    private AbstractBeeModel controlledCharacter;
     private LevelModel levelModel;
     private FSMState state;
     private long ticks;
+    private static final int ticksBeforeChangeInRandomDirection = 240;
+	private static final int ticksBeforeChangeInChaseDirection = 30;
     private Vector2 target;
+    private Vector2 offset;
     private Vector2 lineToTarget;
     private Vector2 direction;
 
@@ -44,20 +60,45 @@ public class AIController {
 	 * Creates an AI Controller for the given enemy model
 	 *
 	 * @param levelModel the level that the enemy is in.
-	 * @param controlledEnemy the enemy that this AI Controller controlls.
+	 * @param target the target which this AI Controller is trying to chase.
+	 * @param controlledCharacter the enemy that this AI Controller controls.
 	 */
-	public AIController(LevelModel levelModel, Vector2 target, ChaserBeeModel controlledEnemy) {
+	public AIController(LevelModel levelModel, Vector2 target, AbstractBeeModel controlledCharacter) {
 		this.levelModel = levelModel;
 		this.target = target;
-        this.controlledEnemy = controlledEnemy;
+		this.offset = new Vector2(0,0);
+        this.controlledCharacter = controlledCharacter;
 		state = FSMState.WANDER;
 		ticks = 0;
         lineToTarget = new Vector2();
         direction = new Vector2();
 	}
 
-	public void update() {
-		updateLineToPlayer();
+	/**
+	 * Creates an AI Controller for the given enemy model
+	 *
+	 * @param levelModel the level that the enemy is in.
+	 * @param target the target which this AI Controller is trying to chase.
+	 * @param controlledCharacter the enemy that this AI Controller controls.
+	 * @param offsetX the x of the offset to the target.
+	 * @param offsetY the y of the offset to the target.
+	 */
+	public AIController(LevelModel levelModel, Vector2 target, AbstractBeeModel controlledCharacter, float offsetX, float offsetY) {
+		this.levelModel = levelModel;
+		this.target = target;
+		this.offset = new Vector2(offsetX, offsetY);
+		this.controlledCharacter = controlledCharacter;
+		state = FSMState.WANDER;
+		ticks = 0;
+		lineToTarget = new Vector2();
+		direction = new Vector2();
+	}
+
+	/**
+	 * Updates the state of the AI Controller
+	 */
+	public void updateAIController() {
+		updateLineToTarget();
 		updateFSMState();
 		updateDirectionBasedOnState();
 	}
@@ -71,13 +112,100 @@ public class AIController {
 		return direction;
 	}
 
-    private void updateLineToPlayer() {
-        lineToTarget.set(levelModel.getPlayer().getPosition());
-        lineToTarget.sub(controlledEnemy.getPosition());
+	/**
+	 * Returns the horizontal direction which the controlled enemy should move.
+	 *
+	 * @return The direction that the enemy should move.
+	 */
+	public float getMovementHorizontalDirection() {
+		return direction.x;
+	}
+
+	/**
+	 * Returns the horizontal direction which the controlled enemy should move.
+	 *
+	 * @return The direction that the enemy should move.
+	 */
+	public float getMovementHorizontalDirection1orNeg1() {
+		if (direction.x > 0) {
+			return 1;
+		} else if (direction.x == 0) {
+			return 0;
+		} else {
+			return -1;
+		}
+	}
+
+	/**
+	 * Returns the horizontal direction which the controlled enemy should move.
+	 *
+	 * @return The direction that the enemy should move.
+	 */
+	public float getMovementVerticalDirection() {
+		return direction.y;
+	}
+
+	/**
+	 * Returns the horizontal direction which the controlled enemy should move.
+	 *
+	 * @return The direction that the enemy should move.
+	 */
+	public float getMovementVerticalDirection1orNeg1() {
+		if (direction.y > 0) {
+			return 1;
+		} else if (direction.y == 0) {
+			return 0;
+		} else {
+			return -1;
+		}
+	}
+
+	/**
+	 * Returns the character which is controlled by the AI Controller
+	 *
+	 * @return the character model which is controlled by the AI Controller.
+	 */
+	public AbstractBeeModel getControlledCharacter() {
+		return controlledCharacter;
+	}
+
+	/**
+	 * Returns the target vector.
+	 * @return return target
+	 */
+	public Vector2 getTarget() {
+		return target;
+	}
+
+	/**
+	 * Sets the target.
+	 */
+	public void setTarget(Vector2 target) {
+		this.target = target;
+	}
+
+	/**
+	 * Sets the offset through two floats.
+	 */
+	public void setOffset(float x, float y) {
+		this.offset.set(x, y);
+	}
+	
+	/**
+	 * Updates the vector 2 between the enemy object and the target.
+	 */
+	private void updateLineToTarget() {
+        lineToTarget.set(target);
+        lineToTarget.add(offset);
+        lineToTarget.sub(controlledCharacter.getPosition());
     }
 
+
+	/**
+	 * Updates the state of the AI Controller to either WANDER or CHASE.
+	 */
 	private void updateFSMState() {
-		float distanceToPlayer = controlledEnemy.getPosition().dst(levelModel.getPlayer().getPosition());
+		float distanceToPlayer = controlledCharacter.getPosition().dst(levelModel.getPlayer().getPosition());
 		switch (this.state) {
 			case WANDER:
 				if (distanceToPlayer < CHASE_RADIUS) {
@@ -91,14 +219,21 @@ public class AIController {
 		}
 	}
 
+	/**
+	 * Updates the direction that the AI Controller has decided based on the state.
+	 */
 	private void updateDirectionBasedOnState() {
 		switch (this.state) {
 			case WANDER:
-				setDirectionToRandomDirection();
+				if (ticks % ticksBeforeChangeInRandomDirection == 0) {
+					setDirectionToRandomDirection();
+				}
 				break;
 
 			case CHASE:
-				setDirectionToGoTowardsTarget();
+				if (ticks % ticksBeforeChangeInChaseDirection == 0) {
+					setDirectionToGoTowardsTarget();
+				}
 				break;
 		}
 	}
@@ -120,6 +255,10 @@ public class AIController {
 		direction.nor();
 	}
 
+	/**
+	 * Still under construction. Checks if the given path to target is blocked by a platform.
+	 * @return
+	 */
     private boolean isLineCollidingWithAPlatform() {
 		PlatformModel platform = levelModel.getPlatforms();
 		for (Obstacle platforms : platform.getBodies()) {
