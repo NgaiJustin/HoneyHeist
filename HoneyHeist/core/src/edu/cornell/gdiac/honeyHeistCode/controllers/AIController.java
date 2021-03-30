@@ -31,6 +31,17 @@ import java.util.Random;
  * Since that vector 2 is a reference, it should update with the movement of the player during runtime.
  */
 public class AIController {
+	/**
+	 * Enumeration of the type of AI Controller
+	 */
+	public static enum CharacterType {
+		/** The character can fly. */
+		FLYING_CHARACTER,
+
+		/** The character cannot fly */
+		GROUNDED_CHARACTER
+	}
+
     /**
 	 * Enumeration to encode the finite state machine.
 	 */
@@ -41,12 +52,14 @@ public class AIController {
 		CHASE
 	}
 
+	private CharacterType characterType;
     private AbstractBeeModel controlledCharacter;
     private LevelModel levelModel;
     private FSMState state;
     private long ticks;
-    private static final int ticksBeforeChangeInRandomDirection = 240;
-	private static final int ticksBeforeChangeInChaseDirection = 30;
+    private static final int ticksBeforeChangeInRandomDirection = 120;
+	private static final int ticksBeforeChangeInChaseDirection = 15;
+	private static final float wanderSpeedFactor = 0.5f;
     private Vector2 target;
     private Vector2 offset;
     private Vector2 lineToTarget;
@@ -54,7 +67,7 @@ public class AIController {
 
     Random random = new Random();
 
-    private static final float CHASE_RADIUS = 150f;
+    private static final float CHASE_RADIUS = 3;
 
     /**
 	 * Creates an AI Controller for the given enemy model
@@ -63,11 +76,12 @@ public class AIController {
 	 * @param target the target which this AI Controller is trying to chase.
 	 * @param controlledCharacter the enemy that this AI Controller controls.
 	 */
-	public AIController(LevelModel levelModel, Vector2 target, AbstractBeeModel controlledCharacter) {
+	public AIController(LevelModel levelModel, Vector2 target, AbstractBeeModel controlledCharacter, CharacterType characterType) {
 		this.levelModel = levelModel;
 		this.target = target;
 		this.offset = new Vector2(0,0);
         this.controlledCharacter = controlledCharacter;
+        this.characterType = characterType;
 		state = FSMState.WANDER;
 		ticks = 0;
         lineToTarget = new Vector2();
@@ -83,11 +97,12 @@ public class AIController {
 	 * @param offsetX the x of the offset to the target.
 	 * @param offsetY the y of the offset to the target.
 	 */
-	public AIController(LevelModel levelModel, Vector2 target, AbstractBeeModel controlledCharacter, float offsetX, float offsetY) {
+	public AIController(LevelModel levelModel, Vector2 target, AbstractBeeModel controlledCharacter, CharacterType characterType, float offsetX, float offsetY) {
 		this.levelModel = levelModel;
 		this.target = target;
 		this.offset = new Vector2(offsetX, offsetY);
 		this.controlledCharacter = controlledCharacter;
+		this.characterType = characterType;
 		state = FSMState.WANDER;
 		ticks = 0;
 		lineToTarget = new Vector2();
@@ -101,6 +116,7 @@ public class AIController {
 		updateLineToTarget();
 		updateFSMState();
 		updateDirectionBasedOnState();
+		ticks ++;
 	}
 
 	/**
@@ -226,8 +242,14 @@ public class AIController {
 		switch (this.state) {
 			case WANDER:
 				if (ticks % ticksBeforeChangeInRandomDirection == 0) {
-					setDirectionToRandomDirection();
+					if (direction.isZero()) {
+						setDirectionToRandomHorizontal();
+					}
+					changeToOppositeDirection();
+					direction.nor();
+					direction.scl(wanderSpeedFactor);
 				}
+
 				break;
 
 			case CHASE:
@@ -243,15 +265,48 @@ public class AIController {
 	 */
 	private void setDirectionToRandomDirection() {
 		int angle = random.nextInt(360);
+		direction.set(1,0);
 		direction.setAngleDeg(angle);
 		direction.nor();
 	}
 
 	/**
+	 * Sets the direction vector to be a random direction limited to 4 cardinal directions.
+	 */
+	private void setDirectionToRandom4CardinalDirection() {
+		int angle = random.nextInt(4);
+		direction.set(1,0);
+		direction.setAngleDeg(angle * 90);
+		direction.nor();
+	}
+
+	private void setDirectionToRandomHorizontal() {
+		int fiftyFifty = random.nextInt(2);
+		if (fiftyFifty > 0) {
+			direction.set(1, 0);
+		} else {
+			direction.set(-1, 0);
+		}
+	}
+
+	/**
+	 * Sets the direction to the opposite direction of it's current direction.
+	 */
+	private void changeToOppositeDirection() {
+		direction.scl(-1);
+	}
+	/**
 	 * Set the direction vector to go towards the specified target.
 	 */
 	private void setDirectionToGoTowardsTarget() {
 		direction.set(lineToTarget);
+		if (characterType == CharacterType.GROUNDED_CHARACTER) {
+			if (direction.x >= 0) {
+				direction.set(1,0);
+			} else {
+				direction.set(-1,0);
+			}
+		}
 		direction.nor();
 	}
 
