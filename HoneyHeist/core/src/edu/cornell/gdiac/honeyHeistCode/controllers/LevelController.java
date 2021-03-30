@@ -235,6 +235,8 @@ public class LevelController extends GameplayController implements ContactListen
         // Create chaser bees
 
         Array<AbstractBeeModel> bees = new Array<AbstractBeeModel>();
+        level = new LevelModel(avatar,bees,goalDoor,platforms,new Vector2(bounds.width / 2, bounds.height / 2));
+        /*
         dwidth = chaserBeeTexture.getRegionWidth() / scale.x;
         dheight = chaserBeeTexture.getRegionHeight() / scale.y;
         ChaserBeeModel chaserBee = new ChaserBeeModel(constants.get("chaserBee"), dwidth, dheight);
@@ -255,6 +257,24 @@ public class LevelController extends GameplayController implements ContactListen
         bees.add(chaserBee);
         addObject(chaserBee);
 
+         */
+
+        aIControllers = new Array<AIController>();
+
+        JsonValue.JsonIterator groundedBeeIterator = constants.get("groundedBees").iterator();
+
+        dwidth = chaserBeeTexture.getRegionWidth() / scale.x;
+        dheight = chaserBeeTexture.getRegionHeight() / scale.y;
+        while (groundedBeeIterator.hasNext()){
+            ChaserBeeModel chaserBee = new ChaserBeeModel(groundedBeeIterator.next(), dwidth, dheight);
+            chaserBee.setDrawScale(scale);
+            chaserBee.setTexture(chaserBeeTexture);
+            bees.add(chaserBee);
+            addObject(chaserBee);
+            AIController chaserBeeAIController = new AIController(level, avatar.getPosition(), chaserBee, AIController.CharacterType.GROUNDED_CHARACTER);
+            aIControllers.add(chaserBeeAIController);
+        }
+
 
         // Create one sleeper bee
         dwidth = sleeperBeeTexture.getRegionWidth() / scale.x;
@@ -266,13 +286,15 @@ public class LevelController extends GameplayController implements ContactListen
         sleeperBee.setBodyType(BodyDef.BodyType.StaticBody);
         bees.add(sleeperBee);
         addObject(sleeperBee);
-        level = new LevelModel(avatar,bees,goalDoor,platforms,new Vector2(bounds.width / 2, bounds.height / 2));
+        //level = new LevelModel(avatar,bees,goalDoor,platforms,new Vector2(bounds.width / 2, bounds.height / 2));
 
+        /*
         aIControllers = new Array<AIController>();
         //Adds AI Controller for chaserBee
         AIController chaserBeeAIController = new AIController(level, avatar.getPosition(), chaserBee, AIController.CharacterType.GROUNDED_CHARACTER);
         aIControllers.add(chaserBeeAIController);
 
+         */
 
         volume = constants.getFloat("volume", 1.0f);
     }
