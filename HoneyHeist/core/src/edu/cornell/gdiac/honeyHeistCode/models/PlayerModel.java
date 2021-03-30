@@ -193,7 +193,7 @@ public class PlayerModel extends CapsuleObstacle {
         sensorDef.isSensor = true;
         sensorShape = new PolygonShape();
         JsonValue sensorjv = data.get("sensor");
-        sensorShape.setAsBox(sensorjv.getFloat("shrink",0)*getWidth(),
+        sensorShape.setAsBox(sensorjv.getFloat("shrink",0)*getWidth()/1.4f,
                 sensorjv.getFloat("height",0), sensorCenter, 0.0f);
         sensorDef.shape = sensorShape;
 
@@ -214,7 +214,6 @@ public class PlayerModel extends CapsuleObstacle {
                     setBodyType(BodyDef.BodyType.DynamicBody);
                     sticking = false;
                     isGrounded = false;
-                    body.getFixtureList().clear();
                     this.setAngle(0);
                 }
             }
@@ -256,6 +255,14 @@ public class PlayerModel extends CapsuleObstacle {
         } else {
             forceCache.set(getMovement(),0);
             body.applyForce(forceCache,getPosition(),true);
+        }
+
+        if (isGrounded&&(Math.abs(getVY()) >= getMaxSpeed())) {
+            setVY(Math.signum(getVY()) * getMaxSpeed());
+        }
+
+        if(!isGrounded){
+            setVY(Math.min(0f,getVY()));
         }
     }
 

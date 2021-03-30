@@ -17,7 +17,7 @@ import com.badlogic.gdx.*;
 import edu.cornell.gdiac.honeyHeistCode.controllers.LevelController;
 import edu.cornell.gdiac.honeyHeistCode.controllers.LoadingMode;
 import edu.cornell.gdiac.util.*;
-import edu.cornell.gdiac.assets.*;;
+import edu.cornell.gdiac.assets.*;
 
 /**
  * Root class for a LibGDX.  
@@ -37,8 +37,8 @@ public class GDXRoot extends Game implements ScreenListener {
 	private LoadingMode loading;
 	/** Player mode for the the game proper (CONTROLLER CLASS) */
 	private int current;
-	/** List of all WorldControllers */
-	private WorldController[] controllers;
+	/** List of all GameplayControllers */
+	private GameplayController[] controllers;
 	
 	/**
 	 * Creates a new game from the configuration settings.
@@ -59,7 +59,7 @@ public class GDXRoot extends Game implements ScreenListener {
 		loading = new LoadingMode("assets.json",canvas,1);
 
 		// Initialize the game world
-		controllers = new WorldController[1];
+		controllers = new GameplayController[1];
 		controllers[0] = new LevelController();
 		current = 0;
 		loading.setScreenListener(this);
@@ -125,15 +125,15 @@ public class GDXRoot extends Game implements ScreenListener {
 			
 			loading.dispose();
 			loading = null;
-		} else if (exitCode == WorldController.EXIT_NEXT) {
+		} else if (exitCode == GameplayController.EXIT_NEXT) {
 			current = (current+1) % controllers.length;
 			controllers[current].reset();
 			setScreen(controllers[current]);
-		} else if (exitCode == WorldController.EXIT_PREV) {
+		} else if (exitCode == GameplayController.EXIT_PREV) {
 			current = (current+controllers.length-1) % controllers.length;
 			controllers[current].reset();
 			setScreen(controllers[current]);
-		} else if (exitCode == WorldController.EXIT_QUIT) {
+		} else if (exitCode == GameplayController.EXIT_QUIT) {
 			// We quit the main application
 			Gdx.app.exit();
 		}
