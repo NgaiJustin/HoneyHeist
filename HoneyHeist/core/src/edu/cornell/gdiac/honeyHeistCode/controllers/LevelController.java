@@ -252,7 +252,7 @@ public class LevelController extends WorldController implements ContactListener 
 
         aIControllers = new Array<AIController>();
         //Adds AI Controller for chaserBee
-        AIController chaserBeeAIController = new AIController(level, avatar.getPosition(), chaserBee);
+        AIController chaserBeeAIController = new AIController(level, avatar.getPosition(), chaserBee, AIController.CharacterType.GROUNDED_CHARACTER);
         aIControllers.add(chaserBeeAIController);
 
         volume = constants.getFloat("volume", 1.0f);
@@ -323,8 +323,8 @@ public class LevelController extends WorldController implements ContactListener 
         for (AIController aIController: aIControllers) {
             aIController.updateAIController();
             AbstractBeeModel bee = aIController.getControlledCharacter();
-            System.out.println(aIController.getMovementHorizontalDirection1orNeg1());
-            bee.setMovement(aIController.getMovementHorizontalDirection1orNeg1() * bee.getForce());
+            System.out.println(aIController.getMovementHorizontalDirection());
+            bee.setMovement(aIController.getMovementHorizontalDirection() * bee.getForce());
         }
     }
 
