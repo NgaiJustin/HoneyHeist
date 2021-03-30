@@ -28,7 +28,7 @@
 		"damping": 10.0,
 		"density": 1.0,
 		"friction": 0.0,
-		"maxspeed": 5.0,
+		"maxspeed": 3.0,
 		"jump_force": 5.5,
 		"jump_cool": 30,
 		"shot_cool": 40,
@@ -45,7 +45,7 @@
 			"damping": 10.0,
 			"density": 1.0,
 			"friction": 0.0,
-			"maxspeed": 5.0,
+			"maxspeed": 3.0,
 			"jump_force": 5.5,
 			"jump_cool": 30,
 			"shot_cool": 40,
@@ -61,7 +61,7 @@
 			"damping": 10.0,
 			"density": 1.0,
 			"friction": 0.0,
-			"maxspeed": 5.0,
+			"maxspeed": 3.0,
 			"jump_force": 5.5,
 			"jump_cool": 30,
 			"shot_cool": 40,
@@ -77,7 +77,7 @@
 			"damping": 10.0,
 			"density": 1.0,
 			"friction": 0.0,
-			"maxspeed": 5.0,
+			"maxspeed": 3.0,
 			"jump_force": 5.5,
 			"jump_cool": 30,
 			"shot_cool": 40,
@@ -87,29 +87,6 @@
 			}
 		}
 	],
-
-	"sleeperBee": {
-		"pos": [
-			19.0,
-			10.0
-		],
-		"shrink": [
-			0.95,
-			0.7
-		],
-		"force": 20.0,
-		"damping": 10.0,
-		"density": 1.0,
-		"friction": 0.0,
-		"maxspeed": 5.0,
-		"jump_force": 5.5,
-		"jump_cool": 30,
-		"shot_cool": 40,
-		"sensor": {
-			"shrink": 0.6,
-			"height": 0.05
-		}
-	},
 	"bullet": {
 		"offset": 0.2,
 		"speed": 20.0,

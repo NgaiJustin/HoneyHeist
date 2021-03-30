@@ -236,28 +236,7 @@ public class LevelController extends GameplayController implements ContactListen
 
         Array<AbstractBeeModel> bees = new Array<AbstractBeeModel>();
         level = new LevelModel(avatar,bees,goalDoor,platforms,new Vector2(bounds.width / 2, bounds.height / 2));
-        /*
-        dwidth = chaserBeeTexture.getRegionWidth() / scale.x;
-        dheight = chaserBeeTexture.getRegionHeight() / scale.y;
-        ChaserBeeModel chaserBee = new ChaserBeeModel(constants.get("chaserBee"), dwidth, dheight);
-        chaserBee.setDrawScale(scale);
-        chaserBee.setTexture(chaserBeeTexture);
-        bees.add(chaserBee);
-        addObject(chaserBee);
 
-        chaserBee = new ChaserBeeModel(constants.get("chaserBee2"), dwidth, dheight);
-        chaserBee.setDrawScale(scale);
-        chaserBee.setTexture(chaserBeeTexture);
-        bees.add(chaserBee);
-        addObject(chaserBee);
-
-        chaserBee = new ChaserBeeModel(constants.get("chaserBee3"), dwidth, dheight);
-        chaserBee.setDrawScale(scale);
-        chaserBee.setTexture(chaserBeeTexture);
-        bees.add(chaserBee);
-        addObject(chaserBee);
-
-         */
 
         aIControllers = new Array<AIController>();
 
@@ -274,18 +253,6 @@ public class LevelController extends GameplayController implements ContactListen
             AIController chaserBeeAIController = new AIController(level, avatar.getPosition(), chaserBee, AIController.CharacterType.GROUNDED_CHARACTER);
             aIControllers.add(chaserBeeAIController);
         }
-
-
-        // Create one sleeper bee
-        dwidth = sleeperBeeTexture.getRegionWidth() / scale.x;
-        dheight = sleeperBeeTexture.getRegionHeight() / scale.y;
-        SleeperBeeModel sleeperBee = new SleeperBeeModel(constants.get("sleeperBee"), dwidth, dheight);
-        sleeperBee.setDrawScale(scale);
-        sleeperBee.setTexture(sleeperBeeTexture);
-        // Sleeper bee doesn't move
-        sleeperBee.setBodyType(BodyDef.BodyType.StaticBody);
-        bees.add(sleeperBee);
-        addObject(sleeperBee);
         //level = new LevelModel(avatar,bees,goalDoor,platforms,new Vector2(bounds.width / 2, bounds.height / 2));
 
         /*
