@@ -365,7 +365,7 @@ public class LevelController extends GameplayController implements ContactListen
         for (AIController aIController: aIControllers) {
             aIController.updateAIController();
             AbstractBeeModel bee = aIController.getControlledCharacter();
-            System.out.println(aIController.getMovementHorizontalDirection());
+            //System.out.println(aIController.getMovementHorizontalDirection());
             bee.setMovement(aIController.getMovementHorizontalDirection() * bee.getForce());
         }
     }
@@ -416,6 +416,9 @@ public class LevelController extends GameplayController implements ContactListen
         moveChaserBeeFromStoredAIControllers();
         for(AbstractBeeModel bee : level.getBees()){
             bee.applyForce();
+            if(!bee.isGrounded()){
+                bee.getSensorFixtures().clear();
+            }
         }
 
 
@@ -423,6 +426,10 @@ public class LevelController extends GameplayController implements ContactListen
             rotateClockwise();
         } else if (InputController.getInstance().didAntiRotate()) {
             rotateCounterClockwise();
+        }
+
+        if(!level.getPlayer().isGrounded()){
+            sensorFixtures.clear();
         }
 
 
@@ -460,14 +467,15 @@ public class LevelController extends GameplayController implements ContactListen
                         !sensorFixtures.contains(fix1)) ||
                 ((avatar.getSensorName().equals(fd1)&& avatar != bd2) && (bd2.getClass() == PolygonObstacle.class) &&
                         !sensorFixtures.contains(fix2))) {
-
                 avatar.setGrounded(true);
                 sensorFixtures.add(avatar == bd1 ? fix2 : fix1); // Could have more than one ground
             }
             // ITERATE OVER ALL CHASER BEES
             for(AbstractBeeModel bee : bees) {
-                if ((bee.getSensorName().equals(fd2) && bee != bd1)&&(bd1.getClass() == PolygonObstacle.class) ||
-                        (bee.getSensorName().equals(fd1) && bee != bd2)&&(bd2.getClass() == PolygonObstacle.class)) {
+                if (((bee.getSensorName().equals(fd2) && bee != bd1)&&(bd1.getClass() == PolygonObstacle.class) &&
+                        !bee.getSensorFixtures().contains(fix1)) ||
+                    ((bee.getSensorName().equals(fd1) && bee != bd2)&&(bd2.getClass() == PolygonObstacle.class) &&
+                        !bee.getSensorFixtures().contains(fix2))) {
                     bee.setGrounded(true);
                     bee.getSensorFixtures().add(bee == bd1 ? fix2 : fix1); // Could have more than one ground
                 }

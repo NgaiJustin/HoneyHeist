@@ -214,7 +214,6 @@ public class PlayerModel extends CapsuleObstacle {
                     setBodyType(BodyDef.BodyType.DynamicBody);
                     sticking = false;
                     isGrounded = false;
-                    body.getFixtureList().clear();
                     this.setAngle(0);
                 }
             }
