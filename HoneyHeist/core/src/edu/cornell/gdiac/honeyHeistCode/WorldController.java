@@ -1,7 +1,23 @@
 package edu.cornell.gdiac.honeyHeistCode;
 
+/*
+ * WorldController.java
+ *
+ * This is the most important new class in this lab.  This class serves as a combination
+ * of the CollisionController and GameplayController from the previous lab.  There is not
+ * much to do for collisions; Box2d takes care of all of that for us.  This controller
+ * invokes Box2d and then performs any after the fact modifications to the data
+ * (e.g. gameplay).
+ *
+ * If you study this class, and the contents of the edu.cornell.cs3152.physics.obstacles
+ * package, you should be able to understand how the Physics engine works.
+ *
+ * Author: Walker M. White
+ * Based on original PhysicsDemo Lab by Don Holden, 2007
+ * LibGDX version, 2/6/2015
+ */
+
 import java.util.Iterator;
-import java.util.logging.Level;
 
 import com.badlogic.gdx.*;
 import com.badlogic.gdx.math.*;
@@ -13,12 +29,9 @@ import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.graphics.g2d.freetype.*;
 import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.audio.SoundBuffer;
-import edu.cornell.gdiac.honeyHeistCode.controllers.AIController;
 import edu.cornell.gdiac.honeyHeistCode.controllers.InputController;
-import edu.cornell.gdiac.honeyHeistCode.controllers.LevelController;
 import edu.cornell.gdiac.util.*;
 import edu.cornell.gdiac.honeyHeistCode.obstacle.*;
-
 /**
  * Base class for a world-specific controller.
  *
@@ -33,14 +46,15 @@ import edu.cornell.gdiac.honeyHeistCode.obstacle.*;
  * This is the purpose of our AssetState variable; it ensures that multiple instances
  * place nicely with the static assets.
  */
-public class GameplayController implements Screen{
-
+public abstract class WorldController {
     /** The texture for walls and platforms */
     protected TextureRegion earthTile;
     /** The texture for the exit condition */
     protected TextureRegion goalTile;
+    /** The font for giving messages to the player */
+    protected BitmapFont displayFont;
 
-    /** Exit code for quitting the game */
+    /** \ code for quitting the game */
     public static final int EXIT_QUIT = 0;
     /** Exit code for advancing to next level */
     public static final int EXIT_NEXT = 1;
@@ -48,10 +62,6 @@ public class GameplayController implements Screen{
     public static final int EXIT_PREV = 2;
     /** How many frames after winning/losing do we continue? */
     public static final int EXIT_COUNT = 120;
-
-    // ------------------------------- root controller -- begin
-    /** The font for giving messages to the player */
-    protected BitmapFont displayFont;
 
     /** The amount of time for a physics engine step. */
     public static final float WORLD_STEP = 1/60.0f;
@@ -82,7 +92,6 @@ public class GameplayController implements Screen{
     protected Rectangle bounds;
     /** The world scale */
     protected Vector2 scale;
-    // ------------------------------- root controller -- end
 
     /** Whether or not this is an active controller */
     private boolean active;
@@ -94,28 +103,6 @@ public class GameplayController implements Screen{
     private boolean debug;
     /** Countdown active for winning or losing */
     private int countdown;
-    // ------------------------------- newly added variables
-    /** Which level the game is currently in */
-    private int level;
-    /** List of all GameplayControllers */
-    private GameplayController[] controllers;
-    /** Level Controller */
-    private LevelController levelController;
-    /** AI Controller */
-    private AIController aiController;
-    /** JsonValue constants for AI Controller */
-    private JsonValue aiConstants;
-    /** JsonValue constants for level Controller */
-    private JsonValue levelConstants;
-
-    /**
-     * Returns levelController
-     *
-     * @return LevelController
-     */
-    public LevelController getLevelController( ) {
-        return levelController;
-    }
 
     /**
      * Returns true if debug mode is active.
@@ -198,7 +185,6 @@ public class GameplayController implements Screen{
         return active;
     }
 
-    // --------------------------------------- root controller -- begin
     /**
      * Returns the canvas associated with this controller
      *
@@ -219,15 +205,22 @@ public class GameplayController implements Screen{
      * @param canvas the canvas associated with this controller
      */
     public void setCanvas(GameCanvas canvas) {
-//        this.canvas = canvas;
-//        this.scale.x = canvas.getWidth()/bounds.getWidth();
-//        this.scale.y = canvas.getHeight()/bounds.getHeight();
-        levelController.setCanvas(canvas);
-        this.canvas = levelController.getCanvas();
-        this.scale.x = levelController.scale.x;
-        this.scale.y = levelController.scale.y;
+        this.canvas = canvas;
+        this.scale.x = canvas.getWidth()/bounds.getWidth();
+        this.scale.y = canvas.getHeight()/bounds.getHeight();
     }
-    // --------------------------------------- root controller -- end
+
+    /**
+     * Creates a new game world with the default values.
+     *
+     * The game world is scaled so that the screen coordinates do not agree
+     * with the Box2d coordinates.  The bounds are in terms of the Box2d
+     * world, not the screen.
+     */
+    protected WorldController() {
+        this(new Rectangle(0,0,DEFAULT_WIDTH,DEFAULT_HEIGHT),
+                new Vector2(0,DEFAULT_GRAVITY));
+    }
 
     /**
      * Creates a new game world
@@ -240,20 +233,8 @@ public class GameplayController implements Screen{
      * @param height	The height in Box2d coordinates
      * @param gravity	The downward gravity
      */
-    protected GameplayController(float width, float height, float gravity) {
+    protected WorldController(float width, float height, float gravity) {
         this(new Rectangle(0,0,width,height), new Vector2(0,gravity));
-    }
-
-    /**
-     * Creates a new game world
-     *
-     * The game world is scaled so that the screen coordinates do not agree
-     * with the Box2d coordinates.  The bounds are in terms of the Box2d
-     * world, not the screen.
-     */
-    protected GameplayController() {
-        // TODO
-        this(DEFAULT_WIDTH, DEFAULT_HEIGHT, DEFAULT_GRAVITY);
     }
 
     /**
@@ -266,10 +247,8 @@ public class GameplayController implements Screen{
      * @param bounds	The game bounds in Box2d coordinates
      * @param gravity	The gravitational force on this Box2d world
      */
-    protected GameplayController(Rectangle bounds, Vector2 gravity) {
-        // TODO
-        // code from WorldController Constructor
-//        world = new World(gravity,false);
+    protected WorldController(Rectangle bounds, Vector2 gravity) {
+        world = new World(gravity,false);
         this.bounds = new Rectangle(bounds);
         this.scale = new Vector2(1,1);
         complete = false;
@@ -277,20 +256,24 @@ public class GameplayController implements Screen{
         debug  = false;
         active = false;
         countdown = -1;
-        // code end
-
-        // we don't have a json file for AI right now, so we can't initialize a ChaserBeeModel
-//        ChaserBeeModel chaserBeeModel = new ChaserBeeModel();
-//        aiController = new AIController();
-        // initialize the level controller
-        levelController = new LevelController();
     }
 
     /**
      * Dispose of all (non-static) resources allocated to this mode.
      */
     public void dispose() {
-        levelController.dispose();
+        for(Obstacle obj : objects) {
+            obj.deactivatePhysics(world);
+        }
+        objects.clear();
+        addQueue.clear();
+        world.dispose();
+        objects = null;
+        addQueue = null;
+        bounds = null;
+        scale  = null;
+        world  = null;
+        canvas = null;
     }
 
     /**
@@ -306,28 +289,6 @@ public class GameplayController implements Screen{
         earthTile = new TextureRegion(directory.getEntry( "shared:earth", Texture.class ));
         goalTile  = new TextureRegion(directory.getEntry( "shared:goal", Texture.class ));
         displayFont = directory.getEntry( "shared:retro" ,BitmapFont.class);
-//        gatherLevelAssets(directory);
-//        gatherAIAssets(directory);
-        levelController.gatherAssets(directory);
-    }
-
-    /**
-     * Gather the assets for the level controller.
-     *
-     * @param directory Reference to global asset manager.
-     */
-    public void gatherLevelAssets(AssetDirectory directory) {
-        // TODO
-        levelController.gatherAssets(directory);
-    }
-
-    /**
-     * Gather the assets for the AI controller.
-     *
-     * @param directory Reference to global asset manager.
-     */
-    public void gatherAIAssets(AssetDirectory directory) {
-        // TODO
     }
 
     /**
@@ -375,109 +336,75 @@ public class GameplayController implements Screen{
      *
      * This method disposes of the world and creates a new one.
      */
-    public void reset() {
-        // TODO
-        levelController.reset();
-    }
+    public abstract void reset();
 
-    /**
-     * Returns whether to process the update loop
-     *
-     * At the start of the update loop, we check if it is time
-     * to switch to a new game mode.  If not, the update proceeds
-     * normally.
-     *
-     * @param dt	Number of seconds since last animation frame
-     *
-     * @return whether to process the update loop
-     */
-    public boolean preUpdate(float dt) {
-        boolean temp = preUpdateHelper(dt);
-        boolean result = levelController.preUpdate(temp, isFailure());
-        setFailure(levelController.isFailure());
-        return result;
-    }
-
-    private boolean preUpdateHelper(float dt) {
-        InputController input = InputController.getInstance();
-        input.readInput(bounds, scale);
-        if (listener == null) {
-            return true;
-        }
-
-        // Toggle debug
-        if (input.didDebug()) {
-            debug = !debug;
-        }
-
-        // Handle resets
-        if (input.didReset()) {
-            reset();
-        }
-
-        // Now it is time to maybe switch screens.
-        if (input.didExit()) {
-            pause();
-            listener.exitScreen(this, EXIT_QUIT);
-            return false;
-        } else if (input.didAdvance()) {
-            pause();
-            listener.exitScreen(this, EXIT_NEXT);
-            return false;
-//		} else if (input.didRetreat()) {
-//			pause();
-//			listener.exitScreen(this, EXIT_PREV);
-//			return false;
-        } else if (countdown > 0) {
-            countdown--;
-        } else if (countdown == 0) {
-            if (failed) {
-                reset();
-            } else if (complete) {
-                pause();
-                listener.exitScreen(this, EXIT_NEXT);
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
-     * The core gameplay loop of this world.
-     *
-     * This method contains the specific update code for this mini-game. It does
-     * not handle collisions, as those are managed by the parent class WorldController.
-     * This method is called after input is read, but before collisions are resolved.
-     * The very last thing that it should do is apply forces to the appropriate objects.
-     *
-     * @param dt	Number of seconds since last animation frame
-     */
-    public void update(float dt) {
-        // TODO Auto-generated method stub
-        float horizontal = InputController.getInstance().getHorizontal();
-        boolean isRotate = InputController.getInstance().didRotate();
-        boolean isAntiRotate = InputController.getInstance().didAntiRotate();
-        levelController.update(horizontal, isRotate, isAntiRotate);
-//        // Process actions in object model
-//        moveAnt(InputController.getInstance().getHorizontal());
-//
-//        level.getAvatar().applyForce();
-//
-//        // Process AI action
-//        // 1. Loop over all chaser bee,
-//        // 2. For each bee, moveChaserBee(...);
-//        // TO BE IMPLEMENTED
-//        for(AbstractBeeModel bee : level.getBees()){
-//            bee.applyForce();
+//    /**
+//     * Returns whether to process the update loop
+//     *
+//     * At the start of the update loop, we check if it is time
+//     * to switch to a new game mode.  If not, the update proceeds
+//     * normally.
+//     *
+//     * @param dt	Number of seconds since last animation frame
+//     *
+//     * @return whether to process the update loop
+//     */
+//    public boolean preUpdate(float dt) {
+//        InputController input = InputController.getInstance();
+//        input.readInput(bounds, scale);
+//        if (listener == null) {
+//            return true;
 //        }
 //
+//        // Toggle debug
+////		if (input.didDebug()) {
+////			debug = !debug;
+////		}
 //
-//        if (InputController.getInstance().didRotate()) {
-//            rotateClockwise();
-//        } else if (InputController.getInstance().didAntiRotate()) {
-//            rotateCounterClockwise();
+//        // Handle resets
+//        if (input.didReset()) {
+//            reset();
 //        }
-    }
+//
+//        // Now it is time to maybe switch screens.
+//        if (input.didExit()) {
+//            pause();
+//            listener.exitScreen(this, EXIT_QUIT);
+//            return false;
+//        } else if (input.didAdvance()) {
+//            pause();
+//            listener.exitScreen(this, EXIT_NEXT);
+//            return false;
+////		} else if (input.didRetreat()) {
+////			pause();
+////			listener.exitScreen(this, EXIT_PREV);
+////			return false;
+//        } else if (countdown > 0) {
+//            countdown--;
+//        } else if (countdown == 0) {
+//            if (failed) {
+//                reset();
+//            } else if (complete) {
+//                pause();
+//                listener.exitScreen(this, EXIT_NEXT);
+//                return false;
+//            }
+//        }
+//        return true;
+//    }
+
+//    /**
+//     * The core gameplay loop of this world.
+//     *
+//     * This method contains the specific update code for this mini-game. It does
+//     * not handle collisions, as those are managed by the parent class WorldController.
+//     * This method is called after input is read, but before collisions are resolved.
+//     * The very last thing that it should do is apply forces to the appropriate objects.
+//     *
+//     * @param dt	Number of seconds since last animation frame
+//     */
+//    public abstract void update(float dt);
+    public abstract void update(float horizontal, boolean didRotate, boolean didAntiRotate);
 
     /**
      * Processes physics
@@ -489,10 +416,31 @@ public class GameplayController implements Screen{
      * @param dt	Number of seconds since last animation frame
      */
     public void postUpdate(float dt) {
-        levelController.postUpdate(dt);
+        // Add any objects created by actions
+        while (!addQueue.isEmpty()) {
+            addObject(addQueue.poll());
+        }
+
+        // Turn the physics engine crank.
+        world.step(WORLD_STEP,WORLD_VELOC,WORLD_POSIT);
+
+        // Garbage collect the deleted objects.
+        // Note how we use the linked list nodes to delete O(1) in place.
+        // This is O(n) without copying.
+        Iterator<PooledList<Obstacle>.Entry> iterator = objects.entryIterator();
+        while (iterator.hasNext()) {
+            PooledList<Obstacle>.Entry entry = iterator.next();
+            Obstacle obj = entry.getValue();
+            if (obj.isRemoved()) {
+                obj.deactivatePhysics(world);
+                entry.remove();
+            } else {
+                // Note that update is called last!
+                obj.update(dt);
+            }
+        }
     }
 
-    // --------------------------------------- root controller -- begin
     /**
      * Draw the physics objects to the canvas
      *
@@ -504,37 +452,35 @@ public class GameplayController implements Screen{
      * @param dt	Number of seconds since last animation frame
      */
     public void draw(float dt) {
-        levelController.draw(dt);
-//        canvas.clear();
-//
-//        canvas.begin();
-//        for(Obstacle obj : objects) {
-//            obj.draw(canvas);
-//        }
-//        canvas.end();
-//
-//        if (debug) {
-//            canvas.beginDebug();
-//            for(Obstacle obj : objects) {
-//                obj.drawDebug(canvas);
-//            }
-//            canvas.endDebug();
-//        }
-//
-//        // Final message
-//        if (complete && !failed) {
-//            displayFont.setColor(Color.YELLOW);
-//            canvas.begin(); // DO NOT SCALE
-//            canvas.drawTextCentered("VICTORY!", displayFont, 0.0f);
-//            canvas.end();
-//        } else if (failed) {
-//            displayFont.setColor(Color.RED);
-//            canvas.begin(); // DO NOT SCALE
-//            canvas.drawTextCentered("FAILURE!", displayFont, 0.0f);
-//            canvas.end();
-//        }
+        canvas.clear();
+
+        canvas.begin();
+        for(Obstacle obj : objects) {
+            obj.draw(canvas);
+        }
+        canvas.end();
+
+        if (debug) {
+            canvas.beginDebug();
+            for(Obstacle obj : objects) {
+                obj.drawDebug(canvas);
+            }
+            canvas.endDebug();
+        }
+
+        // Final message
+        if (complete && !failed) {
+            displayFont.setColor(Color.YELLOW);
+            canvas.begin(); // DO NOT SCALE
+            canvas.drawTextCentered("VICTORY!", displayFont, 0.0f);
+            canvas.end();
+        } else if (failed) {
+            displayFont.setColor(Color.RED);
+            canvas.begin(); // DO NOT SCALE
+            canvas.drawTextCentered("FAILURE!", displayFont, 0.0f);
+            canvas.end();
+        }
     }
-    // --------------------------------------- root controller -- end
 
     /**
      * Method to ensure that a sound asset is only played once.
@@ -587,26 +533,26 @@ public class GameplayController implements Screen{
      * @param height The new height in pixels
      */
     public void resize(int width, int height) {
-        // TODO Auto-generated method stub
+        // IGNORE FOR NOW
     }
 
-    /**
-     * Called when the Screen should render itself.
-     *
-     * We defer to the other methods update() and draw().  However, it is VERY important
-     * that we only quit AFTER a draw.
-     *
-     * @param delta Number of seconds since last animation frame
-     */
-    public void render(float delta) {
-        if (active) {
-            if (preUpdate(delta)) {
-                update(delta); // This is the one that must be defined.
-                postUpdate(delta);
-            }
-            draw(delta);
-        }
-    }
+//    /**
+//     * Called when the Screen should render itself.
+//     *
+//     * We defer to the other methods update() and draw().  However, it is VERY important
+//     * that we only quit AFTER a draw.
+//     *
+//     * @param delta Number of seconds since last animation frame
+//     */
+//    public void render(float delta) {
+//        if (active) {
+//            if (preUpdate(delta)) {
+//                update(delta); // This is the one that must be defined.
+//                postUpdate(delta);
+//            }
+//            draw(delta);
+//        }
+//    }
 
     /**
      * Called when the Screen is paused.
@@ -650,7 +596,6 @@ public class GameplayController implements Screen{
      */
     public void setScreenListener(ScreenListener listener) {
         this.listener = listener;
-//        levelController.setScreenListener(listener);
     }
 
 }

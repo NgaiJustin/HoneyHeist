@@ -19,7 +19,7 @@ import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.ObjectSet;
 import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.audio.SoundBuffer;
-import edu.cornell.gdiac.honeyHeistCode.GameplayController;
+import edu.cornell.gdiac.honeyHeistCode.WorldController;
 import edu.cornell.gdiac.honeyHeistCode.models.*;
 import edu.cornell.gdiac.honeyHeistCode.obstacle.BoxObstacle;
 import edu.cornell.gdiac.honeyHeistCode.obstacle.Obstacle;
@@ -34,7 +34,7 @@ import edu.cornell.gdiac.honeyHeistCode.obstacle.PolygonObstacle;
  * This is the purpose of our AssetState variable; it ensures that multiple instances
  * place nicely with the static assets.
  */
-public class LevelController extends GameplayController implements ContactListener {
+public class LevelController extends WorldController implements ContactListener {
     /**
      * Texture asset for player avatar
      */
@@ -337,22 +337,57 @@ public class LevelController extends GameplayController implements ContactListen
         }
     }
 
-    /**
-     * Returns whether to process the update loop
-     * <p>
-     * At the start of the update loop, we check if it is time
-     * to switch to a new game mode.  If not, the update proceeds
-     * normally.
-     *
-     * @param dt Number of seconds since last animation frame
-     * @return whether to process the update loop
-     */
-    public boolean preUpdate(float dt) {
-        if (!super.preUpdate(dt)) {
+//    /**
+//     * Returns whether to process the update loop
+//     * <p>
+//     * At the start of the update loop, we check if it is time
+//     * to switch to a new game mode.  If not, the update proceeds
+//     * normally.
+//     *
+//     * @param dt Number of seconds since last animation frame
+//     * @return whether to process the update loop
+//     */
+//    public boolean preUpdate(float dt) {
+//        if (!super.preUpdate(dt)) {
+//            return false;
+//        }
+//
+//        if (!isFailure() && level.getPlayer().getY() < -1) {
+//            setFailure(true);
+//            return false;
+//        }
+//
+//        return true;
+//    }
+
+//    /**
+//     * Returns whether to process the update loop
+//     * <p>
+//     * At the start of the update loop, we check if it is time
+//     * to switch to a new game mode.  If not, the update proceeds
+//     * normally.
+//     *
+//     * @param dt Number of seconds since last animation frame
+//     * @return whether to process the update loop
+//     */
+//    public boolean preUpdate(float dt, boolean isFailure) {
+//        if (!super.preUpdate(dt)) {
+//            return false;
+//        }
+//
+//        if (!isFailure && level.getPlayer().getY() < -1) {
+//            setFailure(true);
+//            return false;
+//        }
+//
+//        return true;
+//    }
+    public boolean preUpdate(boolean temp, boolean isFailure) {
+        if (!temp) {
             return false;
         }
 
-        if (!isFailure() && level.getPlayer().getY() < -1) {
+        if (!isFailure && level.getPlayer().getY() < -1) {
             setFailure(true);
             return false;
         }
@@ -360,20 +395,49 @@ public class LevelController extends GameplayController implements ContactListen
         return true;
     }
 
-    /**
-     * The core gameplay loop of this world.
-     * <p>
-     * This method contains the specific update code for this mini-game. It does
-     * not handle collisions, as those are managed by the parent class WorldController.
-     * This method is called after input is read, but before collisions are resolved.
-     * The very last thing that it should do is apply forces to the appropriate objects.
-     *
-     * @param dt Number of seconds since last animation frame
-     */
-    public void update(float dt) {
-        // Process actions in object model
-        moveAnt(InputController.getInstance().getHorizontal());
 
+//    /**
+//     * The core gameplay loop of this world.
+//     * <p>
+//     * This method contains the specific update code for this mini-game. It does
+//     * not handle collisions, as those are managed by the parent class WorldController.
+//     * This method is called after input is read, but before collisions are resolved.
+//     * The very last thing that it should do is apply forces to the appropriate objects.
+//     *
+//     * @param dt Number of seconds since last animation frame
+//     */
+//    public void update(float dt) {
+//        // Process actions in object model
+//        moveAnt(InputController.getInstance().getHorizontal());
+//
+//        level.getPlayer().applyForce();
+//
+//        // Process AI action
+//        // 1. Loop over all chaser bee,
+//        // 2. For each bee, moveChaserBee(...);
+//        // TO BE IMPLEMENTED
+//        moveChaserBeeFromStoredAIControllers();
+//        for(AbstractBeeModel bee : level.getBees()){
+//            bee.applyForce();
+//            if(!bee.isGrounded()){
+//                bee.getSensorFixtures().clear();
+//            }
+//        }
+//
+//
+//        if (InputController.getInstance().didRotate()) {
+//            rotateClockwise();
+//        } else if (InputController.getInstance().didAntiRotate()) {
+//            rotateCounterClockwise();
+//        }
+//
+//        if(!level.getPlayer().isGrounded()){
+//            sensorFixtures.clear();
+//        }
+//    }
+    public void update(float horizontal, boolean didRotate, boolean didAntiRotate) {
+        // Process actions in object model
+        moveAnt(horizontal);
         level.getPlayer().applyForce();
 
         // Process AI action
@@ -388,18 +452,15 @@ public class LevelController extends GameplayController implements ContactListen
             }
         }
 
-
-        if (InputController.getInstance().didRotate()) {
+        if (didRotate) {
             rotateClockwise();
-        } else if (InputController.getInstance().didAntiRotate()) {
+        } else if (didAntiRotate) {
             rotateCounterClockwise();
         }
 
         if(!level.getPlayer().isGrounded()){
             sensorFixtures.clear();
         }
-
-
     }
 
     /**

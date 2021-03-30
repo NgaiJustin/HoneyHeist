@@ -17,7 +17,7 @@ import com.badlogic.gdx.*;
 import edu.cornell.gdiac.honeyHeistCode.controllers.LevelController;
 import edu.cornell.gdiac.honeyHeistCode.controllers.LoadingMode;
 import edu.cornell.gdiac.util.*;
-import edu.cornell.gdiac.assets.*;;
+import edu.cornell.gdiac.assets.*;
 
 /**
  * Root class for a LibGDX.  
@@ -63,11 +63,9 @@ public class GDXRoot extends Game implements ScreenListener {
 
 		// Initialize the game world
 //		controllers = new WorldController[1];
-//		controllers = new GameplayController[1];
 //		controllers[0] = new LevelController();
-//		controller = new LevelController();
 		controller = new GameplayController();
-		current = 0;
+//		current = 0;
 		loading.setScreenListener(this);
 		setScreen(loading);
 	}

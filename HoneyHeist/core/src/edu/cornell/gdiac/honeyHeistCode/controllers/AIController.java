@@ -69,7 +69,7 @@ public class AIController {
 
     private static final float CHASE_RADIUS = 3;
 
-    /**
+	/**
 	 * Creates an AI Controller for the given enemy model
 	 *
 	 * @param levelModel the level that the enemy is in.
@@ -84,8 +84,8 @@ public class AIController {
         this.characterType = characterType;
 		state = FSMState.WANDER;
 		ticks = 0;
-        lineToTarget = new Vector2();
-        direction = new Vector2();
+		lineToTarget = new Vector2();
+		direction = new Vector2();
 	}
 
 	/**
