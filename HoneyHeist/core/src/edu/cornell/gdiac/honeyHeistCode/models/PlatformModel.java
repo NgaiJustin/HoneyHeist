@@ -1,17 +1,3 @@
-/*
- * Spinner.java
- *
- * This class provides a spinning rectangle on a fixed pin.  We did not really need
- * a separate class for this, as it has no update.  However, ComplexObstacles always
- * make joint management easier.
- * 
- * This is one of the files that you are expected to modify. Please limit changes to 
- * the regions that say INSERT CODE HERE.
- *
- * Author: Walker M. White
- * Based on original PhysicsDemo Lab by Don Holden, 2007
- * Updated asset version, 2/6/2021
- */
 package edu.cornell.gdiac.honeyHeistCode.models;
 
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -19,11 +5,12 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.JsonValue;
+import edu.cornell.gdiac.honeyHeistCode.GameCanvas;
 import edu.cornell.gdiac.honeyHeistCode.obstacle.ComplexObstacle;
 import edu.cornell.gdiac.honeyHeistCode.obstacle.Obstacle;
 import edu.cornell.gdiac.honeyHeistCode.obstacle.PolygonObstacle;
 
-public class PlatformModel extends ComplexObstacle {
+public class PlatformModel extends Obstacle {
 	/** The initializing data (to avoid magic numbers) */
 	private final JsonValue data;
 
@@ -67,9 +54,7 @@ public class PlatformModel extends ComplexObstacle {
 		rotationSpeed = (float) Math.PI/3;
     }
 
-	public Iterable<PolygonObstacle> getBodies() {
-		return bodies;
-	}
+	public Iterable<PolygonObstacle> getBodies() { return bodies; }
 
 
 	/**
@@ -81,17 +66,8 @@ public class PlatformModel extends ComplexObstacle {
 	 */
 	@Override
 	public void rotateAboutPoint(float amount, Vector2 point) {
-		for(Object obj : bodies) {
-			Body body = ((PolygonObstacle)obj).getBody();
-			Transform bT = body.getTransform();
-			Vector2 p = bT.getPosition().sub(point);
-			float c = (float) Math.cos(amount);
-			float s = (float) Math.sin(amount);
-			float x = p.x * c - p.y * s;
-			float y = p.x * s + p.y * c;
-			Vector2 pos = new Vector2(x, y).add(point);
-			float angle = bT.getRotation() + amount;
-			body.setTransform(pos, angle);
+		for(Obstacle obj : bodies) {
+			obj.rotateAboutPoint(amount,point);
 		}
 	}
 
@@ -121,30 +97,97 @@ public class PlatformModel extends ComplexObstacle {
 	}
 
 	/**
-	 * Creates the joints for this object.
+	 * Creates the physics Body(s) for this object, adding them to the world.
 	 *
-	 * We implement our custom logic here.
+	 * This method invokes ActivatePhysics for the individual PhysicsObjects
+	 * in the list.
 	 *
-	 * @param world Box2D world to store joints
+	 * @param world Box2D world to store body
 	 *
 	 * @return true if object allocation succeeded
 	 */
-	protected boolean createJoints(World world) {
-		assert bodies.size > 0;
+	public boolean activatePhysics(World world) {
+		bodyinfo.active = true;
+		boolean success = true;
 
-		//#region INSERT CODE HERE
-		// Attach the barrier to the pin here
+		// Create all other bodies.
+		for(PolygonObstacle obj : bodies) {
+			success = success && obj.activatePhysics(world);
+		}
 
-		//#endregion
+		// Clean up if we failed
+		if (!success) {
+			deactivatePhysics(world);
+		}
+		return success;
+	}
 
-		return true;
+	/**
+	 * Destroys the physics Body(s) of this object if applicable,
+	 * removing them from the world.
+	 *
+	 * @param world Box2D world that stores body
+	 */
+	public void deactivatePhysics(World world) {
+		if (bodyinfo.active) {
+			for (Obstacle obj : bodies) {
+				obj.deactivatePhysics(world);
+			}
+			bodyinfo.active = false;
+		}
+	}
+
+	/**
+	 * Sets the drawing scale for this physics object
+	 *
+	 * The drawing scale is the number of pixels to draw before Box2D unit. Because
+	 * mass is a function of area in Box2D, we typically want the physics objects
+	 * to be small.  So we decouple that scale from the physics object.  However,
+	 * we must track the scale difference to communicate with the scene graph.
+	 *
+	 * We allow for the scaling factor to be non-uniform.
+	 *
+	 * @param x  the x-axis scale for this physics object
+	 * @param y  the y-axis scale for this physics object
+	 */
+	public void setDrawScale(float x, float y) {
+		drawScale.set(x,y);
+		for(Obstacle obj : bodies) {
+			obj.setDrawScale(x,y);
+		}
+	}
+
+	/**
+	 * Draws the physics object.
+	 *
+	 * @param canvas Drawing context
+	 */
+	public void draw(GameCanvas canvas) {
+		// Delegate to components
+		for(Obstacle obj : bodies) {
+			obj.draw(canvas);
+		}
+	}
+
+	/**
+	 * Draws the outline of the physics body.
+	 *
+	 * This method can be helpful for understanding issues with collisions.
+	 *
+	 * @param canvas Drawing context
+	 */
+	public void drawDebug(GameCanvas canvas) {
+		// Delegate to components
+		for(Obstacle obj : bodies) {
+			obj.drawDebug(canvas);
+		}
 	}
 
 	
 	public void setTexture(TextureRegion texture) {
 		this.texture = texture;
-		for(Obstacle obj : bodies) {
-			((PolygonObstacle) obj).setTexture(texture);
+		for(PolygonObstacle obj : bodies) {
+			obj.setTexture(texture);
 		}
 
 	}
