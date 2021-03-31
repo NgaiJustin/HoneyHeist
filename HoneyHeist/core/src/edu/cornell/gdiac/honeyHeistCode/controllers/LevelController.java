@@ -382,12 +382,12 @@ public class LevelController extends WorldController implements ContactListener 
 //
 //        return true;
 //    }
-    public boolean preUpdate(boolean temp, boolean isFailure) {
+    public boolean preUpdate(boolean temp) {
         if (!temp) {
             return false;
         }
 
-        if (!isFailure && level.getPlayer().getY() < -1) {
+        if (!isFailure() && level.getPlayer().getY() < -1) {
             setFailure(true);
             return false;
         }

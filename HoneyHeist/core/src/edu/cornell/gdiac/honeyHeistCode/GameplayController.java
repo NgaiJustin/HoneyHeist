@@ -88,8 +88,8 @@ public class GameplayController implements Screen{
     private boolean active;
     /** Whether we have completed this level */
     private boolean complete;
-    /** Whether we have failed at this world (and need a reset) */
-    private boolean failed;
+//    /** Whether we have failed at this world (and need a reset) */
+//    private boolean failed;
     /** Whether or not debug mode is active */
     private boolean debug;
     /** Countdown active for winning or losing */
@@ -147,7 +147,7 @@ public class GameplayController implements Screen{
      * @return true if the level is completed.
      */
     public boolean isComplete( ) {
-        return complete;
+        return levelController.isComplete();
     }
 
     /**
@@ -159,35 +159,35 @@ public class GameplayController implements Screen{
      */
     public void setComplete(boolean value) {
         if (value) {
-            countdown = EXIT_COUNT;
+            levelController.setCountdown(EXIT_COUNT);
         }
-        complete = value;
+        levelController.setComplete(value);
     }
 
-    /**
-     * Returns true if the level is failed.
-     *
-     * If true, the level will reset after a countdown
-     *
-     * @return true if the level is failed.
-     */
-    public boolean isFailure( ) {
-        return failed;
-    }
+//    /**
+//     * Returns true if the level is failed.
+//     *
+//     * If true, the level will reset after a countdown
+//     *
+//     * @return true if the level is failed.
+//     */
+//    public boolean isFailure( ) {
+//        return failed;
+//    }
 
-    /**
-     * Sets whether the level is failed.
-     *
-     * If true, the level will reset after a countdown
-     *
-     * @param value whether the level is failed.
-     */
-    public void setFailure(boolean value) {
-        if (value) {
-            countdown = EXIT_COUNT;
-        }
-        failed = value;
-    }
+//    /**
+//     * Sets whether the level is failed.
+//     *
+//     * If true, the level will reset after a countdown
+//     *
+//     * @param value whether the level is failed.
+//     */
+//    public void setFailure(boolean value) {
+//        if (value) {
+//            countdown = EXIT_COUNT;
+//        }
+//        failed = value;
+//    }
 
     /**
      * Returns true if this is the active screen
@@ -273,7 +273,7 @@ public class GameplayController implements Screen{
         this.bounds = new Rectangle(bounds);
         this.scale = new Vector2(1,1);
         complete = false;
-        failed = false;
+//        failed = false;
         debug  = false;
         active = false;
         countdown = -1;
@@ -303,9 +303,9 @@ public class GameplayController implements Screen{
      */
     public void gatherAssets(AssetDirectory directory) {
         // Allocate the tiles
-        earthTile = new TextureRegion(directory.getEntry( "shared:earth", Texture.class ));
-        goalTile  = new TextureRegion(directory.getEntry( "shared:goal", Texture.class ));
-        displayFont = directory.getEntry( "shared:retro" ,BitmapFont.class);
+//        earthTile = new TextureRegion(directory.getEntry( "shared:earth", Texture.class ));
+//        goalTile  = new TextureRegion(directory.getEntry( "shared:goal", Texture.class ));
+//        displayFont = directory.getEntry( "shared:retro" ,BitmapFont.class);
 //        gatherLevelAssets(directory);
 //        gatherAIAssets(directory);
         levelController.gatherAssets(directory);
@@ -393,8 +393,8 @@ public class GameplayController implements Screen{
      */
     public boolean preUpdate(float dt) {
         boolean temp = preUpdateHelper(dt);
-        boolean result = levelController.preUpdate(temp, isFailure());
-        setFailure(levelController.isFailure());
+        boolean result = levelController.preUpdate(temp);
+//        setFailure(levelController.isFailure());
         return result;
     }
 
@@ -407,7 +407,8 @@ public class GameplayController implements Screen{
 
         // Toggle debug
         if (input.didDebug()) {
-            debug = !debug;
+//            debug = !debug;
+            levelController.setDebug(!levelController.isDebug());
         }
 
         // Handle resets
@@ -428,12 +429,12 @@ public class GameplayController implements Screen{
 //			pause();
 //			listener.exitScreen(this, EXIT_PREV);
 //			return false;
-        } else if (countdown > 0) {
-            countdown--;
-        } else if (countdown == 0) {
-            if (failed) {
+        } else if (levelController.getCountdown() > 0) {
+            levelController.decreaseCountdown();
+        } else if (levelController.getCountdown() == 0) {
+            if (levelController.isFailure()) {
                 reset();
-            } else if (complete) {
+            } else if (levelController.isComplete()) {
                 pause();
                 listener.exitScreen(this, EXIT_NEXT);
                 return false;

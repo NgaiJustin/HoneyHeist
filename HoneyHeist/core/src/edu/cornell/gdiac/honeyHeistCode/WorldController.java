@@ -152,6 +152,32 @@ public abstract class WorldController {
     }
 
     /**
+     * Returns countdown time.
+     *
+     * @return int countdown
+     */
+    public int getCountdown( ) {
+        return countdown;
+    }
+
+    /**
+     * Set the countdown time.
+     *
+     * @param number the new countdown number
+     */
+    public void setCountdown(int number ) {
+        countdown = number;
+    }
+
+    /**
+     * Decreases countdown time by one.
+     *
+     */
+    public void decreaseCountdown() {
+        countdown--;
+    }
+
+    /**
      * Returns true if the level is failed.
      *
      * If true, the level will reset after a countdown
