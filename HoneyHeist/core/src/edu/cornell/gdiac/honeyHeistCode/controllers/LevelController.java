@@ -24,6 +24,7 @@ import edu.cornell.gdiac.honeyHeistCode.models.*;
 import edu.cornell.gdiac.honeyHeistCode.obstacle.BoxObstacle;
 import edu.cornell.gdiac.honeyHeistCode.obstacle.Obstacle;
 import edu.cornell.gdiac.honeyHeistCode.obstacle.PolygonObstacle;
+import edu.cornell.gdiac.util.FilmStrip;
 
 /**
  * Gameplay specific controller for the platformer game.
@@ -39,6 +40,10 @@ public class LevelController extends GameplayController implements ContactListen
      * Texture asset for player avatar
      */
     private TextureRegion avatarTexture;
+    /**
+     * Texture filmstrip for player walking animation
+     */
+    private FilmStrip walkingPlayer;
     /**
      * Texture asset for chaser bee avatar
      */
@@ -113,6 +118,8 @@ public class LevelController extends GameplayController implements ContactListen
         avatarTexture = new TextureRegion(directory.getEntry("platform:ant", Texture.class));
         chaserBeeTexture = new TextureRegion(directory.getEntry("platform:chaserBee", Texture.class));
         sleeperBeeTexture = new TextureRegion(directory.getEntry("platform:sleeperBee", Texture.class));
+
+        walkingPlayer = directory.getEntry( "platform:walk.pacing", FilmStrip.class );
 
         jumpSound = directory.getEntry("platform:jump", SoundBuffer.class);
         fireSound = directory.getEntry("platform:pew", SoundBuffer.class);
@@ -230,10 +237,10 @@ public class LevelController extends GameplayController implements ContactListen
         PlayerModel avatar = new PlayerModel(constants.get("player"), dwidth, dheight);
         avatar.setDrawScale(scale);
         avatar.setTexture(avatarTexture);
+        avatar.setAnimationStrip(PlayerModel.AntAnimations.WALK, walkingPlayer);
         addObject(avatar);
 
         // Create chaser bees
-
         Array<AbstractBeeModel> bees = new Array<AbstractBeeModel>();
         level = new LevelModel(avatar,bees,goalDoor,platforms,new Vector2(bounds.width / 2, bounds.height / 2));
 
@@ -312,7 +319,9 @@ public class LevelController extends GameplayController implements ContactListen
      * @param direction -1 = left, 1 = right, 0 = still
      */
     public void moveAnt(float direction) {
-        level.getPlayer().setMovement(direction * level.getPlayer().getForce());
+        PlayerModel player = level.getPlayer();
+        player.setMovement(direction * level.getPlayer().getForce());
+        player.animateAnt(PlayerModel.AntAnimations.WALK, direction != 0);
     }
 
     /**

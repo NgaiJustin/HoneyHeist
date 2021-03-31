@@ -294,10 +294,12 @@ public class AssetDirectory extends AssetManager {
     public <T> T getEntry(String key, Class<T> type) {
         ObjectMap<String, String> keys = contents.keymap.get( type, null );
         if (keys == null) {
+            System.out.println("No key");
             return null;
         }
         String filename = keys.get( key, null );
         if (filename == null) {
+            System.out.println("No file");
             return null;
         }
         return get( filename, type );
