@@ -6,12 +6,22 @@
             "wrapV": "repeated"
         },
         "shared:goal":   "shared/goaldoor.png",
+        "shared:background": "shared/background.png",
         "platform:ant":  "platform/ant.png",
         "platform:sleeperBee":  "platform/sleeperBee.png",
         "platform:chaserBee":  "platform/chaserBee.png",
         "platform:rope":  "platform/ropebridge.png",
         "platform:barrier": "platform/barrier.png",
         "platform:bullet":  "platform/bullet.png",
+        "platform:walk":  {
+            "file" : "platform/walkstrip.png",
+            "sprites" : {
+                "pacing": {
+                    "rows": 1,
+                    "cols": 6
+                }
+            }
+        }
     },
     "jsons"  : {
         "platform:constants": "platform/constants.json",

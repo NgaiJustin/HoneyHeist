@@ -52,6 +52,8 @@ public abstract class GameplayController implements Screen {
 	protected TextureRegion earthTile;
 	/** The texture for the exit condition */
 	protected TextureRegion goalTile;
+	/** The texture for the background */
+	protected TextureRegion background;
 	/** The font for giving messages to the player */
 	protected BitmapFont displayFont;
 
@@ -289,6 +291,7 @@ public abstract class GameplayController implements Screen {
 		// Allocate the tiles
 		earthTile = new TextureRegion(directory.getEntry( "shared:earth", Texture.class ));
 		goalTile  = new TextureRegion(directory.getEntry( "shared:goal", Texture.class ));
+		background = new TextureRegion(directory.getEntry( "shared:background",  Texture.class ));
 		displayFont = directory.getEntry( "shared:retro" ,BitmapFont.class);
 	}
 
@@ -455,9 +458,11 @@ public abstract class GameplayController implements Screen {
 		canvas.clear();
 		
 		canvas.begin();
+		canvas.draw(background, 0, 0);
 		for(Obstacle obj : objects) {
 			obj.draw(canvas);
 		}
+
 		canvas.end();
 		
 		if (debug) {
