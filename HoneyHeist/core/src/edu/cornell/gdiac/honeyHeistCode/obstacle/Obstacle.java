@@ -976,7 +976,7 @@ public abstract class Obstacle {
 	 * @param amount	the amount in radians to be rotated
 	 * @param point		the point to rotate about
 	 */
-	protected void rotateAboutPoint(float amount, Vector2 point) {
+	public void rotateAboutPoint(float amount, Vector2 point) {
 		Body body = getBody();
 		assert(body != null);
 		Transform bT = body.getTransform();

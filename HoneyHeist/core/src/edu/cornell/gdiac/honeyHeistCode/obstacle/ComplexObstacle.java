@@ -914,7 +914,7 @@ public abstract class ComplexObstacle extends Obstacle {
 	 *
 	 * @return the collection of component physics objects.
 	 */
-	 public Iterable<? extends Obstacle> getBodies() {
+	 public Iterable<Obstacle> getBodies() {
 	 	return bodies;
 	 }
 
