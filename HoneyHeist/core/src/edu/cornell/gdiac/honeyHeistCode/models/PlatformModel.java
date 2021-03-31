@@ -16,10 +16,8 @@ package edu.cornell.gdiac.honeyHeistCode.models;
 
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.physics.box2d.Body;
-import com.badlogic.gdx.physics.box2d.BodyDef;
-import com.badlogic.gdx.physics.box2d.Transform;
-import com.badlogic.gdx.physics.box2d.World;
+import com.badlogic.gdx.physics.box2d.*;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.honeyHeistCode.obstacle.ComplexObstacle;
 import edu.cornell.gdiac.honeyHeistCode.obstacle.Obstacle;
@@ -31,6 +29,8 @@ public class PlatformModel extends ComplexObstacle {
 
 	/** Cache of the texture used by bodies in this Complex Obstacle */
 	protected TextureRegion texture;
+
+	protected Array<PolygonObstacle> bodies;
 
 
 
@@ -45,6 +45,8 @@ public class PlatformModel extends ComplexObstacle {
 	 */
 	public PlatformModel(JsonValue data) {
 		super(0,0);
+		bodies = new Array<PolygonObstacle>();
+
         this.data = data;
 
 		String pname = "platform";
@@ -64,6 +66,10 @@ public class PlatformModel extends ComplexObstacle {
 		rotationAngle = (float) Math.PI/3;
 		rotationSpeed = (float) Math.PI/3;
     }
+
+	public Iterable<PolygonObstacle> getBodies() {
+		return bodies;
+	}
 
 
 	/**
