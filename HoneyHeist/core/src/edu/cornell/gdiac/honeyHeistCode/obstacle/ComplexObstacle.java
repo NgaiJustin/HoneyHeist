@@ -42,7 +42,7 @@ public abstract class ComplexObstacle extends Obstacle {
     /** A root body for this box 2d. */
     protected Body body;
 	/** A complex physics object has multiple bodies */
-	protected Array<Obstacle> bodies;
+	protected Array<PolygonObstacle> bodies;
 	/** Potential joints for connecting the multiple bodies */
 	protected Array<Joint> joints;
 	
@@ -914,7 +914,7 @@ public abstract class ComplexObstacle extends Obstacle {
 	 *
 	 * @return the collection of component physics objects.
 	 */
-	 public Iterable<Obstacle> getBodies() {
+	 public Iterable<PolygonObstacle> getBodies() {
 	 	return bodies;
 	 }
 
@@ -947,7 +947,7 @@ public abstract class ComplexObstacle extends Obstacle {
 	 */
 	protected ComplexObstacle(float x, float y) {
 		super(x,y);
-		bodies = new Array<Obstacle>();
+		bodies = new Array<PolygonObstacle>();
 		joints = new Array<Joint>();
 	}
 
@@ -1022,10 +1022,10 @@ public abstract class ComplexObstacle extends Obstacle {
 	 *
 	 * @param dt Timing values from parent loop
 	 */
-	public void update(float delta) {
+	public void update(float dt) {
 		// Delegate to components
 		for(Obstacle obj : bodies) {
-			obj.update(delta);
+			obj.update(dt);
 		}
 	}
 	
