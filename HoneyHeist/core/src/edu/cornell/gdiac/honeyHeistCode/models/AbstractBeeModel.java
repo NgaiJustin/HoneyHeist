@@ -170,9 +170,8 @@ public abstract class AbstractBeeModel extends CapsuleObstacle {
      * @param width  The object width in physics units
      * @param height The object width in physics units
      */
-    public AbstractBeeModel(JsonValue data, float width, float height) {
-        super(data.get("pos").getFloat(0),
-                data.get("pos").getFloat(1),
+    public AbstractBeeModel(JsonValue data, float x, float y, float width, float height) {
+        super(x, y,
                 width * data.get("shrink").getFloat(0),
                 height * data.get("shrink").getFloat(1));
         setDensity(data.getFloat("density", 0));

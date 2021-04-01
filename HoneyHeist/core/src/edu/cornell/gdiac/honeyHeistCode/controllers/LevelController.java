@@ -73,9 +73,13 @@ public class LevelController extends GameplayController implements ContactListen
      */
     private float volume;
     /**
-     * Physics constants for initialization
+     * Constant data across levels
      */
     private JsonValue constants;
+    /**
+     * Data for the level
+     */
+    private JsonValue levelData;
     /**
      * Reference to the level model
      */
@@ -125,7 +129,8 @@ public class LevelController extends GameplayController implements ContactListen
         fireSound = directory.getEntry("platform:pew", SoundBuffer.class);
         plopSound = directory.getEntry("platform:plop", SoundBuffer.class);
 
-        constants = directory.getEntry("platform:constants", JsonValue.class);
+        constants = directory.getEntry("platform:constants2", JsonValue.class);
+        levelData = directory.getEntry("platform:prototypeLevel", JsonValue.class);
         super.gatherAssets(directory);
     }
 
@@ -161,9 +166,9 @@ public class LevelController extends GameplayController implements ContactListen
         float dheight = goalTile.getRegionHeight() / scale.y;
 
         JsonValue goal = constants.get("goal");
-        JsonValue goalpos = goal.get("pos");
+        float[] goalPos = levelData.get("goalPos").asFloatArray();
 
-        BoxObstacle goalDoor = new BoxObstacle(goalpos.getFloat(0), goalpos.getFloat(1), dwidth, dheight);
+        BoxObstacle goalDoor = new BoxObstacle(goalPos[0], goalPos[1], dwidth, dheight);
         goalDoor.setBodyType(BodyDef.BodyType.StaticBody);
         goalDoor.setDensity(goal.getFloat("density", 0));
         goalDoor.setFriction(goal.getFloat("friction", 0));
@@ -223,7 +228,7 @@ public class LevelController extends GameplayController implements ContactListen
 
 
         // Create platforms
-        PlatformModel platforms = new PlatformModel(constants.get("mediumLevel"));
+        PlatformModel platforms = new PlatformModel(levelData.get("platforms"));
         platforms.setDrawScale(scale);
         platforms.setTexture(earthTile);
         addObject(platforms);
@@ -234,7 +239,8 @@ public class LevelController extends GameplayController implements ContactListen
         // Create player (ant)
         dwidth = avatarTexture.getRegionWidth() / scale.x;
         dheight = avatarTexture.getRegionHeight() / scale.y;
-        PlayerModel avatar = new PlayerModel(constants.get("player"), dwidth, dheight);
+        float[] playerPos = levelData.get("playerPos").asFloatArray();
+        PlayerModel avatar = new PlayerModel(constants.get("player"), playerPos[0], playerPos[1], dwidth, dheight);
         avatar.setDrawScale(scale);
         avatar.setTexture(avatarTexture);
         avatar.setAnimationStrip(PlayerModel.AntAnimations.WALK, walkingPlayer);
@@ -243,14 +249,25 @@ public class LevelController extends GameplayController implements ContactListen
         // Create chaser bees
         Array<AbstractBeeModel> bees = new Array<AbstractBeeModel>();
         level = new LevelModel(avatar,bees,goalDoor,platforms,new Vector2(bounds.width / 2, bounds.height / 2));
-
-
         aIControllers = new Array<AIController>();
-
-        JsonValue.JsonIterator groundedBeeIterator = constants.get("groundedBees").iterator();
 
         dwidth = chaserBeeTexture.getRegionWidth() / scale.x;
         dheight = chaserBeeTexture.getRegionHeight() / scale.y;
+        //JsonValue.JsonIterator groundedBeeIterator = constants.get("groundedBees").iterator();
+        JsonValue groundedBeePositions = levelData.get("groundedBeePos");
+        for (int i=0; i<groundedBeePositions.size; i++){
+            float[] pos = groundedBeePositions.get(i).asFloatArray();
+            ChaserBeeModel chaserBee = new ChaserBeeModel(constants.get("GroundedBee"), pos[0], pos[1], dwidth, dheight);
+            chaserBee.setDrawScale(scale);
+            chaserBee.setTexture(chaserBeeTexture);
+            bees.add(chaserBee);
+            addObject(chaserBee);
+            AIController chaserBeeAIController = new AIController(level, avatar.getPosition(), chaserBee, AIController.CharacterType.GROUNDED_CHARACTER);
+            aIControllers.add(chaserBeeAIController);
+        }
+
+
+        /*
         while (groundedBeeIterator.hasNext()){
             ChaserBeeModel chaserBee = new ChaserBeeModel(groundedBeeIterator.next(), dwidth/1.2f, dheight);
             chaserBee.setDrawScale(scale);
@@ -260,6 +277,7 @@ public class LevelController extends GameplayController implements ContactListen
             AIController chaserBeeAIController = new AIController(level, avatar.getPosition(), chaserBee, AIController.CharacterType.GROUNDED_CHARACTER);
             aIControllers.add(chaserBeeAIController);
         }
+         */
         //level = new LevelModel(avatar,bees,goalDoor,platforms,new Vector2(bounds.width / 2, bounds.height / 2));
 
         /*
