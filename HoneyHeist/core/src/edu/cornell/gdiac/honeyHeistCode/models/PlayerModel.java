@@ -156,9 +156,8 @@ public class PlayerModel extends CapsuleObstacle {
      * @param width		The object width in physics units
      * @param height	The object width in physics units
      */
-    public PlayerModel(JsonValue data, float width, float height){
-        super(	data.get("pos").getFloat(0),
-                data.get("pos").getFloat(1),
+    public PlayerModel(JsonValue data, float x, float y, float width, float height){
+        super(	x, y,
                 width*data.get("shrink").getFloat( 0 ),
                 height*data.get("shrink").getFloat( 1 ));
         setDensity(data.getFloat("density", 0));
@@ -208,8 +207,8 @@ public class PlayerModel extends CapsuleObstacle {
         sensorDef.isSensor = true;
         sensorShape = new PolygonShape();
         JsonValue sensorjv = data.get("sensor");
-        sensorShape.setAsBox(sensorjv.getFloat("shrink",0)*getWidth()/1.4f,
-                sensorjv.getFloat("height",0), sensorCenter, 0.0f);
+        sensorShape.setAsBox(sensorjv.getFloat("shrink",0)*getWidth()/1.2f,
+                sensorjv.getFloat("height",0)*3f, sensorCenter, 0.0f);
         sensorDef.shape = sensorShape;
 
         // Ground sensor to represent our feet
