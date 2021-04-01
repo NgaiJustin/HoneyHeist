@@ -219,6 +219,7 @@ public class AIController {
 	 */
 	private void updateFSMState() {
 		float distanceToPlayer = controlledCharacter.getPosition().dst(levelModel.getPlayer().getPosition());
+//		System.out.println(isLineCollidingWithAPlatform(lineToTarget));
 		switch (this.state) {
 			case WANDER:
 				if (distanceToPlayer < CHASE_RADIUS && !isLineCollidingWithAPlatform(lineToTarget)) {
@@ -226,7 +227,7 @@ public class AIController {
 				}
 				break;
 			case CHASE:
-				if (distanceToPlayer > CHASE_RADIUS) {
+				if (distanceToPlayer > CHASE_RADIUS || isLineCollidingWithAPlatform(lineToTarget)) {
 					this.state = FSMState.WANDER;
 				}
 		}
@@ -312,19 +313,28 @@ public class AIController {
 	 */
     private boolean isLineCollidingWithAPlatform(DirectedLineSegment line) {
 		PlatformModel platforms = levelModel.getPlatforms();
-		System.out.println("-----------------------------");
 		for (PolygonObstacle platform : platforms.getBodies()) {
 			if (doesLineSegmentIntersectsPolygon(line, platform.getVertices())) {
 				return true;
 			}
 		}
-		System.out.println(levelModel.getPlayer().getPosition());
 		return false;
     }
 
     private boolean doesLineSegmentIntersectsPolygon(DirectedLineSegment line, float[] vertices) {
 		for (int i = 0; i < vertices.length; i += 2) {
-			tempLineSegment.set(vertices[i], vertices[i+1], vertices[i+2], vertices[i+3]);
+			int x1Index = i;
+			int y1Index = i + 1;
+			int x2Index;
+			int y2Index;
+			if (i + 2 < vertices.length) {
+				x2Index = i + 2;
+				y2Index = i + 3;
+			} else {
+				x2Index = 0;
+				y2Index = 1;
+			}
+			tempLineSegment.set(vertices[x1Index], vertices[y1Index], vertices[x2Index], vertices[y2Index]);
 			if (tempLineSegment.intersects(line)) {
 				return true;
 			}
@@ -334,8 +344,19 @@ public class AIController {
 
     private boolean pointContainedInPolygon(Vector2 point, float[] vertices) {
 		for (int i = 0; i < vertices.length; i += 2) {
-			float Ypart = (vertices[i+2] - vertices[i]) * (point.y - vertices[i + 1]);
-			float Xpart = (point.x - vertices[i]) * (vertices[i + 3] - vertices[i + 1]);
+			int x1Index = i;
+			int y1Index = i + 1;
+			int x2Index;
+			int y2Index;
+			if (i + 2 < vertices.length) {
+				x2Index = i + 2;
+				y2Index = i + 3;
+			} else {
+				x2Index = 0;
+				y2Index = 1;
+			}
+			float Ypart = (vertices[x2Index] - vertices[x1Index]) * (point.y - vertices[y1Index]);
+			float Xpart = (point.x - vertices[x1Index]) * (vertices[y2Index] - vertices[y1Index]);
 			if (0 > (Ypart - Xpart)) {
 				return false;
 			}
@@ -356,14 +377,17 @@ public class AIController {
 			this.y1 = 0;
 			this.x2 = 0;
 			this.y2 = 0;
+			direction = new Vector2();
 		}
 
     	public DirectedLineSegment (float x1, float y1, float x2, float y2) {
+    		this();
 			set(x1, y1, x2, y2);
 		}
 
 		public DirectedLineSegment (Vector2 startPoint, Vector2 endPoint) {
-			set(startPoint, endPoint);
+			this();
+    		set(startPoint, endPoint);
 		}
 
 		public void set(float x1, float y1, float x2, float y2) {
@@ -401,6 +425,17 @@ public class AIController {
 			if (val == 0) {return 0;}
 			else if (val < 0) {return -1;}
 			else {return 1;}
+		}
+
+		@Override
+		public String toString() {
+			return "DirectedLineSegment{" +
+					"x1=" + x1 +
+					", y1=" + y1 +
+					", x2=" + x2 +
+					", y2=" + y2 +
+					", direction=" + direction +
+					'}';
 		}
 	}
 }

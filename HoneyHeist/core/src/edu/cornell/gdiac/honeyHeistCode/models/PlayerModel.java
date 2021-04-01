@@ -311,7 +311,6 @@ public class PlayerModel extends CapsuleObstacle {
 
         switch (anim) {
             case WALK:
-                System.out.println("WALKING");
                 node  = walkingAnim;
                 cycle = walkCycle;
                 break;
