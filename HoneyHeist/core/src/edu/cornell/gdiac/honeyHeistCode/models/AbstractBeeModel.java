@@ -181,7 +181,7 @@ public abstract class AbstractBeeModel extends CapsuleObstacle {
         maxspeed = data.getFloat("maxspeed", 0);
         damping = data.getFloat("damping", 0);
         force = data.getFloat("force", 0);
-        sensorName = "BeeGroundSensor"+data.get("pos").getFloat(0)+data.get("pos").getFloat(1);
+        sensorName = "BeeGroundSensor"+x+y;
         this.data = data;
 
         // Gameplay attributes
