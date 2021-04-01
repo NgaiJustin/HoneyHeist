@@ -25,6 +25,8 @@
     },
     "jsons"  : {
         "platform:constants": "platform/constants.json",
+        "platform:constants2": "platform/constants2.json",
+        "platform:prototypeLevel": "platform/prototypeLevel.json"
     },
     "sounds" : {
         "platform:jump" : "platform/jump.mp3",
