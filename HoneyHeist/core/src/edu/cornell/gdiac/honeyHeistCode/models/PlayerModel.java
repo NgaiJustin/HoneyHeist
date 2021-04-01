@@ -156,9 +156,8 @@ public class PlayerModel extends CapsuleObstacle {
      * @param width		The object width in physics units
      * @param height	The object width in physics units
      */
-    public PlayerModel(JsonValue data, float width, float height){
-        super(	data.get("pos").getFloat(0),
-                data.get("pos").getFloat(1),
+    public PlayerModel(JsonValue data, float x, float y, float width, float height){
+        super(	x, y,
                 width*data.get("shrink").getFloat( 0 ),
                 height*data.get("shrink").getFloat( 1 ));
         setDensity(data.getFloat("density", 0));

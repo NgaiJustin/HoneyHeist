@@ -10,8 +10,8 @@ public class FlyingBeeModel extends AbstractBeeModel{
      * @param width  The object width in physics units
      * @param height The object width in physics units
      */
-    public FlyingBeeModel(JsonValue data, float width, float height) {
-        super(data, width, height);
+    public FlyingBeeModel(JsonValue data, float x, float y, float width, float height) {
+        super(data, x, y, width, height);
         setGravityScale(0);
     }
 
