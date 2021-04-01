@@ -10,7 +10,8 @@ public class ChaserBeeModel extends AbstractBeeModel{
      * @param width  The object width in physics units
      * @param height The object width in physics units
      */
-    public ChaserBeeModel(JsonValue data, float width, float height) {
-        super(data, width, height);
+    public ChaserBeeModel(JsonValue data, float x, float y, float width, float height)
+            {
+        super(data, x, y, width, height);
     }
 }
