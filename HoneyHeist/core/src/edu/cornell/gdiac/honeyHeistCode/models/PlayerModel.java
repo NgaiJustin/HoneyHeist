@@ -207,8 +207,8 @@ public class PlayerModel extends CapsuleObstacle {
         sensorDef.isSensor = true;
         sensorShape = new PolygonShape();
         JsonValue sensorjv = data.get("sensor");
-        sensorShape.setAsBox(sensorjv.getFloat("shrink",0)*getWidth()/1.4f,
-                sensorjv.getFloat("height",0), sensorCenter, 0.0f);
+        sensorShape.setAsBox(sensorjv.getFloat("shrink",0)*getWidth()/1.2f,
+                sensorjv.getFloat("height",0)*3f, sensorCenter, 0.0f);
         sensorDef.shape = sensorShape;
 
         // Ground sensor to represent our feet

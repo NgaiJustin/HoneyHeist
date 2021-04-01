@@ -269,7 +269,7 @@ public class LevelController extends GameplayController implements ContactListen
 
         /*
         while (groundedBeeIterator.hasNext()){
-            ChaserBeeModel chaserBee = new ChaserBeeModel(groundedBeeIterator.next(), dwidth, dheight);
+            ChaserBeeModel chaserBee = new ChaserBeeModel(groundedBeeIterator.next(), dwidth/1.2f, dheight);
             chaserBee.setDrawScale(scale);
             chaserBee.setTexture(chaserBeeTexture);
             bees.add(chaserBee);
@@ -408,6 +408,7 @@ public class LevelController extends GameplayController implements ContactListen
         // 2. For each bee, moveChaserBee(...);
         // TO BE IMPLEMENTED
         moveChaserBeeFromStoredAIControllers();
+
         for(AbstractBeeModel bee : level.getBees()){
             bee.applyForce();
             if(!bee.isGrounded()){
@@ -476,8 +477,8 @@ public class LevelController extends GameplayController implements ContactListen
             }
             // Check for win condition
             if (!isFailure() && !isComplete() &&
-                    (bd1 == avatar && bd2.getClass().getSuperclass() == AbstractBeeModel.class) ||
-                    (bd1.getClass().getSuperclass() == AbstractBeeModel.class && bd2 == avatar)) {
+                    ((bd1 == avatar && bd2.getClass().getSuperclass() == AbstractBeeModel.class) ||
+                    (bd1.getClass().getSuperclass() == AbstractBeeModel.class && bd2 == avatar))) {
                 setFailure(true);
             }
             if ((bd1 == avatar && bd2 == goalDoor) ||
