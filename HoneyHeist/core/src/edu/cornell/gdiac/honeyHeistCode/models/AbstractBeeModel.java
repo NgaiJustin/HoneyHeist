@@ -182,7 +182,7 @@ public abstract class AbstractBeeModel extends CapsuleObstacle {
         maxspeed = data.getFloat("maxspeed", 0);
         damping = data.getFloat("damping", 0);
         force = data.getFloat("force", 0);
-        sensorName = "BeeGroundSensor";
+        sensorName = "BeeGroundSensor"+data.get("pos").getFloat(0)+data.get("pos").getFloat(1);
         this.data = data;
 
         // Gameplay attributes
@@ -223,8 +223,8 @@ public abstract class AbstractBeeModel extends CapsuleObstacle {
         sensorDef.isSensor = true;
         sensorShape = new PolygonShape();
         JsonValue sensorjv = data.get("sensor");
-        sensorShape.setAsBox(sensorjv.getFloat("shrink", 0) * getWidth() / 2.0f,
-                sensorjv.getFloat("height", 0), sensorCenter, 0.0f);
+        sensorShape.setAsBox(sensorjv.getFloat("shrink", 0) * getWidth()/1.6f ,
+                sensorjv.getFloat("height", 0)*3f, sensorCenter, 0.0f);
         sensorDef.shape = sensorShape;
 
         // Ground sensor to represent our feet
@@ -307,7 +307,7 @@ public abstract class AbstractBeeModel extends CapsuleObstacle {
         //if (!isGrounded()){
         //    this.setAngle(0);
         //}
-        canvas.draw(texture, Color.WHITE, origin.x, origin.y, getX() * drawScale.x, getY() * drawScale.y, getAngle(), effect, 1.0f);
+        canvas.draw(texture, Color.WHITE, origin.x-6.0f, origin.y, getX() * drawScale.x, getY() * drawScale.y, getAngle(), effect, 1.0f);
     }
 
     /**
