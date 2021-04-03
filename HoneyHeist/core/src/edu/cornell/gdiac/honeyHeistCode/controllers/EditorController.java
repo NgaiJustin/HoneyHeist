@@ -1,0 +1,422 @@
+package edu.cornell.gdiac.honeyHeistCode.controllers;
+
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.physics.box2d.*;
+import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.JsonValue;
+import com.badlogic.gdx.utils.ObjectSet;
+import edu.cornell.gdiac.assets.AssetDirectory;
+import edu.cornell.gdiac.audio.SoundBuffer;
+import edu.cornell.gdiac.honeyHeistCode.GameplayController;
+import edu.cornell.gdiac.honeyHeistCode.models.*;
+import edu.cornell.gdiac.honeyHeistCode.obstacle.BoxObstacle;
+import edu.cornell.gdiac.honeyHeistCode.obstacle.Obstacle;
+import edu.cornell.gdiac.honeyHeistCode.obstacle.PolygonObstacle;
+import edu.cornell.gdiac.util.FilmStrip;
+
+public class EditorController extends GameplayController implements ContactListener {
+    /**
+     * Texture asset for player avatar
+     */
+    private TextureRegion avatarTexture;
+    /**
+     * Texture filmstrip for player walking animation
+     */
+    private FilmStrip walkingPlayer;
+    /**
+     * Texture asset for chaser bee avatar
+     */
+    private TextureRegion chaserBeeTexture;
+    /**
+     * Texture asset for testEnemy avatar
+     */
+    private TextureRegion sleeperBeeTexture;
+
+    /**
+     * The jump sound.  We only want to play once.
+     */
+    private SoundBuffer jumpSound;
+    private long jumpId = -1;
+    /**
+     * The weapon fire sound.  We only want to play once.
+     */
+    private SoundBuffer fireSound;
+    private long fireId = -1;
+    /**
+     * The weapon pop sound.  We only want to play once.
+     */
+    private SoundBuffer plopSound;
+    private long plopId = -1;
+    /**
+     * The default sound volume
+     */
+    private float volume;
+    /**
+     * Constant data across levels
+     */
+    private JsonValue constants;
+    /**
+     * Data for the level
+     */
+    private JsonValue levelData;
+    /**
+     * Reference to the level model
+     */
+    private LevelModel level;
+
+
+    /**
+     * Reference to the AI Controllers
+     */
+    private Array<AIController> aIControllers;
+
+    /**
+     * Mark set to handle more sophisticated collision callbacks
+     */
+    protected ObjectSet<Fixture> sensorFixtures;
+
+    /**
+     * Creates and initialize a new instance of the platformer game
+     * <p>
+     * The game has default gravity and other settings
+     */
+    public EditorController() {
+        super(DEFAULT_WIDTH, DEFAULT_HEIGHT, DEFAULT_GRAVITY);
+        setDebug(false);
+        setComplete(false);
+        setFailure(false);
+        world.setContactListener(this);
+        sensorFixtures = new ObjectSet<Fixture>();
+    }
+
+    /**
+     * Gather the assets for this controller.
+     * <p>
+     * This method extracts the asset variables from the given asset directory. It
+     * should only be called after the asset directory is completed.
+     *
+     * @param directory Reference to global asset manager.
+     */
+    public void gatherAssets(AssetDirectory directory) {
+        avatarTexture = new TextureRegion(directory.getEntry("platform:ant", Texture.class));
+        chaserBeeTexture = new TextureRegion(directory.getEntry("platform:chaserBee", Texture.class));
+        sleeperBeeTexture = new TextureRegion(directory.getEntry("platform:sleeperBee", Texture.class));
+
+        walkingPlayer = directory.getEntry( "platform:walk.pacing", FilmStrip.class );
+
+        jumpSound = directory.getEntry("platform:jump", SoundBuffer.class);
+        fireSound = directory.getEntry("platform:pew", SoundBuffer.class);
+        plopSound = directory.getEntry("platform:plop", SoundBuffer.class);
+
+        constants = directory.getEntry("platform:constants2", JsonValue.class);
+        levelData = directory.getEntry("platform:prototypeLevel", JsonValue.class);
+        super.gatherAssets(directory);
+    }
+
+    /**
+     * Resets the status of the game so that we can play again.
+     * <p>
+     * This method disposes of the world and creates a new one.
+     */
+    public void reset() {
+        Vector2 gravity = new Vector2(world.getGravity());
+
+        for (Obstacle obj : objects) {
+            obj.deactivatePhysics(world);
+        }
+        objects.clear();
+        addQueue.clear();
+        world.dispose();
+        sensorFixtures.clear();
+
+        world = new World(gravity, false);
+        world.setContactListener(this);
+        setComplete(false);
+        setFailure(false);
+        populateLevel();
+    }
+
+    /**
+     * Lays out the game geography.
+     */
+    public void populateLevel() {
+        // Add level goal
+        float dwidth = goalTile.getRegionWidth() / scale.x;
+        float dheight = goalTile.getRegionHeight() / scale.y;
+
+        JsonValue goal = constants.get("goal");
+        float[] goalPos = levelData.get("goalPos").asFloatArray();
+
+        volume = constants.getFloat("volume", 1.0f);
+    }
+
+
+    /**
+     * Start rotation.
+     *
+     * @param isClockwise true if the rotation direction is clockwise, false if counterclockwise.
+     * @param platformNotRotating true if the platform model isn't rotating when the rotate function is called.
+     */
+    public void rotate(boolean isClockwise, boolean platformNotRotating){
+        PlatformModel platforms = level.getPlatforms();
+        PlayerModel avatar = level.getPlayer();
+        Array<AbstractBeeModel> bees = level.getBees();
+        Vector2 origin = level.getOrigin();
+
+        platforms.startRotation(isClockwise, origin);
+        if (avatar.isGrounded()&&platformNotRotating){
+            avatar.startRotation(isClockwise, origin);
+        }
+        for(AbstractBeeModel bee : bees){
+            if(bee.isGrounded() && platformNotRotating) {
+                bee.startRotation(isClockwise, origin);
+            }
+        }
+    }
+
+    /**
+     * Start clockwise rotation.
+     * Will only rotate once, and spamming will not queue more rotations.
+     */
+    public void rotateClockwise() {
+        rotate(true, !level.getPlatforms().getIsRotating());
+    }
+
+    /**
+     * Start counterclockwise rotation.
+     * Will only rotate once, and spamming will not queue more rotations.
+     */
+    public void rotateCounterClockwise() {
+        rotate(false, !level.getPlatforms().getIsRotating());
+    }
+
+
+    /**
+     * Moves the chaserBee based on the direction given by AIController
+     *
+     * @param direction -1 = left, 1 = right, 0 = still
+     */
+    public void moveChaserBee(float direction, ChaserBeeModel bee) {
+        bee.setMovement(direction * bee.getForce());
+    }
+
+    /**
+     * TO BE LATER DEPRECATED
+     *
+     */
+    private void moveChaserBeeFromStoredAIControllers() {
+        for (AIController aIController: aIControllers) {
+            aIController.updateAIController();
+            AbstractBeeModel bee = aIController.getControlledCharacter();
+            bee.setMovement(aIController.getMovementHorizontalDirection() * bee.getForce());
+        }
+    }
+
+    /**
+     * Returns whether to process the update loop
+     * <p>
+     * At the start of the update loop, we check if it is time
+     * to switch to a new game mode.  If not, the update proceeds
+     * normally.
+     *
+     * @param dt Number of seconds since last animation frame
+     * @return whether to process the update loop
+     */
+    public boolean preUpdate(float dt) {
+        if (!super.preUpdate(dt)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * The core gameplay loop of this world.
+     * <p>
+     * This method contains the specific update code for this mini-game. It does
+     * not handle collisions, as those are managed by the parent class WorldController.
+     * This method is called after input is read, but before collisions are resolved.
+     * The very last thing that it should do is apply forces to the appropriate objects.
+     *
+     * @param dt Number of seconds since last animation frame
+     */
+    public void update(float dt) {
+        // Process actions in object model
+
+    }
+
+    /**
+     * Callback method for the start of a collision
+     * <p>
+     * This method is called when we first get a collision between two objects.  We use
+     * this method to test if it is the "right" kind of collision.  In particular, we
+     * use it to test if we made it to the win door.
+     *
+     * @param contact The two bodies that collided
+     */
+    public void beginContact(Contact contact) {
+        Fixture fix1 = contact.getFixtureA();
+        Fixture fix2 = contact.getFixtureB();
+
+        Body body1 = fix1.getBody();
+        Body body2 = fix2.getBody();
+
+        Object fd1 = fix1.getUserData();
+        Object fd2 = fix2.getUserData();
+
+        PlayerModel avatar = level.getPlayer();
+        Array<AbstractBeeModel> bees = level.getBees();
+        BoxObstacle goalDoor = level.getGoalDoor();
+
+        try {
+            Obstacle bd1 = (Obstacle) body1.getUserData();
+            Obstacle bd2 = (Obstacle) body2.getUserData();
+
+            // See if we have landed on the ground.
+            if (((avatar.getSensorName().equals(fd2) && avatar != bd1) && (bd1.getClass() == PolygonObstacle.class) &&
+                    !sensorFixtures.contains(fix1)) ||
+                    ((avatar.getSensorName().equals(fd1)&& avatar != bd2) && (bd2.getClass() == PolygonObstacle.class) &&
+                            !sensorFixtures.contains(fix2))) {
+                avatar.setGrounded(true);
+                sensorFixtures.add(avatar == bd1 ? fix2 : fix1); // Could have more than one ground
+            }
+            // ITERATE OVER ALL CHASER BEES
+            for(AbstractBeeModel bee : bees) {
+                if (((bee.getSensorName().equals(fd2) && bee != bd1)&&(bd1.getClass() == PolygonObstacle.class) &&
+                        !bee.getSensorFixtures().contains(fix1)) ||
+                        ((bee.getSensorName().equals(fd1) && bee != bd2)&&(bd2.getClass() == PolygonObstacle.class) &&
+                                !bee.getSensorFixtures().contains(fix2))) {
+                    bee.setGrounded(true);
+                    bee.getSensorFixtures().add(bee == bd1 ? fix2 : fix1); // Could have more than one ground
+                }
+            }
+            // Check for win condition
+            if (!isFailure() && !isComplete() &&
+                    ((bd1 == avatar && bd2.getClass().getSuperclass() == AbstractBeeModel.class) ||
+                            (bd1.getClass().getSuperclass() == AbstractBeeModel.class && bd2 == avatar))) {
+                setFailure(true);
+            }
+            if ((bd1 == avatar && bd2 == goalDoor) ||
+                    (bd1 == goalDoor && bd2 == avatar)) {
+                setComplete(true);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    /**
+     * Callback method for the start of a collision
+     * <p>
+     * This method is called when two objects cease to touch.  The main use of this method
+     * is to determine when the characer is NOT on the ground.  This is how we prevent
+     * double jumping.
+     */
+    public void endContact(Contact contact) {
+        Fixture fix1 = contact.getFixtureA();
+        Fixture fix2 = contact.getFixtureB();
+
+        Body body1 = fix1.getBody();
+        Body body2 = fix2.getBody();
+
+        Object fd1 = fix1.getUserData();
+        Object fd2 = fix2.getUserData();
+
+        Object bd1 = body1.getUserData();
+        Object bd2 = body2.getUserData();
+
+        PlayerModel avatar = level.getPlayer();
+        Array<AbstractBeeModel> bees = level.getBees();
+
+        if (((avatar.getSensorName().equals(fd2) && avatar != bd1)&&(bd1.getClass() == PolygonObstacle.class))  ||
+                ((avatar.getSensorName().equals(fd1) && avatar != bd2)&&(bd2.getClass() == PolygonObstacle.class))) {
+            sensorFixtures.remove(avatar == bd1 ? fix2 : fix1);
+            if (sensorFixtures.size == 0) {
+                avatar.setGrounded(false);
+            }
+        }
+        for(AbstractBeeModel bee : bees) {
+            if (((bee.getSensorName().equals(fd2) && bee != bd1)&&(bd1.getClass() == PolygonObstacle.class)) ||
+                    ((bee.getSensorName().equals(fd1) && bee != bd2)&&(bd2.getClass() == PolygonObstacle.class))) {
+                bee.getSensorFixtures().remove(bee == bd1 ? fix2 : fix1);
+                if (bee.getSensorFixtures().size == 0) {
+                    bee.setGrounded(false);
+                }
+            }
+        }
+    }
+
+    /**
+     * Unused ContactListener method
+     */
+    public void postSolve(Contact contact, ContactImpulse impulse) {
+    }
+
+    /**
+     * Unused ContactListener method
+     */
+    public void preSolve(Contact contact, Manifold oldManifold) {
+    }
+
+    /**
+     * Called when the Screen is paused.
+     * <p>
+     * We need this method to stop all sounds when we pause.
+     * Pausing happens when we switch game modes.
+     */
+    public void pause() {
+        if (jumpSound.isPlaying(jumpId)) {
+            jumpSound.stop(jumpId);
+        }
+        if (plopSound.isPlaying(plopId)) {
+            plopSound.stop(plopId);
+        }
+        if (fireSound.isPlaying(fireId)) {
+            fireSound.stop(fireId);
+        }
+    }
+
+    public float[] platformPointsFromJson(JsonValue platformData){
+        JsonValue pos = platformData.get("position");
+        JsonValue scale = platformData.get("scale");
+        float x = pos.getFloat("x");
+        float y = pos.getFloat("y");
+        float width = scale.getFloat("width");
+        float w = width/2;
+        float height = scale.getFloat("height");
+        float h = height/2;
+        float rot = platformData.getFloat("local_rotation") * 2 * (float)Math.PI/360;
+        float[] points = new float[]{-w, h, -w, -h, w, -h, w, h};
+        float cos = (float)Math.cos(rot);
+        float sin = (float)Math.sin(rot);
+
+        float temp;
+        for (int i=0; i<points.length; i+=2){
+            temp = points[i]*cos - points[i+1]*sin + x;
+            points[i+1] = points[i]*sin + points[i+1]*cos + y;
+            points[i] = temp;
+        }
+
+        return points;
+    }
+
+    public float[] platformPointsFromPoint(float x, float y, float width, float height, float rotation){
+        float w = width/2;
+        float h = height/2;
+        float rot = rotation; /* rotation * 2 * (float)Math.PI/360; */
+        float[] points = new float[]{-w, h, -w, -h, w, -h, w, h};
+        float cos = (float)Math.cos(rot);
+        float sin = (float)Math.sin(rot);
+
+        float temp;
+        for (int i=0; i<points.length; i+=2){
+            temp = points[i]*cos - points[i+1]*sin + x;
+            points[i+1] = points[i]*sin+points[i+1]*cos + y;
+            points[i] = temp;
+        }
+        return points;
+    }
+}
