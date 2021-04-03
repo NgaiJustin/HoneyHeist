@@ -28,6 +28,7 @@ import edu.cornell.gdiac.honeyHeistCode.models.*;
 import edu.cornell.gdiac.honeyHeistCode.obstacle.BoxObstacle;
 import edu.cornell.gdiac.honeyHeistCode.obstacle.Obstacle;
 import edu.cornell.gdiac.honeyHeistCode.obstacle.PolygonObstacle;
+import edu.cornell.gdiac.util.FilmStrip;
 import edu.cornell.gdiac.util.PooledList;
 import edu.cornell.gdiac.util.ScreenListener;
 
@@ -47,8 +48,11 @@ public class LevelController implements ContactListener {
     protected TextureRegion earthTile;
     /** The texture for the exit condition */
     protected TextureRegion goalTile;
+    /** The texture for the background */
+    protected TextureRegion background;
     /** The font for giving messages to the player */
     protected BitmapFont displayFont;
+
 
     /** \ code for quitting the game */
     public static final int EXIT_QUIT = 0;
@@ -257,6 +261,10 @@ public class LevelController implements ContactListener {
      */
     private TextureRegion avatarTexture;
     /**
+     * Texture filmstrip for player walking animation
+     */
+    private FilmStrip walkingPlayer;
+    /**
      * Texture asset for chaser bee avatar
      */
     private TextureRegion chaserBeeTexture;
@@ -285,13 +293,18 @@ public class LevelController implements ContactListener {
      */
     private float volume;
     /**
-     * Physics constants for initialization
+     * Constant data across levels
      */
     private JsonValue constants;
+    /**
+     * Data for the level
+     */
+    private JsonValue levelData;
     /**
      * Reference to the level model
      */
     private LevelModel level;
+
 
     /**
      * Reference to the AI Controllers
@@ -349,15 +362,21 @@ public class LevelController implements ContactListener {
         chaserBeeTexture = new TextureRegion(directory.getEntry("platform:chaserBee", Texture.class));
         sleeperBeeTexture = new TextureRegion(directory.getEntry("platform:sleeperBee", Texture.class));
 
+        walkingPlayer = directory.getEntry( "platform:walk.pacing", FilmStrip.class );
+
         jumpSound = directory.getEntry("platform:jump", SoundBuffer.class);
         fireSound = directory.getEntry("platform:pew", SoundBuffer.class);
         plopSound = directory.getEntry("platform:plop", SoundBuffer.class);
 
-        constants = directory.getEntry("platform:constants", JsonValue.class);
+        constants = directory.getEntry("platform:constants2", JsonValue.class);
+        levelData = directory.getEntry("platform:prototypeLevel", JsonValue.class);
+//        super.gatherAssets(directory);
+//        constants = directory.getEntry("platform:constants", JsonValue.class);
 
         // Allocate the world tiles
         earthTile = new TextureRegion(directory.getEntry( "shared:earth", Texture.class ));
         goalTile  = new TextureRegion(directory.getEntry( "shared:goal", Texture.class ));
+        background = new TextureRegion(directory.getEntry( "shared:background",  Texture.class ));
         displayFont = directory.getEntry( "shared:retro" ,BitmapFont.class);
     }
 
@@ -451,9 +470,9 @@ public class LevelController implements ContactListener {
         float dheight = goalTile.getRegionHeight() / scale.y;
 
         JsonValue goal = constants.get("goal");
-        JsonValue goalpos = goal.get("pos");
+        float[] goalPos = levelData.get("goalPos").asFloatArray();
 
-        BoxObstacle goalDoor = new BoxObstacle(goalpos.getFloat(0), goalpos.getFloat(1), dwidth, dheight);
+        BoxObstacle goalDoor = new BoxObstacle(goalPos[0], goalPos[1], dwidth, dheight);
         goalDoor.setBodyType(BodyDef.BodyType.StaticBody);
         goalDoor.setDensity(goal.getFloat("density", 0));
         goalDoor.setFriction(goal.getFloat("friction", 0));
@@ -513,7 +532,7 @@ public class LevelController implements ContactListener {
 
 
         // Create platforms
-        PlatformModel platforms = new PlatformModel(constants.get("mediumLevel"));
+        PlatformModel platforms = new PlatformModel(levelData.get("platforms"));
         platforms.setDrawScale(scale);
         platforms.setTexture(earthTile);
         addObject(platforms);
@@ -524,9 +543,11 @@ public class LevelController implements ContactListener {
         // Create player (ant)
         dwidth = avatarTexture.getRegionWidth() / scale.x;
         dheight = avatarTexture.getRegionHeight() / scale.y;
-        PlayerModel avatar = new PlayerModel(constants.get("player"), dwidth, dheight);
+        float[] playerPos = levelData.get("playerPos").asFloatArray();
+        PlayerModel avatar = new PlayerModel(constants.get("player"), playerPos[0], playerPos[1], dwidth, dheight);
         avatar.setDrawScale(scale);
         avatar.setTexture(avatarTexture);
+        avatar.setAnimationStrip(PlayerModel.AntAnimations.WALK, walkingPlayer);
         addObject(avatar);
 
         // Create chaser bees
@@ -537,10 +558,23 @@ public class LevelController implements ContactListener {
 
         aIControllers = new Array<AIController>();
 
-        JsonValue.JsonIterator groundedBeeIterator = constants.get("groundedBees").iterator();
-
         dwidth = chaserBeeTexture.getRegionWidth() / scale.x;
         dheight = chaserBeeTexture.getRegionHeight() / scale.y;
+        //JsonValue.JsonIterator groundedBeeIterator = constants.get("groundedBees").iterator();
+        JsonValue groundedBeePositions = levelData.get("groundedBeePos");
+        for (int i=0; i<groundedBeePositions.size; i++){
+            float[] pos = groundedBeePositions.get(i).asFloatArray();
+            ChaserBeeModel chaserBee = new ChaserBeeModel(constants.get("GroundedBee"), pos[0], pos[1], dwidth, dheight);
+            chaserBee.setDrawScale(scale);
+            chaserBee.setTexture(chaserBeeTexture);
+            bees.add(chaserBee);
+            addObject(chaserBee);
+            AIController chaserBeeAIController = new AIController(level, avatar.getPosition(), chaserBee, AIController.CharacterType.GROUNDED_CHARACTER);
+            aIControllers.add(chaserBeeAIController);
+        }
+
+
+        /*
         while (groundedBeeIterator.hasNext()){
             ChaserBeeModel chaserBee = new ChaserBeeModel(groundedBeeIterator.next(), dwidth, dheight);
             chaserBee.setDrawScale(scale);
@@ -550,6 +584,7 @@ public class LevelController implements ContactListener {
             AIController chaserBeeAIController = new AIController(level, avatar.getPosition(), chaserBee, AIController.CharacterType.GROUNDED_CHARACTER);
             aIControllers.add(chaserBeeAIController);
         }
+         */
         //level = new LevelModel(avatar,bees,goalDoor,platforms,new Vector2(bounds.width / 2, bounds.height / 2));
 
         /*
@@ -609,7 +644,9 @@ public class LevelController implements ContactListener {
      * @param direction -1 = left, 1 = right, 0 = still
      */
     public void moveAnt(float direction) {
-        level.getPlayer().setMovement(direction * level.getPlayer().getForce());
+        PlayerModel player = level.getPlayer();
+        player.setMovement(direction * level.getPlayer().getForce());
+        player.animateAnt(PlayerModel.AntAnimations.WALK, direction != 0);
     }
 
     /**
@@ -634,45 +671,22 @@ public class LevelController implements ContactListener {
         }
     }
 
-//    /**
-//     * Returns whether to process the update loop
-//     * <p>
-//     * At the start of the update loop, we check if it is time
-//     * to switch to a new game mode.  If not, the update proceeds
-//     * normally.
-//     *
+    /**
+     * Returns whether to process the update loop
+     * <p>
+     * At the start of the update loop, we check if it is time
+     * to switch to a new game mode.  If not, the update proceeds
+     * normally.
+     *
 //     * @param dt Number of seconds since last animation frame
-//     * @return whether to process the update loop
-//     */
+     * @return whether to process the update loop
+     */
 //    public boolean preUpdate(float dt) {
 //        if (!super.preUpdate(dt)) {
 //            return false;
 //        }
 //
 //        if (!isFailure() && level.getPlayer().getY() < -1) {
-//            setFailure(true);
-//            return false;
-//        }
-//
-//        return true;
-//    }
-
-//    /**
-//     * Returns whether to process the update loop
-//     * <p>
-//     * At the start of the update loop, we check if it is time
-//     * to switch to a new game mode.  If not, the update proceeds
-//     * normally.
-//     *
-//     * @param dt Number of seconds since last animation frame
-//     * @return whether to process the update loop
-//     */
-//    public boolean preUpdate(float dt, boolean isFailure) {
-//        if (!super.preUpdate(dt)) {
-//            return false;
-//        }
-//
-//        if (!isFailure && level.getPlayer().getY() < -1) {
 //            setFailure(true);
 //            return false;
 //        }
@@ -692,17 +706,16 @@ public class LevelController implements ContactListener {
         return true;
     }
 
-
-//    /**
-//     * The core gameplay loop of this world.
-//     * <p>
-//     * This method contains the specific update code for this mini-game. It does
-//     * not handle collisions, as those are managed by the parent class WorldController.
-//     * This method is called after input is read, but before collisions are resolved.
-//     * The very last thing that it should do is apply forces to the appropriate objects.
-//     *
-//     * @param dt Number of seconds since last animation frame
-//     */
+    /**
+     * The core gameplay loop of this world.
+     * <p>
+     * This method contains the specific update code for this mini-game. It does
+     * not handle collisions, as those are managed by the parent class WorldController.
+     * This method is called after input is read, but before collisions are resolved.
+     * The very last thing that it should do is apply forces to the appropriate objects.
+     *
+     * dt Number of seconds since last animation frame
+     */
 //    public void update(float dt) {
 //        // Process actions in object model
 //        moveAnt(InputController.getInstance().getHorizontal());
@@ -714,6 +727,7 @@ public class LevelController implements ContactListener {
 //        // 2. For each bee, moveChaserBee(...);
 //        // TO BE IMPLEMENTED
 //        moveChaserBeeFromStoredAIControllers();
+//
 //        for(AbstractBeeModel bee : level.getBees()){
 //            bee.applyForce();
 //            if(!bee.isGrounded()){
@@ -759,7 +773,6 @@ public class LevelController implements ContactListener {
             sensorFixtures.clear();
         }
     }
-
     /**
      * Processes physics
      *
@@ -776,7 +789,7 @@ public class LevelController implements ContactListener {
         }
 
         // Turn the physics engine crank.
-        world.step(WORLD_STEP,WORLD_VELOC,WORLD_POSIT);
+        world.step(WORLD_STEP, WORLD_VELOC, WORLD_POSIT);
 
         // Garbage collect the deleted objects.
         // Note how we use the linked list nodes to delete O(1) in place.
@@ -794,6 +807,7 @@ public class LevelController implements ContactListener {
             }
         }
     }
+
 
     /**
      * Callback method for the start of a collision
@@ -842,8 +856,8 @@ public class LevelController implements ContactListener {
             }
             // Check for win condition
             if (!isFailure() && !isComplete() &&
-                    (bd1 == avatar && bd2.getClass().getSuperclass() == AbstractBeeModel.class) ||
-                    (bd1.getClass().getSuperclass() == AbstractBeeModel.class && bd2 == avatar)) {
+                    ((bd1 == avatar && bd2.getClass().getSuperclass() == AbstractBeeModel.class) ||
+                    (bd1.getClass().getSuperclass() == AbstractBeeModel.class && bd2 == avatar))) {
                 setFailure(true);
             }
             if ((bd1 == avatar && bd2 == goalDoor) ||
@@ -911,6 +925,7 @@ public class LevelController implements ContactListener {
         canvas.clear();
 
         canvas.begin();
+        canvas.draw(background, 0, 0);
         for(Obstacle obj : objects) {
             obj.draw(canvas);
         }

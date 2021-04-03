@@ -97,7 +97,14 @@ public class PolygonObstacle extends SimpleObstacle {
 	public float getWidth() {
 		return dimension.x;
 	}
-	
+
+	/**
+	 * Returns the vertices
+	 *
+	 * @return the vertices
+	 */
+	public float[] getVertices() { return vertices; }
+
 	/**
 	 * Sets the box width
 	 *

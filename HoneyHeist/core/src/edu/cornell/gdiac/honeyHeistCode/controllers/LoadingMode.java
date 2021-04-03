@@ -347,7 +347,7 @@ public class LoadingMode implements Screen, InputProcessor, ControllerListener {
 		scale = (sx < sy ? sx : sy);
 		
 		this.width = (int)(BAR_WIDTH_RATIO*width);
-		centerY = (int)(BAR_HEIGHT_RATIO*height);
+		centerY = (int)(BAR_HEIGHT_RATIO*height * 1.2);
 		centerX = width/2;
 		heightY = height;
 	}
@@ -507,7 +507,7 @@ public class LoadingMode implements Screen, InputProcessor, ControllerListener {
 	/** 
 	 * Called when a key is typed (UNSUPPORTED)
 	 *
-	 * @param keycode the key typed
+//	 * @param keycode the key typed
 	 * @return whether to hand the event to other listeners. 
 	 */
 	public boolean keyTyped(char character) { 
