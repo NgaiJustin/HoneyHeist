@@ -224,8 +224,9 @@ public class GameplayController implements Screen{
 //        this.scale.y = canvas.getHeight()/bounds.getHeight();
         levelController.setCanvas(canvas);
         this.canvas = levelController.getCanvas();
-        this.scale.x = levelController.scale.x;
-        this.scale.y = levelController.scale.y;
+        Vector2 scale = levelController.getScale();
+        this.scale.x = scale.x;
+        this.scale.y = scale.y;
     }
     // --------------------------------------- root controller -- end
 
