@@ -1,0 +1,42 @@
+{
+	"textures": {
+        "shared:earth" : {
+            "file":  "shared/temptile.png",
+            "wrapU": "repeated",
+            "wrapV": "repeated"
+        },
+        "shared:goal":   "shared/goaldoor.png",
+        "shared:background": "shared/background.png",
+        "platform:ant":  "platform/ant.png",
+        "platform:sleeperBee":  "platform/sleeperBee.png",
+        "platform:chaserBee":  "platform/chaserBee.png",
+        "platform:rope":  "platform/ropebridge.png",
+        "platform:barrier": "platform/barrier.png",
+        "platform:bullet":  "platform/bullet.png",
+        "platform:walk":  {
+            "file" : "platform/walkstrip.png",
+            "sprites" : {
+                "pacing": {
+                    "rows": 1,
+                    "cols": 6
+                }
+            }
+        }
+    },
+    "jsons"  : {
+        "platform:constants": "platform/constants.json",
+        "platform:constants2": "platform/constants2.json",
+        "platform:prototypeLevel": "platform/prototypeLevel.json"
+    },
+    "sounds" : {
+        "platform:jump" : "platform/jump.mp3",
+        "platform:pew"  : "platform/pew.mp3",
+        "platform:plop" : "platform/plop.mp3",
+    },
+    "fonts": {
+        "shared:retro": {
+            "file": "shared/RetroGame.ttf",
+            "size": 64
+        }
+    }
+}
