@@ -262,7 +262,7 @@ public class LevelController extends GameplayController implements ContactListen
             chaserBee.setTexture(chaserBeeTexture);
             bees.add(chaserBee);
             addObject(chaserBee);
-            AIController chaserBeeAIController = new AIController(level, avatar.getPosition(), chaserBee, AIController.CharacterType.GROUNDED_CHARACTER);
+            AIController chaserBeeAIController = new AIController(level, chaserBee, constants.get("GroundedBee").get("ai_controller_options"));
             aIControllers.add(chaserBeeAIController);
         }
 
