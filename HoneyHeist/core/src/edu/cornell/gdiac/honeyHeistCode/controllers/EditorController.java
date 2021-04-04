@@ -3,7 +3,6 @@ package edu.cornell.gdiac.honeyHeistCode.controllers;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.PolygonRegion;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
@@ -76,9 +75,9 @@ public class EditorController extends GameplayController {
 
     private float platWidth = 0.5f;
 
-    private PolygonShape line;
+    private PolygonShape outline;
 
-    private boolean drawLine;
+    private boolean drawOutline;
 
     /**
      * Creates and initialize a new instance of the platformer game
@@ -136,7 +135,7 @@ public class EditorController extends GameplayController {
         setComplete(false);
         setFailure(false);
         populateLevel();
-        drawLine = false;
+        drawOutline = false;
     }
 
     /**
@@ -150,7 +149,7 @@ public class EditorController extends GameplayController {
         level.setBees(new Array<AbstractBeeModel>());
         level.setPlatforms(new PlatformModel());
         clickCache = new Array<Vector2>();
-        line = new PolygonShape();
+        outline = new PolygonShape();
     }
 
     /**
@@ -187,7 +186,7 @@ public class EditorController extends GameplayController {
         if (input.didMode()){
             mode = (mode+1) % 5;
             clickCache.clear();
-            drawLine = false;
+            drawOutline = false;
         }
         if (input.didMouseClick()){
             clickCache.add(new Vector2(input.getCrossHair().x,input.getCrossHair().y));
@@ -210,7 +209,7 @@ public class EditorController extends GameplayController {
                     level.getPlatforms().getArrayBodies().add(obj);
 
                     clickCache.clear();
-                    drawLine = false;
+                    drawOutline = false;
                 }
             }
             //PLACE PLAYER MODE
@@ -280,8 +279,8 @@ public class EditorController extends GameplayController {
             Vector2 currentClick = clickCache.get(0);
             Vector2 nearest = nearestPointAngle(currentClick,input.getCrossHair(),Math.PI/3);
             if(currentClick.x != nearest.x || currentClick.y != nearest.y){
-                line.set(rectFromTwoPoints(currentClick, nearest));
-                drawLine = true;
+                outline.set(rectFromTwoPoints(currentClick, nearest));
+                drawOutline = true;
             }
         }
 
@@ -395,10 +394,10 @@ public class EditorController extends GameplayController {
         canvas.end();
 
         // Draw platform outline
-        if(drawLine){
+        if(drawOutline){
             canvas.beginDebug();
             //System.out.print("drawline");
-            canvas.drawPhysics(line,Color.RED,0,0,0,scale.x,scale.y);
+            canvas.drawPhysics(outline,Color.RED,0,0,0,scale.x,scale.y);
             canvas.endDebug();
         }
 
