@@ -1,12 +1,13 @@
 package edu.cornell.gdiac.honeyHeistCode.controllers;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.JsonValue;
-import com.badlogic.gdx.utils.ObjectSet;
 import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.audio.SoundBuffer;
 import edu.cornell.gdiac.honeyHeistCode.GameplayController;
@@ -16,7 +17,7 @@ import edu.cornell.gdiac.honeyHeistCode.obstacle.Obstacle;
 import edu.cornell.gdiac.honeyHeistCode.obstacle.PolygonObstacle;
 import edu.cornell.gdiac.util.FilmStrip;
 
-public class EditorController extends GameplayController implements ContactListener {
+public class EditorController extends GameplayController {
     /**
      * Texture asset for player avatar
      */
@@ -33,6 +34,8 @@ public class EditorController extends GameplayController implements ContactListe
      * Texture asset for testEnemy avatar
      */
     private TextureRegion sleeperBeeTexture;
+
+    private BitmapFont modeFont;
 
     /**
      * The jump sound.  We only want to play once.
@@ -66,16 +69,11 @@ public class EditorController extends GameplayController implements ContactListe
      */
     private LevelModel level;
 
+    private Array<Vector2> clickCache;
 
-    /**
-     * Reference to the AI Controllers
-     */
-    private Array<AIController> aIControllers;
+    private int mode;
 
-    /**
-     * Mark set to handle more sophisticated collision callbacks
-     */
-    protected ObjectSet<Fixture> sensorFixtures;
+    private float platWidth = 0.5f;
 
     /**
      * Creates and initialize a new instance of the platformer game
@@ -87,8 +85,6 @@ public class EditorController extends GameplayController implements ContactListe
         setDebug(false);
         setComplete(false);
         setFailure(false);
-        world.setContactListener(this);
-        sensorFixtures = new ObjectSet<Fixture>();
     }
 
     /**
@@ -112,6 +108,7 @@ public class EditorController extends GameplayController implements ContactListe
 
         constants = directory.getEntry("platform:constants2", JsonValue.class);
         levelData = directory.getEntry("platform:prototypeLevel", JsonValue.class);
+        modeFont = directory.getEntry("shared:marker",BitmapFont.class);
         super.gatherAssets(directory);
     }
 
@@ -129,10 +126,8 @@ public class EditorController extends GameplayController implements ContactListe
         objects.clear();
         addQueue.clear();
         world.dispose();
-        sensorFixtures.clear();
 
         world = new World(gravity, false);
-        world.setContactListener(this);
         setComplete(false);
         setFailure(false);
         populateLevel();
@@ -142,76 +137,13 @@ public class EditorController extends GameplayController implements ContactListe
      * Lays out the game geography.
      */
     public void populateLevel() {
-        // Add level goal
-        float dwidth = goalTile.getRegionWidth() / scale.x;
-        float dheight = goalTile.getRegionHeight() / scale.y;
-
-        JsonValue goal = constants.get("goal");
-        float[] goalPos = levelData.get("goalPos").asFloatArray();
 
         volume = constants.getFloat("volume", 1.0f);
-    }
 
-
-    /**
-     * Start rotation.
-     *
-     * @param isClockwise true if the rotation direction is clockwise, false if counterclockwise.
-     * @param platformNotRotating true if the platform model isn't rotating when the rotate function is called.
-     */
-    public void rotate(boolean isClockwise, boolean platformNotRotating){
-        PlatformModel platforms = level.getPlatforms();
-        PlayerModel avatar = level.getPlayer();
-        Array<AbstractBeeModel> bees = level.getBees();
-        Vector2 origin = level.getOrigin();
-
-        platforms.startRotation(isClockwise, origin);
-        if (avatar.isGrounded()&&platformNotRotating){
-            avatar.startRotation(isClockwise, origin);
-        }
-        for(AbstractBeeModel bee : bees){
-            if(bee.isGrounded() && platformNotRotating) {
-                bee.startRotation(isClockwise, origin);
-            }
-        }
-    }
-
-    /**
-     * Start clockwise rotation.
-     * Will only rotate once, and spamming will not queue more rotations.
-     */
-    public void rotateClockwise() {
-        rotate(true, !level.getPlatforms().getIsRotating());
-    }
-
-    /**
-     * Start counterclockwise rotation.
-     * Will only rotate once, and spamming will not queue more rotations.
-     */
-    public void rotateCounterClockwise() {
-        rotate(false, !level.getPlatforms().getIsRotating());
-    }
-
-
-    /**
-     * Moves the chaserBee based on the direction given by AIController
-     *
-     * @param direction -1 = left, 1 = right, 0 = still
-     */
-    public void moveChaserBee(float direction, ChaserBeeModel bee) {
-        bee.setMovement(direction * bee.getForce());
-    }
-
-    /**
-     * TO BE LATER DEPRECATED
-     *
-     */
-    private void moveChaserBeeFromStoredAIControllers() {
-        for (AIController aIController: aIControllers) {
-            aIController.updateAIController();
-            AbstractBeeModel bee = aIController.getControlledCharacter();
-            bee.setMovement(aIController.getMovementHorizontalDirection() * bee.getForce());
-        }
+        level = new LevelModel();
+        level.setBees(new Array<AbstractBeeModel>());
+        level.setPlatforms(new PlatformModel());
+        clickCache = new Array<Vector2>();
     }
 
     /**
@@ -244,108 +176,216 @@ public class EditorController extends GameplayController implements ContactListe
      */
     public void update(float dt) {
         // Process actions in object model
+        InputController input = InputController.getInstance();
+        if (input.didMode()){
+            mode = (mode+1) % 5;
+            clickCache.clear();
+        }
+        if (input.didMouseClick()){
+            clickCache.add(new Vector2(input.getCrossHair().x,input.getCrossHair().y));
+            //PLACE PLATFORM MODE
+            if (mode == 0) {
+                if (clickCache.size>=2){
+                    snapClick();
+
+                    Vector2 previousClick = clickCache.get(clickCache.size-2);
+                    Vector2 currentClick = clickCache.get(clickCache.size-1);
+                    float[] points = rectFromTwoPoints(previousClick,currentClick);
+
+                    PolygonObstacle obj;
+                    obj = new PolygonObstacle(points, 0, 0);
+                    obj.setBodyType(BodyDef.BodyType.StaticBody);
+                    obj.setDrawScale(scale);
+                    obj.setTexture(earthTile);
+                    addObject(obj);
+                    obj.setActive(false);
+                    level.getPlatforms().getArrayBodies().add(obj);
+
+                    clickCache.clear();
+                }
+            }
+            //PLACE PLAYER MODE
+            if (mode == 1) {
+                if (level.getPlayer() == null) {
+                    float dwidth = avatarTexture.getRegionWidth() / scale.x;
+                    float dheight = avatarTexture.getRegionHeight() / scale.y;
+
+                    PlayerModel avatar = new PlayerModel(constants.get("player"),
+                            clickCache.get(0).x, clickCache.get(0).y, dwidth, dheight);
+
+                    avatar.setDrawScale(scale);
+                    avatar.setTexture(avatarTexture);
+                    avatar.setAnimationStrip(PlayerModel.AntAnimations.WALK, walkingPlayer);
+                    addObject(avatar);
+                    avatar.setActive(false);
+                    level.setPlayer(avatar);
+                }
+                clickCache.clear();
+            }
+
+            //PLACE BEE MODE
+            if (mode == 2) {
+                float dwidth =  chaserBeeTexture.getRegionWidth() / scale.x;
+                float dheight = chaserBeeTexture.getRegionHeight() / scale.y;
+
+                ChaserBeeModel chaserBee = new ChaserBeeModel(constants.get("GroundedBee"),
+                        clickCache.get(0).x, clickCache.get(0).y, dwidth, dheight);
+
+                chaserBee.setDrawScale(scale);
+                chaserBee.setTexture(chaserBeeTexture);
+                level.getBees().add(chaserBee);
+                addObject(chaserBee);
+                chaserBee.setActive(false);
+
+                clickCache.clear();
+            }
+
+            //PLACE GOAL MODE
+            if (mode == 3) {
+                if (level.getGoalDoor() == null) {
+                    float dwidth = goalTile.getRegionWidth() / scale.x;
+                    float dheight = goalTile.getRegionHeight() / scale.y;
+
+                    BoxObstacle goalDoor = new BoxObstacle(clickCache.get(0).x, clickCache.get(0).y,
+                            dwidth, dheight);
+
+                    goalDoor.setBodyType(BodyDef.BodyType.StaticBody);
+                    goalDoor.setDrawScale(scale);
+                    goalDoor.setTexture(goalTile);
+                    level.setGoalDoor(goalDoor);
+                    addObject(goalDoor);
+                    goalDoor.setActive(false);
+
+                    clickCache.clear();
+                }
+            }
+
+            //SELECT MODE
+            if (mode == 4){
+                clickCache.clear();
+            }
+        }
 
     }
 
     /**
-     * Callback method for the start of a collision
-     * <p>
-     * This method is called when we first get a collision between two objects.  We use
-     * this method to test if it is the "right" kind of collision.  In particular, we
-     * use it to test if we made it to the win door.
+     * Snap the most recent click in click cache to the nearest 60 degree increment
+     */
+    private void snapClick(){
+        Vector2 previousClick = clickCache.get(clickCache.size-2);
+        Vector2 currentClick = clickCache.get(clickCache.size-1);
+        clickCache.set(clickCache.size-1,nearestPointAngle(previousClick, currentClick, Math.PI/3));
+    }
+
+    /**
+     * Returns the nearest point to endPoint along a ray from startPoint with an angle of some multiple of
+     * angleIncrement
      *
-     * @param contact The two bodies that collided
+     * @param startPoint the start point from which angles are determined
+     * @param endPoint the point which will be approximated onto the nearest angle increment line
+     * @param angleIncrement the desired angle increment
+     * @return the nearest Vector2 point to endPoint along an angle increment line
      */
-    public void beginContact(Contact contact) {
-        Fixture fix1 = contact.getFixtureA();
-        Fixture fix2 = contact.getFixtureB();
+    private Vector2 nearestPointAngle(Vector2 startPoint, Vector2 endPoint, double angleIncrement){
+        Vector2 vec = new Vector2(endPoint.x-startPoint.x,endPoint.y-startPoint.y);
+        double length = Math.sqrt(Math.pow(vec.x,2)+Math.pow(vec.y,2));
 
-        Body body1 = fix1.getBody();
-        Body body2 = fix2.getBody();
+        double currAngle = Math.atan(vec.y/vec.x);
+        double newAngle;
 
-        Object fd1 = fix1.getUserData();
-        Object fd2 = fix2.getUserData();
+        newAngle = Math.abs(Math.round(currAngle / angleIncrement)) * angleIncrement;
 
-        PlayerModel avatar = level.getPlayer();
-        Array<AbstractBeeModel> bees = level.getBees();
-        BoxObstacle goalDoor = level.getGoalDoor();
-
-        try {
-            Obstacle bd1 = (Obstacle) body1.getUserData();
-            Obstacle bd2 = (Obstacle) body2.getUserData();
-
-            // See if we have landed on the ground.
-            if (((avatar.getSensorName().equals(fd2) && avatar != bd1) && (bd1.getClass() == PolygonObstacle.class) &&
-                    !sensorFixtures.contains(fix1)) ||
-                    ((avatar.getSensorName().equals(fd1)&& avatar != bd2) && (bd2.getClass() == PolygonObstacle.class) &&
-                            !sensorFixtures.contains(fix2))) {
-                avatar.setGrounded(true);
-                sensorFixtures.add(avatar == bd1 ? fix2 : fix1); // Could have more than one ground
-            }
-            // ITERATE OVER ALL CHASER BEES
-            for(AbstractBeeModel bee : bees) {
-                if (((bee.getSensorName().equals(fd2) && bee != bd1)&&(bd1.getClass() == PolygonObstacle.class) &&
-                        !bee.getSensorFixtures().contains(fix1)) ||
-                        ((bee.getSensorName().equals(fd1) && bee != bd2)&&(bd2.getClass() == PolygonObstacle.class) &&
-                                !bee.getSensorFixtures().contains(fix2))) {
-                    bee.setGrounded(true);
-                    bee.getSensorFixtures().add(bee == bd1 ? fix2 : fix1); // Could have more than one ground
-                }
-            }
-            // Check for win condition
-            if (!isFailure() && !isComplete() &&
-                    ((bd1 == avatar && bd2.getClass().getSuperclass() == AbstractBeeModel.class) ||
-                            (bd1.getClass().getSuperclass() == AbstractBeeModel.class && bd2 == avatar))) {
-                setFailure(true);
-            }
-            if ((bd1 == avatar && bd2 == goalDoor) ||
-                    (bd1 == goalDoor && bd2 == avatar)) {
-                setComplete(true);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+        if (currAngle < 0) {
+            newAngle = -newAngle;
         }
 
+        Vector2 result = new Vector2((float)(length*Math.cos(newAngle)),
+                (float)(length*Math.sin(newAngle)));
+
+        if (vec.x<0){
+            result.x = -result.x;
+            result.y = -result.y;
+        }
+
+        return result.add(startPoint);
+    }
+
+
+    /**
+     * Creates a rectangle based on the two points a and b
+     *
+     * @param a the first point
+     * @param b the second point
+     * @return the list of vertices comprising the rectangle
+     */
+    private float[] rectFromTwoPoints(Vector2 a, Vector2 b) {
+        Vector2 vec = new Vector2(b.x-a.x,b.y-a.y);
+        double angle = Math.atan(vec.y/vec.x);
+        angle += Math.PI/2;
+        Vector2 offset = new Vector2((float)Math.cos(angle)*platWidth/2,(float)Math.sin(angle)*platWidth/2);
+        float[] result = {
+                a.x+offset.x,a.y+offset.y,
+                a.x-offset.x,a.y-offset.y,
+                b.x-offset.x,b.y-offset.y,
+                b.x+offset.x,b.y+offset.y,
+        };
+        return result;
     }
 
     /**
-     * Callback method for the start of a collision
-     * <p>
-     * This method is called when two objects cease to touch.  The main use of this method
-     * is to determine when the characer is NOT on the ground.  This is how we prevent
-     * double jumping.
+     * Draw the physics objects to the canvas
+     *
+     * For simple worlds, this method is enough by itself.  It will need
+     * to be overriden if the world needs fancy backgrounds or the like.
+     *
+     * The method draws all objects in the order that they were added.
+     *
+     * @param dt	Number of seconds since last animation frame
      */
-    public void endContact(Contact contact) {
-        Fixture fix1 = contact.getFixtureA();
-        Fixture fix2 = contact.getFixtureB();
+    public void draw(float dt) {
+        canvas.clear();
 
-        Body body1 = fix1.getBody();
-        Body body2 = fix2.getBody();
-
-        Object fd1 = fix1.getUserData();
-        Object fd2 = fix2.getUserData();
-
-        Object bd1 = body1.getUserData();
-        Object bd2 = body2.getUserData();
-
-        PlayerModel avatar = level.getPlayer();
-        Array<AbstractBeeModel> bees = level.getBees();
-
-        if (((avatar.getSensorName().equals(fd2) && avatar != bd1)&&(bd1.getClass() == PolygonObstacle.class))  ||
-                ((avatar.getSensorName().equals(fd1) && avatar != bd2)&&(bd2.getClass() == PolygonObstacle.class))) {
-            sensorFixtures.remove(avatar == bd1 ? fix2 : fix1);
-            if (sensorFixtures.size == 0) {
-                avatar.setGrounded(false);
-            }
+        canvas.begin();
+        canvas.draw(background, 0, 0);
+        for(Obstacle obj : objects) {
+            obj.draw(canvas);
         }
-        for(AbstractBeeModel bee : bees) {
-            if (((bee.getSensorName().equals(fd2) && bee != bd1)&&(bd1.getClass() == PolygonObstacle.class)) ||
-                    ((bee.getSensorName().equals(fd1) && bee != bd2)&&(bd2.getClass() == PolygonObstacle.class))) {
-                bee.getSensorFixtures().remove(bee == bd1 ? fix2 : fix1);
-                if (bee.getSensorFixtures().size == 0) {
-                    bee.setGrounded(false);
-                }
+
+        canvas.end();
+
+        if (debug) {
+            canvas.beginDebug();
+            for(Obstacle obj : objects) {
+                obj.drawDebug(canvas);
             }
+            canvas.endDebug();
+        }
+
+        // Set mode text
+        String modeText = "MODE: ";
+        if(mode == 0){modeText += "Place Platform";}
+        if(mode == 1){modeText += "Place Player";}
+        if(mode == 2){modeText += "Place Bee";}
+        if(mode == 3){modeText += "Place Goal Door";}
+        if(mode == 4){modeText += "Select";}
+
+        // Draw mode text
+        canvas.begin();
+        modeFont.setColor(Color.WHITE);
+        canvas.drawTextCentered(modeText,modeFont, -canvas.getWidth()/4f);
+        canvas.end();
+
+        // Final message
+        if (complete && !failed) {
+            displayFont.setColor(Color.YELLOW);
+            canvas.begin(); // DO NOT SCALE
+            canvas.drawTextCentered("VICTORY!", displayFont, 0.0f);
+            canvas.end();
+        } else if (failed) {
+            displayFont.setColor(Color.RED);
+            canvas.begin(); // DO NOT SCALE
+            canvas.drawTextCentered("FAILURE!", displayFont, 0.0f);
+            canvas.end();
         }
     }
 

@@ -99,11 +99,11 @@ public abstract class GameplayController implements Screen {
 	/** Whether or not this is an active controller */
 	private boolean active;
 	/** Whether we have completed this level */
-	private boolean complete;
+	protected boolean complete;
 	/** Whether we have failed at this world (and need a reset) */
-	private boolean failed;
+	protected boolean failed;
 	/** Whether or not debug mode is active */
-	private boolean debug;
+	protected boolean debug;
 	/** Countdown active for winning or losing */
 	private int countdown;
 
