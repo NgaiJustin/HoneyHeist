@@ -13,8 +13,10 @@ import edu.cornell.gdiac.honeyHeistCode.models.AbstractBeeModel;
 import edu.cornell.gdiac.honeyHeistCode.models.LevelModel;
 import edu.cornell.gdiac.honeyHeistCode.models.PlatformModel;
 import edu.cornell.gdiac.honeyHeistCode.obstacle.Obstacle;
+import edu.cornell.gdiac.honeyHeistCode.obstacle.PolygonObstacle;
 
 import java.util.Random;
+
 
 /**
  * This is the AI Controller which is responsible for character pathfinding and decision making.
@@ -62,14 +64,16 @@ public class AIController {
 	private static final float wanderSpeedFactor = 0.5f;
     private Vector2 target;
     private Vector2 offset;
-    private Vector2 lineToTarget;
+    private DirectedLineSegment lineToTarget;
+    private DirectedLineSegment tempLineSegment;
     private Vector2 direction;
+    private Vector2 temp;
 
     Random random = new Random();
 
     private static final float CHASE_RADIUS = 3;
 
-	/**
+    /**
 	 * Creates an AI Controller for the given enemy model
 	 *
 	 * @param levelModel the level that the enemy is in.
@@ -84,8 +88,10 @@ public class AIController {
         this.characterType = characterType;
 		state = FSMState.WANDER;
 		ticks = 0;
-		lineToTarget = new Vector2();
-		direction = new Vector2();
+        lineToTarget = new DirectedLineSegment(controlledCharacter.getPosition(), target);
+        tempLineSegment = new DirectedLineSegment();
+        direction = new Vector2();
+		temp = new Vector2();
 	}
 
 	/**
@@ -98,15 +104,8 @@ public class AIController {
 	 * @param offsetY the y of the offset to the target.
 	 */
 	public AIController(LevelModel levelModel, Vector2 target, AbstractBeeModel controlledCharacter, CharacterType characterType, float offsetX, float offsetY) {
-		this.levelModel = levelModel;
-		this.target = target;
-		this.offset = new Vector2(offsetX, offsetY);
-		this.controlledCharacter = controlledCharacter;
-		this.characterType = characterType;
-		state = FSMState.WANDER;
-		ticks = 0;
-		lineToTarget = new Vector2();
-		direction = new Vector2();
+		this(levelModel, target, controlledCharacter, characterType);
+		this.offset.set(offsetX, offsetY);
 	}
 
 	/**
@@ -211,9 +210,7 @@ public class AIController {
 	 * Updates the vector 2 between the enemy object and the target.
 	 */
 	private void updateLineToTarget() {
-        lineToTarget.set(target);
-        lineToTarget.add(offset);
-        lineToTarget.sub(controlledCharacter.getPosition());
+        lineToTarget.set(controlledCharacter.getPosition(), target);
     }
 
 
@@ -222,14 +219,15 @@ public class AIController {
 	 */
 	private void updateFSMState() {
 		float distanceToPlayer = controlledCharacter.getPosition().dst(levelModel.getPlayer().getPosition());
+//		System.out.println(isLineCollidingWithAPlatform(lineToTarget));
 		switch (this.state) {
 			case WANDER:
-				if (distanceToPlayer < CHASE_RADIUS) {
+				if (distanceToPlayer < CHASE_RADIUS && !isLineCollidingWithAPlatform(lineToTarget)) {
 					this.state = FSMState.CHASE;
 				}
 				break;
 			case CHASE:
-				if (distanceToPlayer > CHASE_RADIUS) {
+				if (distanceToPlayer > CHASE_RADIUS || isLineCollidingWithAPlatform(lineToTarget)) {
 					this.state = FSMState.WANDER;
 				}
 		}
@@ -249,7 +247,6 @@ public class AIController {
 					direction.nor();
 					direction.scl(wanderSpeedFactor);
 				}
-
 				break;
 
 			case CHASE:
@@ -299,7 +296,7 @@ public class AIController {
 	 * Set the direction vector to go towards the specified target.
 	 */
 	private void setDirectionToGoTowardsTarget() {
-		direction.set(lineToTarget);
+		direction.set(lineToTarget.getDirection());
 		if (characterType == CharacterType.GROUNDED_CHARACTER) {
 			if (direction.x >= 0) {
 				direction.set(1,0);
@@ -314,12 +311,131 @@ public class AIController {
 	 * Still under construction. Checks if the given path to target is blocked by a platform.
 	 * @return
 	 */
-    private boolean isLineCollidingWithAPlatform() {
-		PlatformModel platform = levelModel.getPlatforms();
-		for (Obstacle platforms : platform.getBodies()) {
-
+    private boolean isLineCollidingWithAPlatform(DirectedLineSegment line) {
+		PlatformModel platforms = levelModel.getPlatforms();
+		for (PolygonObstacle platform : platforms.getBodies()) {
+			if (doesLineSegmentIntersectsPolygon(line, platform.getVertices())) {
+				return true;
+			}
 		}
 		return false;
     }
 
+    private boolean doesLineSegmentIntersectsPolygon(DirectedLineSegment line, float[] vertices) {
+		for (int i = 0; i < vertices.length; i += 2) {
+			int x1Index = i;
+			int y1Index = i + 1;
+			int x2Index;
+			int y2Index;
+			if (i + 2 < vertices.length) {
+				x2Index = i + 2;
+				y2Index = i + 3;
+			} else {
+				x2Index = 0;
+				y2Index = 1;
+			}
+			tempLineSegment.set(vertices[x1Index], vertices[y1Index], vertices[x2Index], vertices[y2Index]);
+			if (tempLineSegment.intersects(line)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+    private boolean pointContainedInPolygon(Vector2 point, float[] vertices) {
+		for (int i = 0; i < vertices.length; i += 2) {
+			int x1Index = i;
+			int y1Index = i + 1;
+			int x2Index;
+			int y2Index;
+			if (i + 2 < vertices.length) {
+				x2Index = i + 2;
+				y2Index = i + 3;
+			} else {
+				x2Index = 0;
+				y2Index = 1;
+			}
+			float Ypart = (vertices[x2Index] - vertices[x1Index]) * (point.y - vertices[y1Index]);
+			float Xpart = (point.x - vertices[x1Index]) * (vertices[y2Index] - vertices[y1Index]);
+			if (0 > (Ypart - Xpart)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	public class DirectedLineSegment {
+    	float x1;
+    	float y1;
+    	float x2;
+    	float y2;
+
+    	Vector2 direction;
+
+    	public DirectedLineSegment() {
+			this.x1 = 0;
+			this.y1 = 0;
+			this.x2 = 0;
+			this.y2 = 0;
+			direction = new Vector2();
+		}
+
+    	public DirectedLineSegment (float x1, float y1, float x2, float y2) {
+    		this();
+			set(x1, y1, x2, y2);
+		}
+
+		public DirectedLineSegment (Vector2 startPoint, Vector2 endPoint) {
+			this();
+    		set(startPoint, endPoint);
+		}
+
+		public void set(float x1, float y1, float x2, float y2) {
+			this.x1 = x1;
+			this.y1 = y1;
+			this.x2 = x2;
+			this.y2 = y2;
+			direction.set((x2 - x1), (y2 - y1));
+		}
+
+		public void set(Vector2 startPoint, Vector2 endPoint) {
+			set(startPoint.x, startPoint.y, endPoint.x, endPoint.y);
+		}
+
+		public float dst() {
+    		return (float)Math.sqrt(Math.pow((x2 - x1), 2) + Math.pow((y2 - y1), 2));
+		}
+
+		public Vector2 getDirection() {
+			return direction;
+		}
+
+		public boolean intersects(DirectedLineSegment line) {
+			int dir1 = orientation(this.x1, this.y1, this.x2, this.y2, line.x1, line.y1);
+			int dir2 = orientation(this.x1, this.y1, this.x2, this.y2, line.x2, line.y2);
+			int dir3 = orientation(line.x1, line.y1, line.x2, line.y2, this.x1, this.y1);
+			int dir4 = orientation(line.x1, line.y1, line.x2, line.y2, this.x2, this.y2);
+
+			if (dir1 != dir2 && dir3 != dir4) {return true;}
+			return false;
+    	}
+
+		private int orientation(float x1, float y1, float x2, float y2, float x3, float y3) {
+			float val = (y2 - y1) * (x3 - x2) - (x2 - x1) * (y3 - y2);
+			if (val == 0) {return 0;}
+			else if (val < 0) {return -1;}
+			else {return 1;}
+		}
+
+		@Override
+		public String toString() {
+			return "DirectedLineSegment{" +
+					"x1=" + x1 +
+					", y1=" + y1 +
+					", x2=" + x2 +
+					", y2=" + y2 +
+					", direction=" + direction +
+					'}';
+		}
+	}
 }
