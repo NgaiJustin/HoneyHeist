@@ -14,6 +14,7 @@
  package edu.cornell.gdiac.honeyHeistCode;
 
 import com.badlogic.gdx.*;
+import edu.cornell.gdiac.honeyHeistCode.controllers.EditorController;
 import edu.cornell.gdiac.honeyHeistCode.controllers.LevelController;
 import edu.cornell.gdiac.honeyHeistCode.controllers.LoadingMode;
 import edu.cornell.gdiac.util.*;
@@ -59,8 +60,9 @@ public class GDXRoot extends Game implements ScreenListener {
 		loading = new LoadingMode("assets.json",canvas,1);
 
 		// Initialize the game world
-		controllers = new GameplayController[1];
+		controllers = new GameplayController[2];
 		controllers[0] = new LevelController();
+		controllers[1] = new EditorController();
 		current = 0;
 		loading.setScreenListener(this);
 

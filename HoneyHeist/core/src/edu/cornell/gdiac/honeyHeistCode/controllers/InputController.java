@@ -84,6 +84,7 @@ public class InputController {
      * Whether the mouse Left button was pressed.
      */
     private boolean mousePressed;
+    private boolean mousePrevious;
     /**
      * Whether the debug toggle was pressed.
      */
@@ -94,6 +95,11 @@ public class InputController {
      */
     private boolean exitPressed;
     private boolean exitPrevious;
+    /**
+     * Whether the editor mode button was pressed
+     */
+    private boolean modePressed;
+    private boolean modePrevious;
 /*
  **** DEPRECATED BOOLEAN FIELDS
  	/** Whether the button to step back worlds was pressed. * /
@@ -198,13 +204,22 @@ public class InputController {
 
     /**
      * Returns true if the mouse LEFT button was pressed.
+     *
+     * @return true if the mouse LEFT button was pressed.
+     */
+    public boolean didMouseClick() {
+        return mousePressed && !mousePrevious;
+    }
+
+    /**
+     * Returns true if the mouse LEFT button was pressed.
      * <p>
      * This is a sustained button. It will returns true as long as the player
      * holds it down.
      *
      * @return true if the mouse LEFT button was pressed.
      */
-    public boolean didMouse() {
+    public boolean didMouseDrag() {
         return mousePressed;
     }
 
@@ -297,6 +312,13 @@ public class InputController {
     }
 
     /**
+     * Returns true if the mode button was pressed.
+     *
+     * @return true if the mode button was pressed.
+     */
+    public boolean didMode() { return modePressed && !modePrevious; }
+
+    /**
      * Creates a new input controller
      * <p>
      * The input controller attempts to connect to the X-Box controller at device 0,
@@ -340,6 +362,8 @@ public class InputController {
 //		prevPrevious = prevPressed;
 		rotationPrevious = rotationPressed;
 		anti_rotationPrevious = anti_rotationPressed;
+		modePrevious = modePressed;
+		mousePrevious = mousePressed;
 
         // Check to see if a GamePad is connected
         if (xbox != null && xbox.isConnected()) {
@@ -408,6 +432,7 @@ public class InputController {
         nextPressed = (secondary && nextPressed) || (Gdx.input.isKeyPressed(Input.Keys.N));
         exitPressed = (secondary && exitPressed) || (Gdx.input.isKeyPressed(Input.Keys.ESCAPE));
         debugPressed = (secondary && debugPressed) || (Gdx.input.isKeyPressed(Input.Keys.X));
+        modePressed = (secondary && modePressed) || (Gdx.input.isKeyPressed(Input.Keys.M));
         // Directional controls
         horizontal = (secondary ? horizontal : 0.0f);
         if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {

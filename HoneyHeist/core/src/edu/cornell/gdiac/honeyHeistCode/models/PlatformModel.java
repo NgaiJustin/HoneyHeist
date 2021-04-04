@@ -54,7 +54,19 @@ public class PlatformModel extends Obstacle {
 		rotationSpeed = (float) Math.PI/3;
     }
 
+	public PlatformModel() {
+		super(0,0);
+		bodies = new Array<PolygonObstacle>();
+		data = null;
+
+		//Probably replace the following code with json data
+		rotationAngle = (float) Math.PI/3;
+		rotationSpeed = (float) Math.PI/3;
+	}
+
 	public Iterable<PolygonObstacle> getBodies() { return bodies; }
+
+	public Array<PolygonObstacle> getArrayBodies() {return bodies;}
 
 
 	/**

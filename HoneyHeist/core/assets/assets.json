@@ -38,5 +38,9 @@
             "file": "shared/RetroGame.ttf",
             "size": 64
         }
+        "shared:marker": {
+            "file": "shared/MarkerFelt.ttf",
+            "size": 40
+        }
     }
 }
