@@ -551,7 +551,7 @@ public class EditorController extends GameplayController {
 
         Json json = new Json();
         json.setOutputType(JsonWriter.OutputType.json);
-        System.out.println(json.prettyPrint(jsonLevel));
         file.writeString(json.prettyPrint(jsonLevel), false);
+        System.out.println("saved");
     }
 }
