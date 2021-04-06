@@ -1,5 +1,7 @@
 package edu.cornell.gdiac.honeyHeistCode.controllers;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -7,7 +9,9 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
+import com.badlogic.gdx.utils.JsonWriter;
 import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.audio.SoundBuffer;
 import edu.cornell.gdiac.honeyHeistCode.GameplayController;
@@ -78,6 +82,9 @@ public class EditorController extends GameplayController {
     private PolygonShape outline;
 
     private boolean drawOutline;
+
+    /** Filehandler for saving and loading jsons */
+    private FileHandle file = Gdx.files.local("bin/savedLevel.json");
 
     /**
      * Creates and initialize a new instance of the platformer game
@@ -484,5 +491,64 @@ public class EditorController extends GameplayController {
             points[i] = temp;
         }
         return points;
+    }
+
+    public class Level{
+        public float[] goalPos;
+        public float[] playerPos;
+        public float[][] beePos;
+        public float[][] platformPos;
+
+        public Level(){
+
+        }
+
+        public void setGoal(float[] goalPos) { this.goalPos = goalPos; }
+        public void setPlayer(float[] playerPos) { this.playerPos = playerPos; }
+        public void setBee(float[][] beePos) { this.beePos = beePos; }
+        public void setPlatform(float[][] platformPos) { this.platformPos = platformPos; }
+
+    }
+
+    public void convertToJson(){
+        Level jsonLevel = new Level();
+
+        if (level.getGoalDoor()!=null){
+            Vector2 goalPos = level.getGoalDoor().getPosition();
+            float[] goalArray = new float[]{goalPos.x, goalPos.y};
+            jsonLevel.setGoal(goalArray);
+        }
+
+        if (level.getPlayer()!=null){
+            Vector2 playerPos = level.getPlayer().getPosition();
+            float[] playerArray = new float[] {playerPos.x, playerPos.y};
+            jsonLevel.setPlayer(playerArray);
+        }
+
+        if (level.getBees()!=null){
+            Array<AbstractBeeModel> bees = level.getBees();
+            float[][] beeArray = new float[bees.size][2];
+            for (int i=0; i<beeArray.length; i++) {
+                Vector2 beePos = bees.get(i).getPosition();
+                beeArray[i][0] = beePos.x;
+                beeArray[i][1] = beePos.y;
+            }
+            jsonLevel.setBee(beeArray);
+        }
+
+        if (level.getPlatforms()!=null){
+            Array<PolygonObstacle> platforms = level.getPlatforms().getArrayBodies();
+            float[][] platformArray = new float[platforms.size][8];
+            for (int i=0; i<platformArray.length; i++){
+                platformArray[i] = platforms.get(i).getVertices();
+            }
+            jsonLevel.setPlatform(platformArray);
+        }
+
+
+        Json json = new Json();
+        json.setOutputType(JsonWriter.OutputType.json);
+        System.out.println(json.prettyPrint(jsonLevel));
+        file.writeString(json.prettyPrint(jsonLevel), false);
     }
 }
