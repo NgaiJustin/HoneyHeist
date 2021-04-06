@@ -324,6 +324,13 @@ public class InputController {
     public boolean didMode() { return modePressed && !modePrevious; }
 
     /**
+     * Returns true if the save button was pressed.
+     *
+     * @return true if the save button was pressed.
+     */
+    public boolean didSave() {return savePressed && !savePrevious; }
+
+    /**
      * Creates a new input controller
      * <p>
      * The input controller attempts to connect to the X-Box controller at device 0,

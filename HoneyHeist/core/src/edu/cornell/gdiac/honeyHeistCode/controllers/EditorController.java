@@ -280,6 +280,9 @@ public class EditorController extends GameplayController {
                 clickCache.clear();
             }
         }
+        if (input.didSave()){
+            convertToJson();
+        }
 
         //if clicked once and in platform mode, update outline
         if (mode == 0 && clickCache.size==1){
