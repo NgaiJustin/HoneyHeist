@@ -100,6 +100,11 @@ public class InputController {
      */
     private boolean modePressed;
     private boolean modePrevious;
+    /**
+     * Whether the save button (s) was pressed
+     */
+    private boolean savePressed;
+    private boolean savePrevious;
 /*
  **** DEPRECATED BOOLEAN FIELDS
  	/** Whether the button to step back worlds was pressed. * /
@@ -364,6 +369,7 @@ public class InputController {
 		anti_rotationPrevious = anti_rotationPressed;
 		modePrevious = modePressed;
 		mousePrevious = mousePressed;
+		savePrevious = savePressed;
 
         // Check to see if a GamePad is connected
         if (xbox != null && xbox.isConnected()) {
@@ -433,6 +439,7 @@ public class InputController {
         exitPressed = (secondary && exitPressed) || (Gdx.input.isKeyPressed(Input.Keys.ESCAPE));
         debugPressed = (secondary && debugPressed) || (Gdx.input.isKeyPressed(Input.Keys.X));
         modePressed = (secondary && modePressed) || (Gdx.input.isKeyPressed(Input.Keys.M));
+        savePressed = (secondary && savePressed) || (Gdx.input.isKeyPressed(Input.Keys.S));
         // Directional controls
         horizontal = (secondary ? horizontal : 0.0f);
         if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
