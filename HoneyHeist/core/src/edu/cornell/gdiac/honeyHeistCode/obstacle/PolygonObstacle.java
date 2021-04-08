@@ -105,6 +105,30 @@ public class PolygonObstacle extends SimpleObstacle {
 	 */
 	public float[] getVertices() { return vertices; }
 
+	/** Returns the true vertices after the object has been rotated.
+	 *
+	 * @return the true vertices
+	 */
+	public float[] getTrueVertices(){
+		float[] vertices = getVertices();
+		float x = (vertices[0] + vertices[4])/2;
+		float y = (vertices[1] + vertices[5])/2;
+		float angle = getAngle();
+		float cos = (float)Math.cos(angle);
+		float sin = (float)Math.sin(angle);
+
+		float temp;
+		for (int i=0; i<vertices.length; i+=2){
+			vertices[i] -= x;
+			vertices[i+1] -= y;
+			temp = vertices[i]*cos - vertices[i+1]*sin + x;
+			vertices[i+1] = vertices[i]*sin+vertices[i+1]*cos + y;
+			vertices[i] = temp;
+		}
+
+		return vertices;
+	}
+
 	/**
 	 * Sets the box width
 	 *
