@@ -52,7 +52,7 @@ import java.util.Iterator;
  * This is the purpose of our AssetState variable; it ensures that multiple instances
  * place nicely with the static assets.
  */
-public class GameplayController implements Screen {
+public class GameplayController extends WorldController {
 	/** The texture for walls and platforms */
 	protected TextureRegion earthTile;
 	/** The texture for the exit condition */
