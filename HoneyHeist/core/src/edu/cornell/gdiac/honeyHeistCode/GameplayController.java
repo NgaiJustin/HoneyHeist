@@ -16,20 +16,25 @@
  */
 package edu.cornell.gdiac.honeyHeistCode;
 
-import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.physics.box2d.World;
+import java.util.Iterator;
+import java.util.logging.Level;
+
+import com.badlogic.gdx.*;
+import com.badlogic.gdx.math.*;
+import com.badlogic.gdx.utils.*;
+import com.badlogic.gdx.assets.*;
+import com.badlogic.gdx.graphics.*;
+import com.badlogic.gdx.graphics.g2d.*;
+import com.badlogic.gdx.physics.box2d.*;
+import com.badlogic.gdx.graphics.g2d.freetype.*;
 import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.audio.SoundBuffer;
+import edu.cornell.gdiac.honeyHeistCode.controllers.AIController;
 import edu.cornell.gdiac.honeyHeistCode.controllers.InputController;
 import edu.cornell.gdiac.honeyHeistCode.obstacle.Obstacle;
 import edu.cornell.gdiac.util.PooledList;
 import edu.cornell.gdiac.util.ScreenListener;
+import edu.cornell.gdiac.honeyHeistCode.controllers.LevelController;
 
 import java.util.Iterator;
 
@@ -47,7 +52,7 @@ import java.util.Iterator;
  * This is the purpose of our AssetState variable; it ensures that multiple instances
  * place nicely with the static assets.
  */
-public abstract class GameplayController implements Screen {
+public class GameplayController implements Screen {
 	/** The texture for walls and platforms */
 	protected TextureRegion earthTile;
 	/** The texture for the exit condition */
@@ -96,16 +101,38 @@ public abstract class GameplayController implements Screen {
 	/** The world scale */
 	protected Vector2 scale;
 
-	/** Whether or not this is an active controller */
-	private boolean active;
-	/** Whether we have completed this level */
-	protected boolean complete;
-	/** Whether we have failed at this world (and need a reset) */
-	protected boolean failed;
-	/** Whether or not debug mode is active */
-	protected boolean debug;
-	/** Countdown active for winning or losing */
-	private int countdown;
+    /** Whether or not this is an active controller */
+    private boolean active;
+    /** Whether we have completed this level */
+    private boolean complete;
+    /** Whether we have failed at this world (and need a reset) */
+    private boolean failed;
+    /** Whether or not debug mode is active */
+    private boolean debug;
+    /** Countdown active for winning or losing */
+    private int countdown;
+    // ------------------------------- newly added variables
+    /** Which level the game is currently in */
+    private int level;
+    /** List of all GameplayControllers */
+    private GameplayController[] controllers;
+    /** Level Controller */
+    private LevelController levelController;
+    /** AI Controller */
+    private AIController aiController;
+    /** JsonValue constants for AI Controller */
+    private JsonValue aiConstants;
+    /** JsonValue constants for level Controller */
+    private JsonValue levelConstants;
+
+    /**
+     * Returns levelController
+     *
+     * @return LevelController
+     */
+    public LevelController getLevelController( ) {
+        return levelController;
+    }
 
 	/**
 	 * Returns true if debug mode is active.
@@ -129,30 +156,30 @@ public abstract class GameplayController implements Screen {
 		debug = value;
 	}
 
-	/**
-	 * Returns true if the level is completed.
-	 *
-	 * If true, the level will advance after a countdown
-	 *
-	 * @return true if the level is completed.
-	 */
-	public boolean isComplete( ) {
-		return complete;
-	}
+    /**
+     * Returns true if the level is completed.
+     *
+     * If true, the level will advance after a countdown
+     *
+     * @return true if the level is completed.
+     */
+    public boolean isComplete( ) {
+        return levelController.isComplete();
+    }
 
-	/**
-	 * Sets whether the level is completed.
-	 *
-	 * If true, the level will advance after a countdown
-	 *
-	 * @param value whether the level is completed.
-	 */
-	public void setComplete(boolean value) {
-		if (value) {
-			countdown = EXIT_COUNT;
-		}
-		complete = value;
-	}
+    /**
+     * Sets whether the level is completed.
+     *
+     * If true, the level will advance after a countdown
+     *
+     * @param value whether the level is completed.
+     */
+    public void setComplete(boolean value) {
+        if (value) {
+            levelController.setCountdown(EXIT_COUNT);
+        }
+        levelController.setComplete(value);
+    }
 
 	/**
 	 * Returns true if the level is failed.
@@ -199,31 +226,25 @@ public abstract class GameplayController implements Screen {
 		return canvas;
 	}
 
-	/**
-	 * Sets the canvas associated with this controller
-	 *
-	 * The canvas is shared across all controllers.  Setting this value will compute
-	 * the drawing scale from the canvas size.
-	 *
-	 * @param canvas the canvas associated with this controller
-	 */
-	public void setCanvas(GameCanvas canvas) {
-		this.canvas = canvas;
-		this.scale.x = canvas.getWidth()/bounds.getWidth();
-		this.scale.y = canvas.getHeight()/bounds.getHeight();
-	}
-
-	/**
-	 * Creates a new game world with the default values.
-	 *
-	 * The game world is scaled so that the screen coordinates do not agree
-	 * with the Box2d coordinates.  The bounds are in terms of the Box2d
-	 * world, not the screen.
-	 */
-	protected GameplayController() {
-		this(new Rectangle(0,0,DEFAULT_WIDTH,DEFAULT_HEIGHT),
-			 new Vector2(0,DEFAULT_GRAVITY));
-	}
+    /**
+     * Sets the canvas associated with this controller
+     *
+     * The canvas is shared across all controllers.  Setting this value will compute
+     * the drawing scale from the canvas size.
+     *
+     * @param canvas the canvas associated with this controller
+     */
+    public void setCanvas(GameCanvas canvas) {
+//        this.canvas = canvas;
+//        this.scale.x = canvas.getWidth()/bounds.getWidth();
+//        this.scale.y = canvas.getHeight()/bounds.getHeight();
+        levelController.setCanvas(canvas);
+        this.canvas = levelController.getCanvas();
+        Vector2 scale = levelController.getScale();
+        this.scale.x = scale.x;
+        this.scale.y = scale.y;
+    }
+    // --------------------------------------- root controller -- end
 
 	/**
 	 * Creates a new game world
@@ -241,6 +262,13 @@ public abstract class GameplayController implements Screen {
 	}
 
 	/**
+	 * Creates a default new game world
+	 */
+	protected GameplayController() {
+		this(DEFAULT_WIDTH, DEFAULT_HEIGHT, DEFAULT_GRAVITY);
+	}
+
+	/**
 	 * Creates a new game world
 	 *
 	 * The game world is scaled so that the screen coordinates do not agree
@@ -251,7 +279,7 @@ public abstract class GameplayController implements Screen {
 	 * @param gravity	The gravitational force on this Box2d world
 	 */
 	protected GameplayController(Rectangle bounds, Vector2 gravity) {
-		world = new World(gravity,false);
+//		world = new World(gravity,false);
 		this.bounds = new Rectangle(bounds);
 		this.scale = new Vector2(1,1);
 		complete = false;
@@ -259,24 +287,29 @@ public abstract class GameplayController implements Screen {
 		debug  = false;
 		active = false;
 		countdown = -1;
+		// initialize the level controller
+		levelController = new LevelController();
 	}
-	
+
 	/**
 	 * Dispose of all (non-static) resources allocated to this mode.
 	 */
+//	public void dispose() {
+//		for(Obstacle obj : objects) {
+//			obj.deactivatePhysics(world);
+//		}
+//		objects.clear();
+//		addQueue.clear();
+//		world.dispose();
+//		objects = null;
+//		addQueue = null;
+//		bounds = null;
+//		scale  = null;
+//		world  = null;
+//		canvas = null;
+//	}
 	public void dispose() {
-		for(Obstacle obj : objects) {
-			obj.deactivatePhysics(world);
-		}
-		objects.clear();
-		addQueue.clear();
-		world.dispose();
-		objects = null;
-		addQueue = null;
-		bounds = null;
-		scale  = null;
-		world  = null;
-		canvas = null;
+		levelController.dispose();
 	}
 
 	/**
@@ -289,10 +322,12 @@ public abstract class GameplayController implements Screen {
 	 */
 	public void gatherAssets(AssetDirectory directory) {
 		// Allocate the tiles
-		earthTile = new TextureRegion(directory.getEntry( "shared:earth", Texture.class ));
-		goalTile  = new TextureRegion(directory.getEntry( "shared:goal", Texture.class ));
+//		earthTile = new TextureRegion(directory.getEntry( "shared:earth", Texture.class ));
+//		goalTile  = new TextureRegion(directory.getEntry( "shared:goal", Texture.class ));
+		// background
 		background = new TextureRegion(directory.getEntry( "shared:background",  Texture.class ));
 		displayFont = directory.getEntry( "shared:retro" ,BitmapFont.class);
+		levelController.gatherAssets(directory);
 	}
 
 	/**
@@ -320,75 +355,86 @@ public abstract class GameplayController implements Screen {
 		obj.activatePhysics(world);
 	}
 
-	/**
-	 * Returns true if the object is in bounds.
-	 *
-	 * This assertion is useful for debugging the physics.
-	 *
-	 * @param obj The object to check.
-	 *
-	 * @return true if the object is in bounds.
-	 */
-	public boolean inBounds(Obstacle obj) {
-		boolean horiz = (bounds.x <= obj.getX() && obj.getX() <= bounds.x+bounds.width);
-		boolean vert  = (bounds.y <= obj.getY() && obj.getY() <= bounds.y+bounds.height);
-		return horiz && vert;
-	}
-	
-	/**
-	 * Resets the status of the game so that we can play again.
-	 *
-	 * This method disposes of the world and creates a new one.
-	 */
-	public abstract void reset();
+    /**
+     * Returns true if the object is in bounds.
+     *
+     * This assertion is useful for debugging the physics.
+     *
+     * @param obj The object to check.
+     *
+     * @return true if the object is in bounds.
+     */
+    public boolean inBounds(Obstacle obj) {
+        boolean horiz = (bounds.x <= obj.getX() && obj.getX() <= bounds.x+bounds.width);
+        boolean vert  = (bounds.y <= obj.getY() && obj.getY() <= bounds.y+bounds.height);
+        return horiz && vert;
+    }
 
-	/**
-	 * Returns whether to process the update loop
-	 *
-	 * At the start of the update loop, we check if it is time
-	 * to switch to a new game mode.  If not, the update proceeds
-	 * normally.
-	 *
-	 * @param dt	Number of seconds since last animation frame
-	 * 
-	 * @return whether to process the update loop
-	 */
-	public boolean preUpdate(float dt) {
-		InputController input = InputController.getInstance();
-		input.readInput(bounds, scale);
-		if (listener == null) {
-			return true;
-		}
+    /**
+     * Resets the status of the game so that we can play again.
+     *
+     * This method disposes of the world and creates a new one.
+     */
+    public void reset() {
+        // TODO
+        levelController.reset();
+    }
 
-		// Toggle debug
-		if (input.didDebug()) {
-			debug = !debug;
-		}
-		
-		// Handle resets
-		if (input.didReset()) {
-			reset();
-		}
-		
-		// Now it is time to maybe switch screens.
-		if (input.didExit()) {
-			pause();
-			listener.exitScreen(this, EXIT_QUIT);
-			return false;
-		} else if (input.didAdvance()) {
-			pause();
-			listener.exitScreen(this, EXIT_NEXT);
-			return false;
+    /**
+     * Returns whether to process the update loop
+     *
+     * At the start of the update loop, we check if it is time
+     * to switch to a new game mode.  If not, the update proceeds
+     * normally.
+     *
+     * @param dt	Number of seconds since last animation frame
+     *
+     * @return whether to process the update loop
+     */
+    public boolean preUpdate(float dt) {
+        boolean temp = preUpdateHelper(dt);
+        boolean result = levelController.preUpdate(temp);
+//        setFailure(levelController.isFailure());
+        return result;
+    }
+
+    private boolean preUpdateHelper(float dt) {
+        InputController input = InputController.getInstance();
+        input.readInput(bounds, scale);
+        if (listener == null) {
+            return true;
+        }
+
+        // Toggle debug
+        if (input.didDebug()) {
+//            debug = !debug;
+            levelController.setDebug(!levelController.isDebug());
+        }
+
+        // Handle resets
+        if (input.didReset()) {
+            reset();
+        }
+
+        // Now it is time to maybe switch screens.
+        if (input.didExit()) {
+            pause();
+            listener.exitScreen(this, EXIT_QUIT);
+            return false;
+        } else if (input.didAdvance()) {
+            pause();
+            listener.exitScreen(this, EXIT_NEXT);
+            return false;
 //		} else if (input.didRetreat()) {
 //			pause();
 //			listener.exitScreen(this, EXIT_PREV);
 //			return false;
-		} else if (countdown > 0) {
-			countdown--;
-		} else if (countdown == 0) {
-			if (failed) {
+		} else if (levelController.getCountdown() > 0) {
+			levelController.decreaseCountdown();
+		} else if (levelController.getCountdown() == 0) {
+			if (levelController.isFailure()) {
 				reset();
-			} else if (complete) {
+			} else if (levelController.isComplete()) {
 				pause();
 				listener.exitScreen(this, EXIT_NEXT);
 				return false;
@@ -396,7 +442,7 @@ public abstract class GameplayController implements Screen {
 		}
 		return true;
 	}
-	
+
 	/**
 	 * The core gameplay loop of this world.
 	 *
@@ -407,8 +453,13 @@ public abstract class GameplayController implements Screen {
 	 *
 	 * @param dt	Number of seconds since last animation frame
 	 */
-	public abstract void update(float dt);
-	
+//	public abstract void update(float dt);
+	public void update(float dt) {
+		float horizontal = InputController.getInstance().getHorizontal();
+		boolean isRotate = InputController.getInstance().didRotate();
+		boolean isAntiRotate = InputController.getInstance().didAntiRotate();
+		levelController.update(horizontal, isRotate, isAntiRotate);
+	};
 	/**
 	 * Processes physics
 	 *
@@ -419,29 +470,30 @@ public abstract class GameplayController implements Screen {
 	 * @param dt	Number of seconds since last animation frame
 	 */
 	public void postUpdate(float dt) {
-		// Add any objects created by actions
-		while (!addQueue.isEmpty()) {
-			addObject(addQueue.poll());
-		}
-		
-		// Turn the physics engine crank.
-		world.step(WORLD_STEP,WORLD_VELOC,WORLD_POSIT);
-
-		// Garbage collect the deleted objects.
-		// Note how we use the linked list nodes to delete O(1) in place.
-		// This is O(n) without copying.
-		Iterator<PooledList<Obstacle>.Entry> iterator = objects.entryIterator();
-		while (iterator.hasNext()) {
-			PooledList<Obstacle>.Entry entry = iterator.next();
-			Obstacle obj = entry.getValue();
-			if (obj.isRemoved()) {
-				obj.deactivatePhysics(world);
-				entry.remove();
-			} else {
-				// Note that update is called last!
-				obj.update(dt);
-			}
-		}
+//		// Add any objects created by actions
+//		while (!addQueue.isEmpty()) {
+//			addObject(addQueue.poll());
+//		}
+//
+//		// Turn the physics engine crank.
+//		world.step(WORLD_STEP,WORLD_VELOC,WORLD_POSIT);
+//
+//		// Garbage collect the deleted objects.
+//		// Note how we use the linked list nodes to delete O(1) in place.
+//		// This is O(n) without copying.
+//		Iterator<PooledList<Obstacle>.Entry> iterator = objects.entryIterator();
+//		while (iterator.hasNext()) {
+//			PooledList<Obstacle>.Entry entry = iterator.next();
+//			Obstacle obj = entry.getValue();
+//			if (obj.isRemoved()) {
+//				obj.deactivatePhysics(world);
+//				entry.remove();
+//			} else {
+//				// Note that update is called last!
+//				obj.update(dt);
+//			}
+//		}
+		levelController.postUpdate(dt);
 	}
 	
 	/**
@@ -455,36 +507,35 @@ public abstract class GameplayController implements Screen {
 	 * @param dt	Number of seconds since last animation frame
 	 */
 	public void draw(float dt) {
-		canvas.clear();
-		
-		canvas.begin();
-		canvas.draw(background, 0, 0);
-		for(Obstacle obj : objects) {
-			obj.draw(canvas);
-		}
-
-		canvas.end();
-		
-		if (debug) {
-			canvas.beginDebug();
-			for(Obstacle obj : objects) {
-				obj.drawDebug(canvas);
-			}
-			canvas.endDebug();
-		}
-		
-		// Final message
-		if (complete && !failed) {
-			displayFont.setColor(Color.YELLOW);
-			canvas.begin(); // DO NOT SCALE
-			canvas.drawTextCentered("VICTORY!", displayFont, 0.0f);
-			canvas.end();
-		} else if (failed) {
-			displayFont.setColor(Color.RED);
-			canvas.begin(); // DO NOT SCALE
-			canvas.drawTextCentered("FAILURE!", displayFont, 0.0f);
-			canvas.end();
-		}
+		levelController.draw(dt);
+//		canvas.clear();
+//
+//		canvas.begin();
+//		for(Obstacle obj : objects) {
+//			obj.draw(canvas);
+//		}
+//		canvas.end();
+//
+//		if (debug) {
+//			canvas.beginDebug();
+//			for(Obstacle obj : objects) {
+//				obj.drawDebug(canvas);
+//			}
+//			canvas.endDebug();
+//		}
+//
+//		// Final message
+//		if (complete && !failed) {
+//			displayFont.setColor(Color.YELLOW);
+//			canvas.begin(); // DO NOT SCALE
+//			canvas.drawTextCentered("VICTORY!", displayFont, 0.0f);
+//			canvas.end();
+//		} else if (failed) {
+//			displayFont.setColor(Color.RED);
+//			canvas.begin(); // DO NOT SCALE
+//			canvas.drawTextCentered("FAILURE!", displayFont, 0.0f);
+//			canvas.end();
+//		}
 	}
 
 	/**

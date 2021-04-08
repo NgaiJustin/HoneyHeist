@@ -14,6 +14,7 @@ import edu.cornell.gdiac.honeyHeistCode.models.LevelModel;
 import edu.cornell.gdiac.honeyHeistCode.models.PlatformModel;
 import edu.cornell.gdiac.honeyHeistCode.obstacle.Obstacle;
 import edu.cornell.gdiac.honeyHeistCode.obstacle.PolygonObstacle;
+import com.badlogic.gdx.utils.JsonValue;
 
 import java.util.Random;
 
@@ -36,18 +37,28 @@ public class AIController {
 	/**
 	 * Enumeration of the type of AI Controller
 	 */
-	public static enum CharacterType {
+	public enum CharacterType {
 		/** The character can fly. */
 		FLYING_CHARACTER,
 
 		/** The character cannot fly */
-		GROUNDED_CHARACTER
+		GROUNDED_CHARACTER;
+
+		public static CharacterType fromInteger(int value) {
+			switch(value) {
+				case 0:
+					return FLYING_CHARACTER;
+				case 1:
+					return GROUNDED_CHARACTER;
+			}
+			return null;
+		}
 	}
 
     /**
 	 * Enumeration to encode the finite state machine.
 	 */
-	private static enum FSMState {
+	private enum FSMState {
 		/** The enemy is patrolling around since it is too far from the player */
 		WANDER,
 		/** The enemy is near the player and is trying to chace the player*/
@@ -57,11 +68,14 @@ public class AIController {
 	private CharacterType characterType;
     private AbstractBeeModel controlledCharacter;
     private LevelModel levelModel;
+    private float chaseRadius;
+    private float wanderSpeedFactor;
+    private float chaseSpeedFactor;
+
     private FSMState state;
     private long ticks;
     private static final int ticksBeforeChangeInRandomDirection = 120;
 	private static final int ticksBeforeChangeInChaseDirection = 15;
-	private static final float wanderSpeedFactor = 0.5f;
     private Vector2 target;
     private Vector2 offset;
     private DirectedLineSegment lineToTarget;
@@ -71,41 +85,34 @@ public class AIController {
 
     Random random = new Random();
 
-    private static final float CHASE_RADIUS = 3;
-
     /**
 	 * Creates an AI Controller for the given enemy model
 	 *
 	 * @param levelModel the level that the enemy is in.
 	 * @param target the target which this AI Controller is trying to chase.
 	 * @param controlledCharacter the enemy that this AI Controller controls.
+	 *
 	 */
-	public AIController(LevelModel levelModel, Vector2 target, AbstractBeeModel controlledCharacter, CharacterType characterType) {
+	public AIController(LevelModel levelModel, AbstractBeeModel controlledCharacter, JsonValue data) {
 		this.levelModel = levelModel;
-		this.target = target;
-		this.offset = new Vector2(0,0);
         this.controlledCharacter = controlledCharacter;
-        this.characterType = characterType;
+
+		this.characterType = CharacterType.fromInteger(data.getInt("enemy_type"));
+		this.chaseRadius = data.getFloat("chase_distance");
+		switch (data.getInt("target")) {
+			case 0:
+				this.target = levelModel.getPlayer().getPosition();
+		}
+		this.offset = new Vector2(data.get("offset").getFloat("x"), data.get("offset").getFloat("y"));
+		this.wanderSpeedFactor = data.getFloat("wander_speed_factor");
+		this.chaseSpeedFactor = data.getFloat("chase_speed_factor");
+
 		state = FSMState.WANDER;
 		ticks = 0;
-        lineToTarget = new DirectedLineSegment(controlledCharacter.getPosition(), target);
-        tempLineSegment = new DirectedLineSegment();
-        direction = new Vector2();
+		lineToTarget = new DirectedLineSegment(controlledCharacter.getPosition(), target);
+		tempLineSegment = new DirectedLineSegment();
+		direction = new Vector2();
 		temp = new Vector2();
-	}
-
-	/**
-	 * Creates an AI Controller for the given enemy model
-	 *
-	 * @param levelModel the level that the enemy is in.
-	 * @param target the target which this AI Controller is trying to chase.
-	 * @param controlledCharacter the enemy that this AI Controller controls.
-	 * @param offsetX the x of the offset to the target.
-	 * @param offsetY the y of the offset to the target.
-	 */
-	public AIController(LevelModel levelModel, Vector2 target, AbstractBeeModel controlledCharacter, CharacterType characterType, float offsetX, float offsetY) {
-		this(levelModel, target, controlledCharacter, characterType);
-		this.offset.set(offsetX, offsetY);
 	}
 
 	/**
@@ -160,20 +167,6 @@ public class AIController {
 		return direction.y;
 	}
 
-	/**
-	 * Returns the horizontal direction which the controlled enemy should move.
-	 *
-	 * @return The direction that the enemy should move.
-	 */
-	public float getMovementVerticalDirection1orNeg1() {
-		if (direction.y > 0) {
-			return 1;
-		} else if (direction.y == 0) {
-			return 0;
-		} else {
-			return -1;
-		}
-	}
 
 	/**
 	 * Returns the character which is controlled by the AI Controller
@@ -222,12 +215,12 @@ public class AIController {
 //		System.out.println(isLineCollidingWithAPlatform(lineToTarget));
 		switch (this.state) {
 			case WANDER:
-				if (distanceToPlayer < CHASE_RADIUS && !isLineCollidingWithAPlatform(lineToTarget)) {
+				if (distanceToPlayer < chaseRadius && !isLineCollidingWithAPlatform(lineToTarget)) {
 					this.state = FSMState.CHASE;
 				}
 				break;
 			case CHASE:
-				if (distanceToPlayer > CHASE_RADIUS || isLineCollidingWithAPlatform(lineToTarget)) {
+				if (distanceToPlayer > chaseRadius || isLineCollidingWithAPlatform(lineToTarget)) {
 					this.state = FSMState.WANDER;
 				}
 		}
