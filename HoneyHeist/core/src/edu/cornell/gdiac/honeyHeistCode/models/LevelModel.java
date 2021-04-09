@@ -10,6 +10,7 @@
  */
 package edu.cornell.gdiac.honeyHeistCode.models;
 
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 import edu.cornell.gdiac.honeyHeistCode.obstacle.BoxObstacle;
@@ -42,6 +43,10 @@ public class LevelModel {
      * Reference to the origin of the world
      */
     private Vector2 origin;
+    /**
+     * Reference to the bounds of the world
+     */
+    private Rectangle bounds;
 
     /**
      * Creates and initialize a new instance of the platformer game
@@ -49,12 +54,13 @@ public class LevelModel {
      * The game has default gravity and other settings
      */
     public LevelModel(PlayerModel playerModel, Array<AbstractBeeModel> bees, BoxObstacle goalDoor,
-                      PlatformModel platforms, Vector2 origin) {
+                      PlatformModel platforms, Rectangle bounds) {
         this.playerModel = playerModel;
         this.bees = bees;
         this.goalDoor = goalDoor;
         this.platforms = platforms;
-        this.origin = origin;
+        this.origin = new Vector2(bounds.width/2,bounds.height/2);
+        this.bounds = bounds;
     }
 
     public LevelModel() {
@@ -83,4 +89,6 @@ public class LevelModel {
     public Vector2 getOrigin() {return origin;}
 
     public void setOrigin(Vector2 origin) { this.origin = origin; }
+
+    public Rectangle getBounds() {return bounds;}
 }
