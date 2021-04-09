@@ -34,12 +34,12 @@ import edu.cornell.gdiac.honeyHeistCode.*;  // For GameCanvas
 public class PolygonObstacle extends SimpleObstacle {
 	/** An earclipping triangular to make sure we work with convex shapes */
 	private static final EarClippingTriangulator TRIANGULATOR = new EarClippingTriangulator();
-	
+
 	/** Shape information for this physics object */
 	protected PolygonShape[] shapes;
 	/** Texture information for this object */
 	protected PolygonRegion region;
-	
+
 	/** The polygon vertices, scaled for drawing */
 	private float[] scaled;
 	/** The triangle indices, used for drawing */
@@ -53,8 +53,8 @@ public class PolygonObstacle extends SimpleObstacle {
 	private Vector2 sizeCache;
 	/** Cache of the polygon vertices (for resizing) */
 	private float[] vertices;
-	
-	/** 
+
+	/**
 	 * Returns the dimensions of this box
 	 *
 	 * This method does NOT return a reference to the dimension vector. Changes to this 
@@ -67,7 +67,7 @@ public class PolygonObstacle extends SimpleObstacle {
 		return sizeCache.set(dimension);
 	}
 
-	/** 
+	/**
 	 * Sets the dimensions of this box
 	 *
 	 * This method does not keep a reference to the parameter.
@@ -77,8 +77,8 @@ public class PolygonObstacle extends SimpleObstacle {
 	public void setDimension(Vector2 value) {
 		setDimension(value.x, value.y);
 	}
-	
-	/** 
+
+	/**
 	 * Sets the dimensions of this box
 	 *
 	 * @param width   The width of this box
@@ -88,7 +88,7 @@ public class PolygonObstacle extends SimpleObstacle {
 		resize(width, height);
 		markDirty(true);
 	}
-	
+
 	/**
 	 * Returns the box width
 	 *
@@ -178,7 +178,7 @@ public class PolygonObstacle extends SimpleObstacle {
 		sizeCache.set(value,dimension.y);
 		setDimension(sizeCache);
 	}
-	
+
 	/**
 	 * Returns the box height
 	 *
@@ -187,7 +187,7 @@ public class PolygonObstacle extends SimpleObstacle {
 	public float getHeight() {
 		return dimension.y;
 	}
-	
+
 	/**
 	 * Sets the box height
 	 *
@@ -197,7 +197,7 @@ public class PolygonObstacle extends SimpleObstacle {
 		sizeCache.set(dimension.x,value);
 		setDimension(sizeCache);
 	}
-	
+
 	/**
 	 * Creates a (not necessarily convex) polygon at the origin.
 	 *
@@ -205,7 +205,7 @@ public class PolygonObstacle extends SimpleObstacle {
 	 * are measured in physics units.  They tile the image according
 	 * to the drawScale (which must be set for drawing to work 
 	 * properly).
-	 * 
+	 *
 	 * @param points   The polygon vertices
 	 */
 	public PolygonObstacle(float[] points) {
@@ -227,7 +227,7 @@ public class PolygonObstacle extends SimpleObstacle {
 	public PolygonObstacle(float[] points, float x, float y) {
 		super(x, y);
 		assert points.length % 2 == 0;
-		
+
 		// Compute the bounds.
 		initShapes(points);
 		initBounds();
@@ -241,7 +241,7 @@ public class PolygonObstacle extends SimpleObstacle {
 		float maxx = vertices[0];
 		float miny = vertices[1];
 		float maxy = vertices[1];
-		
+
 		for(int ii = 2; ii < vertices.length; ii += 2) {
 			if (vertices[ii] < minx) {
 				minx = vertices[ii];
@@ -257,7 +257,7 @@ public class PolygonObstacle extends SimpleObstacle {
 		dimension = new Vector2((maxx-minx), (maxy-miny));
 		sizeCache = new Vector2(dimension);
 	}
-	
+
 	/**
 	 * Initializes the Box2d shapes for this polygon
 	 *
@@ -271,10 +271,10 @@ public class PolygonObstacle extends SimpleObstacle {
 		// Triangulate
 		ShortArray array = TRIANGULATOR.computeTriangles(points);
 		trimColinear(points,array);
-		
+
 		tridx = new short[array.items.length];
 		System.arraycopy(array.items, 0, tridx, 0, tridx.length);
-		
+
 		// Allocate space for physics triangles.
 		int tris = array.items.length / 3;
 		vertices = new float[tris*6];
@@ -288,7 +288,7 @@ public class PolygonObstacle extends SimpleObstacle {
 			shapes[ii] = new PolygonShape();
 			shapes[ii].set(vertices,6*ii,6);
 		}
-		
+
 		// Draw the shape with the appropriate scaling factor
 		scaled = new float[points.length];
 		for(int ii = 0; ii < points.length; ii+= 2) {
@@ -301,7 +301,7 @@ public class PolygonObstacle extends SimpleObstacle {
 		}
 
 	}
-	
+
 	/**
 	 * Removes colinear vertices from the given triangulation.
 	 *
@@ -322,12 +322,12 @@ public class PolygonObstacle extends SimpleObstacle {
 				indices.swap(3*ii+1,  indices.size-3*colinear-2);
 				indices.swap(3*ii+2,  indices.size-3*colinear-1);
 				colinear++;
-			 }
+			}
 		}
 		indices.size -= 3*colinear;
 		indices.shrink();
 	}
-	
+
 	/**
 	 * Resize this polygon (stretching uniformly out from origin)
 	 *
@@ -337,7 +337,7 @@ public class PolygonObstacle extends SimpleObstacle {
 	private void resize(float width, float height) {
 		float scalex = width/dimension.x;
 		float scaley = height/dimension.y;
-		
+
 		for(int ii = 0; ii < shapes.length; ii++) {
 			for(int jj = 0; jj < 3; jj++) {
 				vertices[6*ii+2*jj  ] *= scalex;
@@ -345,7 +345,7 @@ public class PolygonObstacle extends SimpleObstacle {
 			}
 			shapes[ii].set(vertices,6*ii,6);
 		}
-		
+
 		// Reset the drawing shape as well
 		for(int ii = 0; ii < scaled.length; ii+= 2) {
 			scaled[ii  ] *= scalex;
@@ -364,9 +364,9 @@ public class PolygonObstacle extends SimpleObstacle {
 		if (body == null) {
 			return;
 		}
-		
+
 		releaseFixtures();
-		
+
 		// Create the fixtures
 		for(int ii = 0; ii < shapes.length; ii++) {
 			fixture.shape = shapes[ii];
@@ -374,7 +374,7 @@ public class PolygonObstacle extends SimpleObstacle {
 		}
 		markDirty(false);
 	}
-	
+
 	/**
 	 * Release the fixtures for this body, reseting the shape
 	 *
@@ -393,31 +393,31 @@ public class PolygonObstacle extends SimpleObstacle {
 	 *
 	 * In order for drawing to work properly, you MUST set the drawScale.
 	 * The drawScale converts the physics units to pixels.
-	 * 
+	 *
 	 * @param value  the object texture for drawing purposes.
 	 */
 	public void setTexture(TextureRegion value) {
 		texture = value;
 		region = new PolygonRegion(texture,scaled,tridx);
 	}
-	
-    /**
-     * Sets the drawing scale for this physics object
-     *
-     * The drawing scale is the number of pixels to draw before Box2D unit. Because
-     * mass is a function of area in Box2D, we typically want the physics objects
-     * to be small.  So we decouple that scale from the physics object.  However,
-     * we must track the scale difference to communicate with the scene graph.
-     *
-     * We allow for the scaling factor to be non-uniform.
-     *
-     * @param x  the x-axis scale for this physics object
-     * @param y  the y-axis scale for this physics object
-     */
-    public void setDrawScale(float x, float y) {
-    	assert x != 0 && y != 0 : "Scale cannot be 0";
-    	float dx = x/drawScale.x; 
-    	float dy = y/drawScale.y;
+
+	/**
+	 * Sets the drawing scale for this physics object
+	 *
+	 * The drawing scale is the number of pixels to draw before Box2D unit. Because
+	 * mass is a function of area in Box2D, we typically want the physics objects
+	 * to be small.  So we decouple that scale from the physics object.  However,
+	 * we must track the scale difference to communicate with the scene graph.
+	 *
+	 * We allow for the scaling factor to be non-uniform.
+	 *
+	 * @param x  the x-axis scale for this physics object
+	 * @param y  the y-axis scale for this physics object
+	 */
+	public void setDrawScale(float x, float y) {
+		assert x != 0 && y != 0 : "Scale cannot be 0";
+		float dx = x/drawScale.x;
+		float dy = y/drawScale.y;
 		// Reset the drawing shape as well
 		for(int ii = 0; ii < scaled.length; ii+= 2) {
 			scaled[ii  ] *= dx;
@@ -426,9 +426,9 @@ public class PolygonObstacle extends SimpleObstacle {
 		if (texture != null) {
 			region = new PolygonRegion(texture,scaled,tridx);
 		}
-    	drawScale.set(x,y);
-    }
-	
+		drawScale.set(x,y);
+	}
+
 	/**
 	 * Draws the physics object.
 	 *
@@ -452,5 +452,5 @@ public class PolygonObstacle extends SimpleObstacle {
 			canvas.drawPhysics(tri,Color.YELLOW,getX(),getY(),getAngle(),drawScale.x,drawScale.y);
 		}
 	}
-	
+
 }
