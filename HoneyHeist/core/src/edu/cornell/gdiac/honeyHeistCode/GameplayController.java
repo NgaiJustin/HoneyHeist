@@ -52,7 +52,7 @@ import java.util.Iterator;
  * This is the purpose of our AssetState variable; it ensures that multiple instances
  * place nicely with the static assets.
  */
-public class GameplayController extends WorldController {
+public class GameplayController implements Screen {
 	/** The texture for walls and platforms */
 	protected TextureRegion earthTile;
 	/** The texture for the exit condition */
@@ -68,6 +68,8 @@ public class GameplayController extends WorldController {
 	public static final int EXIT_NEXT = 1;
 	/** Exit code for jumping back to previous level */
 	public static final int EXIT_PREV = 2;
+	/** Exit code for going to the editor */
+	public static final int EXIT_EDITOR = 3;
     /** How many frames after winning/losing do we continue? */
 	public static final int EXIT_COUNT = 100;
 
@@ -423,7 +425,7 @@ public class GameplayController extends WorldController {
             return false;
         } else if (input.didAdvance()) {
             pause();
-            listener.exitScreen(this, EXIT_NEXT);
+            listener.exitScreen(this, EXIT_EDITOR);
             return false;
 //		} else if (input.didRetreat()) {
 //			pause();
