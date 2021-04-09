@@ -109,7 +109,7 @@ public class PolygonObstacle extends SimpleObstacle {
 	 *
 	 * @return the true vertices
 	 */
-	public float[] getTrueVertices(){
+	/*public float[] getTrueVertices(){
 		float[] vertices = getVertices();
 		float x = (vertices[0] + vertices[4])/2;
 		float y = (vertices[1] + vertices[5])/2;
@@ -127,6 +127,21 @@ public class PolygonObstacle extends SimpleObstacle {
 		}
 
 		return vertices;
+	}*/
+	public float[] getTrueVertices(){
+		float[] vertices = getVertices();
+		float angle = getAngle();
+		Vector2 pos = getPosition();
+		for (int i=0; i<vertices.length; i+=2){
+			float length = (float)Math.sqrt(Math.pow(vertices[i],2)+Math.pow(vertices[i+1],2));
+			float theta = (float)Math.atan((vertices[i+1] /vertices[i]));
+			vertices[i] = length*(float)Math.cos(theta+angle);
+			vertices[i+1] =  length*(float)Math.sin(theta+angle);;
+			vertices[i] += pos.x;
+			vertices[i+1] +=  pos.y;;
+		}
+
+		return vertices;
 	}
 
 	/** Returns the center of the polygon in world coordinates.
@@ -134,9 +149,12 @@ public class PolygonObstacle extends SimpleObstacle {
 	 * @return the center of the polygon
 	 */
 	public Vector2 getCenter(){
+		return getCenter(true);
+	}
+	public Vector2 getCenter(boolean v){
 		float xAvg = 0;
 		float yAvg = 0;
-		float[] verts = getTrueVertices();
+		float[] verts = ((v) ? getTrueVertices() : getVertices());
 		for(int i=0; i<verts.length; i++){
 			if(i%2 == 0){
 				xAvg+=verts[i];
@@ -147,9 +165,8 @@ public class PolygonObstacle extends SimpleObstacle {
 		}
 		xAvg = xAvg/(verts.length/2);
 		yAvg = yAvg/(verts.length/2);
-		Vector2 center = new Vector2(xAvg,yAvg);
 
-		return center;
+		return new Vector2(xAvg,yAvg);
 	}
 
 	/**

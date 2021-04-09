@@ -19,10 +19,13 @@ import edu.cornell.gdiac.honeyHeistCode.WorldController;
 import edu.cornell.gdiac.honeyHeistCode.models.*;
 import edu.cornell.gdiac.honeyHeistCode.obstacle.BoxObstacle;
 import edu.cornell.gdiac.honeyHeistCode.obstacle.Obstacle;
+import edu.cornell.gdiac.honeyHeistCode.obstacle.ObstacleSelector;
 import edu.cornell.gdiac.honeyHeistCode.obstacle.PolygonObstacle;
 import edu.cornell.gdiac.util.FilmStrip;
 
 public class EditorController extends WorldController {
+    /** Texture asset for mouse crosshairs */
+    private TextureRegion crosshairTexture;
     /** The texture for the background */
     protected TextureRegion background;
     /**
@@ -76,6 +79,9 @@ public class EditorController extends WorldController {
      */
     private LevelModel level;
 
+    /** Mouse selector to move the ragdoll */
+    private ObstacleSelector selector;
+
     private Array<Vector2> clickCache;
 
     private int mode;
@@ -110,6 +116,7 @@ public class EditorController extends WorldController {
      * @param directory Reference to global asset manager.
      */
     public void gatherAssets(AssetDirectory directory) {
+        crosshairTexture  = new TextureRegion(directory.getEntry( "shared:crosshair", Texture.class ));
         background = new TextureRegion(directory.getEntry( "shared:background",  Texture.class ));
         avatarTexture = new TextureRegion(directory.getEntry("platform:ant", Texture.class));
         chaserBeeTexture = new TextureRegion(directory.getEntry("platform:chaserBee", Texture.class));
@@ -161,6 +168,10 @@ public class EditorController extends WorldController {
         level.setPlatforms(new PlatformModel());
         clickCache = new Array<Vector2>();
         outline = new PolygonShape();
+
+        selector = new ObstacleSelector(world);
+        selector.setTexture(crosshairTexture);
+        selector.setDrawScale(scale);
     }
 
     /**
@@ -198,108 +209,192 @@ public class EditorController extends WorldController {
             mode = (mode+1) % 5;
             clickCache.clear();
             drawOutline = false;
+            selector.deselect();
         }
-        if (input.didMouseClick()){
-            clickCache.add(new Vector2(input.getCrossHair().x,input.getCrossHair().y));
-            //PLACE PLATFORM MODE
-            if (mode == 0) {
-                if (clickCache.size>=2){
+
+        //PLACE PLATFORM MODE
+        if (mode == 0) {
+            if (input.didMouseClick()) {
+                clickCache.add(new Vector2(input.getCrossHair().x,input.getCrossHair().y));
+                if (clickCache.size >= 2) {
                     snapClick();
 
-                    Vector2 previousClick = clickCache.get(clickCache.size-2);
-                    Vector2 currentClick = clickCache.get(clickCache.size-1);
-                    float[] points = rectFromTwoPoints(previousClick,currentClick);
+                    Vector2 previousClick = clickCache.get(clickCache.size - 2);
+                    Vector2 currentClick = clickCache.get(clickCache.size - 1);
 
-                    PolygonObstacle obj;
-                    obj = new PolygonObstacle(points, 0, 0);
-                    obj.setBodyType(BodyDef.BodyType.StaticBody);
-                    obj.setDrawScale(scale);
-                    obj.setTexture(earthTile);
-                    addObject(obj);
-                    obj.setActive(false);
-                    level.getPlatforms().getArrayBodies().add(obj);
-
+                    newPlatform(rectFromTwoPoints(previousClick, currentClick));
                     clickCache.clear();
                     drawOutline = false;
-                    //System.out.print("position:" + obj.getPosition() +"\n");
-                    //System.out.print("anlge:" + obj.getAngle()+"\n");
                 }
             }
-            //PLACE PLAYER MODE
-            if (mode == 1) {
+            //if clicked once and in platform mode, update outline
+            if (clickCache.size==1){
+                Vector2 currentClick = clickCache.get(0);
+                Vector2 nearest = nearestPointAngle(currentClick,input.getCrossHair(),Math.PI/3);
+                if(currentClick.x != nearest.x || currentClick.y != nearest.y){
+                    outline.set(rectFromTwoPoints(currentClick, nearest));
+                    drawOutline = true;
+                }
+            }
+            if(input.didMouseRightClick()){
+                clickCache.clear();
+                drawOutline = false;
+            }
+        }
+
+        //PLACE PLAYER MODE
+        if (mode == 1) {
+            if (input.didMouseClick()) {
+                clickCache.add(new Vector2(input.getCrossHair().x, input.getCrossHair().y));
                 if (level.getPlayer() == null) {
-                    float dwidth = avatarTexture.getRegionWidth() / scale.x;
-                    float dheight = avatarTexture.getRegionHeight() / scale.y;
-
-                    PlayerModel avatar = new PlayerModel(constants.get("player"),
-                            clickCache.get(0).x, clickCache.get(0).y, dwidth, dheight);
-
-                    avatar.setDrawScale(scale);
-                    avatar.setTexture(avatarTexture);
-                    avatar.setAnimationStrip(PlayerModel.AntAnimations.WALK, walkingPlayer);
-                    addObject(avatar);
-                    avatar.setActive(false);
-                    level.setPlayer(avatar);
+                    newPlayer();
                 }
-                clickCache.clear();
-            }
-
-            //PLACE BEE MODE
-            if (mode == 2) {
-                float dwidth =  chaserBeeTexture.getRegionWidth() / scale.x;
-                float dheight = chaserBeeTexture.getRegionHeight() / scale.y;
-
-                ChaserBeeModel chaserBee = new ChaserBeeModel(constants.get("GroundedBee"),
-                        clickCache.get(0).x, clickCache.get(0).y, dwidth, dheight);
-
-                chaserBee.setDrawScale(scale);
-                chaserBee.setTexture(chaserBeeTexture);
-                level.getBees().add(chaserBee);
-                addObject(chaserBee);
-                chaserBee.setActive(false);
-
-                clickCache.clear();
-            }
-
-            //PLACE GOAL MODE
-            if (mode == 3) {
-                if (level.getGoalDoor() == null) {
-                    float dwidth = goalTile.getRegionWidth() / scale.x;
-                    float dheight = goalTile.getRegionHeight() / scale.y;
-
-                    BoxObstacle goalDoor = new BoxObstacle(clickCache.get(0).x, clickCache.get(0).y,
-                            dwidth, dheight);
-
-                    goalDoor.setBodyType(BodyDef.BodyType.StaticBody);
-                    goalDoor.setDrawScale(scale);
-                    goalDoor.setTexture(goalTile);
-                    level.setGoalDoor(goalDoor);
-                    addObject(goalDoor);
-                    goalDoor.setActive(false);
-
-                    clickCache.clear();
-                }
-            }
-
-            //SELECT MODE
-            if (mode == 4){
                 clickCache.clear();
             }
         }
+
+        //PLACE BEE MODE
+        if (mode == 2) {
+            if (input.didMouseClick()) {
+                clickCache.add(new Vector2(input.getCrossHair().x, input.getCrossHair().y));
+                newChaserBee();
+                clickCache.clear();
+            }
+        }
+
+        //PLACE GOAL MODE
+        if (mode == 3) {
+            if (input.didMouseClick()) {
+                clickCache.add(new Vector2(input.getCrossHair().x, input.getCrossHair().y));
+                if (level.getGoalDoor() == null) {
+                    newGoalDoor();
+
+                    clickCache.clear();
+                }
+            }
+        }
+
+        //SELECT MODE
+        if (mode == 4){
+            if (input.didMouseClick()) {
+                selector.deselect();
+                selector.select(input.getCrossHair().x, input.getCrossHair().y);
+            }
+            //if dragging, move selected
+            if(selector.isSelected()){
+                if(input.didMouseDrag()){
+                    if(selector.getObstacle().getClass()==PolygonObstacle.class){
+                        PolygonObstacle obj = (PolygonObstacle)selector.getObstacle();
+                        Vector2 offset = obj.getCenter(false);
+                        float length = (float)Math.sqrt(Math.pow(offset.x,2)+Math.pow(offset.y,2));
+                        float theta = (float)Math.atan((double)(offset.y /offset.x));
+                        float angle = obj.getAngle();
+                        offset.x = length*(float)Math.cos(theta+angle);
+                        offset.y =  length*(float)Math.sin(theta+angle);
+                        selector.moveTo(input.getCrossHair().sub(offset));
+                    }
+                    else{
+                        selector.moveTo(input.getCrossHair());
+                    }
+                }
+                if(input.didRotate()){
+                    if(selector.getObstacle().getClass()==PolygonObstacle.class){
+                        PolygonObstacle obj = (PolygonObstacle)selector.getObstacle();
+                        obj.rotateAboutPoint((float) Math.PI/3,obj.getCenter());
+                    }
+                }
+                if(input.didAntiRotate()){
+                    if(selector.getObstacle().getClass()==PolygonObstacle.class){
+                        PolygonObstacle obj = (PolygonObstacle)selector.getObstacle();
+                        obj.rotateAboutPoint((float) -Math.PI/3,obj.getCenter());
+                    }
+                }
+                if(input.didMouseRightClick()){
+                    selector.deselect();
+                }
+                if(input.didDelete()){
+                    if(selector.getObstacle().getName().contains("platform")) {
+                        PolygonObstacle obj = (PolygonObstacle) selector.getObstacle();
+                        level.getPlatforms().getArrayBodies().removeValue(obj,false);
+                    }
+                    if(selector.getObstacle().getClass()==PlayerModel.class) {
+                        level.setPlayer(null);
+                    }
+                    if(selector.getObstacle().getClass().getSuperclass()==AbstractBeeModel.class) {
+                        AbstractBeeModel obj = (AbstractBeeModel) selector.getObstacle();
+                        level.getBees().removeValue(obj,false);
+                    }
+                    if(selector.getObstacle().getName() == "goal") {
+                        level.setGoalDoor(null);
+                    }
+                    selector.getObstacle().markRemoved(true);
+                }
+            }
+        }
+
         if (input.didSave()){
             convertToJson();
         }
 
-        //if clicked once and in platform mode, update outline
-        if (mode == 0 && clickCache.size==1){
-            Vector2 currentClick = clickCache.get(0);
-            Vector2 nearest = nearestPointAngle(currentClick,input.getCrossHair(),Math.PI/3);
-            if(currentClick.x != nearest.x || currentClick.y != nearest.y){
-                outline.set(rectFromTwoPoints(currentClick, nearest));
-                drawOutline = true;
-            }
-        }
+    }
 
+    private void newGoalDoor() {
+        float dwidth = goalTile.getRegionWidth() / scale.x;
+        float dheight = goalTile.getRegionHeight() / scale.y;
+
+        BoxObstacle goalDoor = new BoxObstacle(clickCache.get(0).x, clickCache.get(0).y,
+                dwidth, dheight);
+
+        goalDoor.setBodyType(BodyDef.BodyType.StaticBody);
+        goalDoor.setDrawScale(scale);
+        goalDoor.setTexture(goalTile);
+        goalDoor.setName("goal");
+        level.setGoalDoor(goalDoor);
+        addObject(goalDoor);
+        //goalDoor.setActive(false);
+    }
+
+    private void newPlayer() {
+        float dwidth = avatarTexture.getRegionWidth() / scale.x;
+        float dheight = avatarTexture.getRegionHeight() / scale.y;
+
+        PlayerModel avatar = new PlayerModel(constants.get("player"),
+                clickCache.get(0).x, clickCache.get(0).y, dwidth, dheight);
+
+        avatar.setDrawScale(scale);
+        avatar.setTexture(avatarTexture);
+        avatar.setAnimationStrip(PlayerModel.AntAnimations.WALK, walkingPlayer);
+        addObject(avatar);
+        //avatar.setActive(false);
+        avatar.setGravityScale(0);
+        level.setPlayer(avatar);
+    }
+
+    private void newPlatform(float[] points) {
+        PolygonObstacle obj;
+        obj = new PolygonObstacle(points, 0, 0);
+        obj.setBodyType(BodyDef.BodyType.StaticBody);
+        obj.setDrawScale(scale);
+        obj.setTexture(earthTile);
+        addObject(obj);
+        //obj.setActive(false);
+        obj.setName("platform");
+        level.getPlatforms().getArrayBodies().add(obj);
+    }
+
+    private void newChaserBee() {
+        float dwidth = chaserBeeTexture.getRegionWidth() / scale.x;
+        float dheight = chaserBeeTexture.getRegionHeight() / scale.y;
+
+        ChaserBeeModel chaserBee = new ChaserBeeModel(constants.get("GroundedBee"),
+                clickCache.get(0).x, clickCache.get(0).y, dwidth, dheight);
+
+        chaserBee.setDrawScale(scale);
+        chaserBee.setTexture(chaserBeeTexture);
+        level.getBees().add(chaserBee);
+        addObject(chaserBee);
+        //chaserBee.setActive(false);
+        chaserBee.setGravityScale(0);
     }
 
     /**
@@ -415,6 +510,15 @@ public class EditorController extends WorldController {
             //System.out.print("drawline");
             canvas.drawPhysics(outline,Color.RED,0,0,0,scale.x,scale.y);
             canvas.endDebug();
+        }
+
+        // Draw selected highlight
+        for(Obstacle obj : objects) {
+            if(obj == selector.getObstacle()){
+                canvas.beginDebug();
+                obj.drawDebug(canvas);
+                canvas.endDebug();
+            }
         }
 
         // Final message
