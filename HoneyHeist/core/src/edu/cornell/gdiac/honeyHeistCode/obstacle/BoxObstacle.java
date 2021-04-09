@@ -143,7 +143,10 @@ public class BoxObstacle extends SimpleObstacle {
 		geometry = null;
 		
 		// Initialize
-		resize(width, height);	
+		resize(width, height);
+		//Probably replace the following code with json data
+		rotationAngle = (float) Math.PI/3;
+		rotationSpeed = (float) Math.PI/3;
 	}
 	
 	/**
@@ -160,6 +163,31 @@ public class BoxObstacle extends SimpleObstacle {
 		vertices[6] =  width/2.0f;
 		vertices[7] = -height/2.0f;
 		shape.set(vertices);
+	}
+
+	/**
+	 * Updates the object's physics state (NOT GAME LOGIC).
+	 *
+	 * This method is called AFTER the collision resolution state. Therefore, it
+	 * should not be used to process actions or any other gameplay information.  Its
+	 * primary purpose is to adjust changes to the fixture, which have to take place
+	 * after collision.
+	 *
+	 * @param dt Timing values from parent loop
+	 */
+	public void update(float dt) {
+		if (!isRotating) return;
+
+		float rotationAmount = rotationSpeed * dt;
+		if (rotationAmount > remainingAngle){
+			rotationAmount = remainingAngle;
+			isRotating = false;
+		}
+		remainingAngle -= rotationAmount;
+		if (!isClockwise) {
+			rotationAmount *= -1;
+		}
+		rotateAboutPoint(rotationAmount, stageCenter);
 	}
 
 	/**

@@ -435,9 +435,10 @@ public class GameplayController extends WorldController {
 			if (levelController.isFailure()) {
 				reset();
 			} else if (levelController.isComplete()) {
-				pause();
+				/*pause();
 				listener.exitScreen(this, EXIT_NEXT);
-				return false;
+				return false;*/
+				reset();
 			}
 		}
 		return true;

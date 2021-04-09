@@ -610,6 +610,7 @@ public class LevelController implements ContactListener {
         Vector2 origin = level.getOrigin();
 
         platforms.startRotation(isClockwise, origin);
+        level.getGoalDoor().startRotation(isClockwise,origin);
         if (avatar.isGrounded()&&platformNotRotating){
             avatar.startRotation(isClockwise, origin);
         }
