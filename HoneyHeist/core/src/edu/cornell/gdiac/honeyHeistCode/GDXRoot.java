@@ -143,7 +143,6 @@ public class GDXRoot extends Game implements ScreenListener {
 			controller.setCanvas(canvas);
 			editorController.setCanvas(canvas);
 			controller.reset();
-			editorController.reset();
 			setScreen(controller);
 			// new editing end
 
