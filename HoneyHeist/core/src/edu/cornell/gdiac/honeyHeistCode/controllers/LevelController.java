@@ -553,7 +553,7 @@ public class LevelController implements ContactListener {
         // Create chaser bees
 
         Array<AbstractBeeModel> bees = new Array<AbstractBeeModel>();
-        level = new LevelModel(avatar,bees,goalDoor,platforms,new Vector2(bounds.width / 2, bounds.height / 2));
+        level = new LevelModel(avatar,bees,goalDoor,platforms,new Rectangle(bounds));
 
 
         aIControllers = new Array<AIController>();
