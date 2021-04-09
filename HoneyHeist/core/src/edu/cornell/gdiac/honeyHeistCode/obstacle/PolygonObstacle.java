@@ -103,7 +103,7 @@ public class PolygonObstacle extends SimpleObstacle {
 	 *
 	 * @return the vertices
 	 */
-	public float[] getVertices() { return vertices; }
+	public float[] getVertices() { return vertices.clone();}
 
 	/** Returns the true vertices after the object has been rotated.
 	 *
@@ -127,6 +127,29 @@ public class PolygonObstacle extends SimpleObstacle {
 		}
 
 		return vertices;
+	}
+
+	/** Returns the center of the polygon in world coordinates.
+	 *
+	 * @return the center of the polygon
+	 */
+	public Vector2 getCenter(){
+		float xAvg = 0;
+		float yAvg = 0;
+		float[] verts = getTrueVertices();
+		for(int i=0; i<verts.length; i++){
+			if(i%2 == 0){
+				xAvg+=verts[i];
+			}
+			else{
+				yAvg+=verts[i];
+			}
+		}
+		xAvg = xAvg/(verts.length/2);
+		yAvg = yAvg/(verts.length/2);
+		Vector2 center = new Vector2(xAvg,yAvg);
+
+		return center;
 	}
 
 	/**

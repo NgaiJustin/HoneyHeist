@@ -289,23 +289,6 @@ public class EditorController extends WorldController {
         if (input.didSave()){
             convertToJson();
         }
-        for (PolygonObstacle body : level.getPlatforms().getBodies()){
-            float xAvg = 0;
-            float yAvg = 0;
-            float[] verts = body.getVertices();
-            for(int i=0; i<verts.length; i++){
-                if(i%2 == 0){
-                    xAvg+=verts[i];
-                }
-                else{
-                    yAvg+=verts[i];
-                }
-            }
-            xAvg = xAvg/(verts.length/2);
-            yAvg = yAvg/(verts.length/2);
-            Vector2 center = new Vector2(xAvg,yAvg);
-            body.rotateAboutPoint(dt,center);
-        }
 
         //if clicked once and in platform mode, update outline
         if (mode == 0 && clickCache.size==1){
