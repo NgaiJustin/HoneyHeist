@@ -12,6 +12,7 @@ package edu.cornell.gdiac.honeyHeistCode.models;
 
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
+
 import edu.cornell.gdiac.honeyHeistCode.obstacle.BoxObstacle;
 
 /**
