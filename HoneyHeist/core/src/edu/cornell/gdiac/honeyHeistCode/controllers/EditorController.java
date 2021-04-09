@@ -653,7 +653,7 @@ public class EditorController extends WorldController {
             Array<PolygonObstacle> platforms = level.getPlatforms().getArrayBodies();
             float[][] platformArray = new float[platforms.size][8];
             for (int i=0; i<platformArray.length; i++){
-                platformArray[i] = platforms.get(i).getVertices();
+                platformArray[i] = platforms.get(i).getTrueVertices();
             }
             jsonLevel.setPlatform(platformArray);
         }
