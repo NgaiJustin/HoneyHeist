@@ -23,11 +23,9 @@ import com.badlogic.gdx.utils.ObjectSet;
 import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.audio.SoundBuffer;
 import edu.cornell.gdiac.honeyHeistCode.GameCanvas;
-import edu.cornell.gdiac.honeyHeistCode.WorldController;
 import edu.cornell.gdiac.honeyHeistCode.models.*;
 import edu.cornell.gdiac.honeyHeistCode.obstacle.BoxObstacle;
 import edu.cornell.gdiac.honeyHeistCode.obstacle.Obstacle;
-import edu.cornell.gdiac.honeyHeistCode.obstacle.PolygonObstacle;
 import edu.cornell.gdiac.util.FilmStrip;
 import edu.cornell.gdiac.util.PooledList;
 import edu.cornell.gdiac.util.ScreenListener;
@@ -627,7 +625,7 @@ public class LevelController implements ContactListener {
      * Will only rotate once, and spamming will not queue more rotations.
      */
     public void rotateClockwise() {
-        rotate(true, !level.getPlatforms().getIsRotating());
+        rotate(true, !level.getPlatforms().isRotating());
     }
 
     /**
@@ -635,7 +633,7 @@ public class LevelController implements ContactListener {
      * Will only rotate once, and spamming will not queue more rotations.
      */
     public void rotateCounterClockwise() {
-        rotate(false, !level.getPlatforms().getIsRotating());
+        rotate(false, !level.getPlatforms().isRotating());
     }
 
     /**
@@ -749,7 +747,12 @@ public class LevelController implements ContactListener {
     public void update(float horizontal, boolean didRotate, boolean didAntiRotate) {
         // Process actions in object model
         moveAnt(horizontal);
-        level.getPlayer().applyForce();
+        PlayerModel avatar  = level.getPlayer();
+        PlatformModel platforms = level.getPlatforms();
+        avatar.applyForce();
+        if(avatar.isGrounded() && platforms.isRotating() && !avatar.isRotating()){
+            avatar.startRotation(platforms.getRemainingAngle(), platforms.isClockwise(), level.getOrigin());
+        }
 
         // Process AI action
         // 1. Loop over all chaser bee,
@@ -760,6 +763,9 @@ public class LevelController implements ContactListener {
             bee.applyForce();
             if(!bee.isGrounded()){
                 bee.getSensorFixtures().clear();
+            }
+            if(bee.isGrounded() && platforms.isRotating() && !bee.isRotating()){
+                bee.startRotation(platforms.getRemainingAngle(), platforms.isClockwise(), level.getOrigin());
             }
         }
 

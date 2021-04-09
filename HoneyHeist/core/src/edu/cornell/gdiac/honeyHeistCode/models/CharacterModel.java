@@ -267,7 +267,8 @@ public class CharacterModel extends CapsuleObstacle {
         // Velocity too high, clamp it
         if (Math.abs(getVX()) >= getMaxSpeed()) {
             setVX(Math.signum(getVX()) * getMaxSpeed());
-        } else {
+        }
+        if((Math.copySign(1.0f,getVX())!=Math.copySign(1.0f,getMovement()))||!(Math.abs(getVX()) >= getMaxSpeed())){
             forceCache.set(getMovement(), 0);
             body.applyForce(forceCache, getPosition(), true);
         }
@@ -279,6 +280,10 @@ public class CharacterModel extends CapsuleObstacle {
         if(!isGrounded){
             setVY(Math.min(0f,getVY()));
         }
+
+        /*if(isGrounded){
+            setVY(Math.min(-0.145f,getVY()));
+        }*/
     }
     /**
      * Draws the outline of the physics body.

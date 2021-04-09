@@ -276,12 +276,15 @@ public class EditorController extends WorldController {
 
         //SELECT MODE
         if (mode == 4){
+            //If clicked, reselect
             if (input.didMouseClick()) {
                 selector.deselect();
                 selector.select(input.getCrossHair().x, input.getCrossHair().y);
             }
-            //if dragging, move selected
+
             if(selector.isSelected()){
+
+                //if dragging, move selected
                 if(input.didMouseDrag()){
                     if(selector.getObstacle().getClass()==PolygonObstacle.class){
                         PolygonObstacle obj = (PolygonObstacle)selector.getObstacle();
@@ -297,6 +300,8 @@ public class EditorController extends WorldController {
                         selector.moveTo(input.getCrossHair());
                     }
                 }
+
+                //rotate only effects polygon obstacles
                 if(input.didRotate()){
                     if(selector.getObstacle().getClass()==PolygonObstacle.class){
                         PolygonObstacle obj = (PolygonObstacle)selector.getObstacle();
@@ -309,9 +314,13 @@ public class EditorController extends WorldController {
                         obj.rotateAboutPoint((float) -Math.PI/3,obj.getCenter());
                     }
                 }
+
+                //right click to deselect
                 if(input.didMouseRightClick()){
                     selector.deselect();
                 }
+
+                //have to remove objects from level model + mark them to be deleted
                 if(input.didDelete()){
                     if(selector.getObstacle().getName().contains("platform")) {
                         PolygonObstacle obj = (PolygonObstacle) selector.getObstacle();
