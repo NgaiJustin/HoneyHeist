@@ -28,6 +28,8 @@
       "editor:platformButton":"editor/platformButton.png",
       "editor:goalButton":"editor/goalButton.png",
       "editor:selectModeButton":"editor/selectModeButton.png",
+      "editor:saveButton":"editor/saveButton.png",
+      "editor:resetButton":"editor/resetButton.png"
     },
     "jsons"  : {
         "platform:constants": "platform/constants.json",
