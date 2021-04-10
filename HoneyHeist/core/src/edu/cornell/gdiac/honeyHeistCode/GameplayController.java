@@ -68,6 +68,8 @@ public class GameplayController implements Screen {
 	public static final int EXIT_NEXT = 1;
 	/** Exit code for jumping back to previous level */
 	public static final int EXIT_PREV = 2;
+	/** Exit code for going to the editor */
+	public static final int EXIT_EDITOR = 3;
     /** How many frames after winning/losing do we continue? */
 	public static final int EXIT_COUNT = 100;
 
@@ -423,7 +425,7 @@ public class GameplayController implements Screen {
             return false;
         } else if (input.didAdvance()) {
             pause();
-            listener.exitScreen(this, EXIT_NEXT);
+            listener.exitScreen(this, EXIT_EDITOR);
             return false;
 //		} else if (input.didRetreat()) {
 //			pause();
@@ -435,9 +437,10 @@ public class GameplayController implements Screen {
 			if (levelController.isFailure()) {
 				reset();
 			} else if (levelController.isComplete()) {
-				pause();
+				/*pause();
 				listener.exitScreen(this, EXIT_NEXT);
-				return false;
+				return false;*/
+				reset();
 			}
 		}
 		return true;

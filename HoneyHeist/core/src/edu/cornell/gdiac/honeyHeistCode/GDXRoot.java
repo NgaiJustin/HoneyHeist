@@ -15,6 +15,7 @@
 
 import com.badlogic.gdx.*;
 import edu.cornell.gdiac.honeyHeistCode.controllers.LevelController;
+import edu.cornell.gdiac.honeyHeistCode.controllers.EditorController;
 import edu.cornell.gdiac.honeyHeistCode.controllers.LoadingMode;
 import edu.cornell.gdiac.util.*;
 import edu.cornell.gdiac.assets.*;
@@ -44,7 +45,9 @@ public class GDXRoot extends Game implements ScreenListener {
 	// new editing
 	/** GameplayController */
 	private GameplayController controller;
-	
+	/** Level Editor Controller + GUI (Screen) */
+	private EditorController editorController;
+
 	/**
 	 * Creates a new game from the configuration settings.
 	 *
@@ -53,23 +56,23 @@ public class GDXRoot extends Game implements ScreenListener {
 	 */
 	public GDXRoot() { }
 
-	/** 
+	/**
 	 * Called when the Application is first created.
-	 * 
+	 *
 	 * This is method immediately loads assets for the loading screen, and prepares
 	 * the asynchronous loader for all other assets.
 	 */
 	public void create() {
 		canvas  = new GameCanvas();
 		loading = new LoadingMode("assets.json",canvas,1);
-//		levelSelector = new LevelSelector("assets.json",canvas,1);
+
 		// Initialize the game world
 //		controllers = new WorldController[1];
 //		controllers[0] = new LevelController();
 		controller = new GameplayController();
-//		current = 0;
-//		levelSelector.setScreenListener(this);
-//		setScreen(levelSelector);
+		// current = 0;
+		// Initialize editor controller and modes
+		editorController = new EditorController();
 		loading.setScreenListener(this);
 
 		setScreen(loading);
@@ -126,7 +129,7 @@ public class GDXRoot extends Game implements ScreenListener {
 	 */
 	public void exitScreen(Screen screen, int exitCode) {
 		if (screen == loading) {
-			levelSelector = new LevelSelector("assets.json", canvas, 1);
+			// new editing start
 //			for(int ii = 0; ii < controllers.length; ii++) {
 //				directory = loading.getAssets();
 //				controllers[ii].gatherAssets(directory);
@@ -149,8 +152,11 @@ public class GDXRoot extends Game implements ScreenListener {
 		} else if (screen == levelSelector) {
 			directory = levelSelector.getAssets();
 			controller.gatherAssets(directory);
+			editorController.gatherAssets(directory);
 			controller.setScreenListener(this);
+			editorController.setScreenListener(this);
 			controller.setCanvas(canvas);
+			editorController.setCanvas(canvas);
 			controller.reset();
 			// set the level number
 
@@ -173,7 +179,10 @@ public class GDXRoot extends Game implements ScreenListener {
 			controller.reset();
 			setScreen(controller);
 //		} else if (exitCode == WorldController.EXIT_QUIT) {
-		// new editing end
+			// new editing end
+		} else if(exitCode == GameplayController.EXIT_EDITOR) {
+			editorController.reset();
+			setScreen(editorController);
 		} else if (exitCode == GameplayController.EXIT_QUIT) {
 			// We quit the main application
 			Gdx.app.exit();

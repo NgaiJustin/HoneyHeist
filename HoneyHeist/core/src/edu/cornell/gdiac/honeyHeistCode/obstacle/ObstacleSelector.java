@@ -61,10 +61,10 @@ public class ObstacleSelector implements QueryCallback  {
 	/** The drawing scale for this selector */
 	private Vector2 drawScale;
     
-    /** A reusable definition for creating a mouse joint */
-    private MouseJointDef mouseJointDef;
-    /** The current mouse joint, if an item is selected */
-    private MouseJoint mouseJoint;
+    ///** A reusable definition for creating a mouse joint */
+    //private MouseJointDef mouseJointDef;
+    ///** The current mouse joint, if an item is selected */
+    //private MouseJoint mouseJoint;
     
     /** The region of world space to select an object from */
     private Rectangle  pointer;
@@ -83,9 +83,9 @@ public class ObstacleSelector implements QueryCallback  {
      * 
      * @return the response speed of the mouse joint
      */
-    public float getFrequency() { 
+    /*public float getFrequency() {
     	return mouseJointDef.frequencyHz; 
-    }
+    }*/
     
     /**
      * Sets the response speed of the mouse joint
@@ -94,9 +94,9 @@ public class ObstacleSelector implements QueryCallback  {
      *
      * @param  speed    the response speed of the mouse joint
      */
-    public void setFrequency(float speed) { 
+    /*public void setFrequency(float speed) {
     	mouseJointDef.frequencyHz = speed; 
-    }
+    }*/
     
     /**
      * Returns the damping ratio of the mouse joint
@@ -105,20 +105,20 @@ public class ObstacleSelector implements QueryCallback  {
      *
      * @return the damping ratio of the mouse joint
      */
-    public float getDamping() { 
+    /*public float getDamping() {
     	return mouseJointDef.dampingRatio; 
-    }
+    }*/
     
     /**
      * Sets the damping ratio of the mouse joint
      *
      * See the documentation of b2JointDef for more information on the damping ratio.
      *
-     * @param  ration   the damping ratio of the mouse joint
+     * @param  ratio   the damping ratio of the mouse joint
      */
-    public void setDamping(float ratio) { 
+    /*public void setDamping(float ratio) {
     	mouseJointDef.dampingRatio = ratio; 
-    }
+    }*/
     
     /**
      * Returns the force multiplier of the mouse joint
@@ -204,10 +204,10 @@ public class ObstacleSelector implements QueryCallback  {
     	pointer.width  = width;
     	pointer.height = height;
     
-    	mouseJointDef = new MouseJointDef();
+    	/*mouseJointDef = new MouseJointDef();
     	
     	mouseJointDef.frequencyHz = DEFAULT_FREQUENCY;
-    	mouseJointDef.dampingRatio = DEFAULT_DAMPING;
+    	mouseJointDef.dampingRatio = DEFAULT_DAMPING;*/
     	force = DEFAULT_FORCE;
     
     	BodyDef groundDef = new BodyDef();
@@ -272,13 +272,13 @@ public class ObstacleSelector implements QueryCallback  {
 		world.QueryAABB(this, pointer.x,pointer.y,pointer.x+pointer.width,pointer.y+pointer.height);
 		if (selection != null) {
 			Body body = selection.getBody();
-			mouseJointDef.bodyA = ground;
-			mouseJointDef.bodyB = body;
-			mouseJointDef.target.set(x,y);
-			mouseJointDef.frequencyHz = 5.0f;
-			mouseJointDef.dampingRatio = 0.7f;
-			mouseJointDef.maxForce = 1000 * body.getMass();
-			mouseJoint = (MouseJoint)world.createJoint(mouseJointDef);
+			//mouseJointDef.bodyA = ground;
+			//mouseJointDef.bodyB = body;
+			//mouseJointDef.target.set(x,y);
+			//mouseJointDef.frequencyHz = 5.0f;
+			//mouseJointDef.dampingRatio = 0.7f;
+			//mouseJointDef.maxForce = 1000 * body.getMass();
+			//mouseJoint = (MouseJoint)world.createJoint(mouseJointDef);
 			body.setAwake(true);
 		}
 	    return selection != null; 
@@ -287,15 +287,15 @@ public class ObstacleSelector implements QueryCallback  {
     /**
      * Moves the selected body to the given position.
      *
-     * @param  x  the x-coordinate (in physics space) to move to
-     * @param  y  the y-coordinate (in physics space) to move to
+     * @param  position the position to be moved to
      *
      * If nothing is selected, this method does nothing.
      */
-    public void moveTo(float x, float y) {
-    	position.set(x,y);
-    	if (mouseJoint != null) {
-    		mouseJoint.setTarget(position);
+    public void moveTo(Vector2 position) {
+    	//position.set(x,y);
+    	if (selection != null) {
+    		Body body = selection.getBody();
+    		body.setTransform(position,body.getAngle());
     	}
     }
     
@@ -306,9 +306,9 @@ public class ObstacleSelector implements QueryCallback  {
      */
     public void deselect() {
         if (selection != null) {
-    		world.destroyJoint(mouseJoint);
+    		//world.destroyJoint(mouseJoint);
     	    selection = null;
-    	    mouseJoint = null;
+    	    //mouseJoint = null;
 	    }
     }
     

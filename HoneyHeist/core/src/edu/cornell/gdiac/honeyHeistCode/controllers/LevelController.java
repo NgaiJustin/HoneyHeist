@@ -10,7 +10,9 @@
  */
 package edu.cornell.gdiac.honeyHeistCode.controllers;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -23,11 +25,9 @@ import com.badlogic.gdx.utils.ObjectSet;
 import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.audio.SoundBuffer;
 import edu.cornell.gdiac.honeyHeistCode.GameCanvas;
-import edu.cornell.gdiac.honeyHeistCode.WorldController;
 import edu.cornell.gdiac.honeyHeistCode.models.*;
 import edu.cornell.gdiac.honeyHeistCode.obstacle.BoxObstacle;
 import edu.cornell.gdiac.honeyHeistCode.obstacle.Obstacle;
-import edu.cornell.gdiac.honeyHeistCode.obstacle.PolygonObstacle;
 import edu.cornell.gdiac.util.FilmStrip;
 import edu.cornell.gdiac.util.PooledList;
 import edu.cornell.gdiac.util.ScreenListener;
@@ -316,6 +316,8 @@ public class LevelController implements ContactListener {
      */
     protected ObjectSet<Fixture> sensorFixtures;
 
+//    OrthographicCamera camera;
+
     /**
      * Creates and initialize a new instance of the platformer game
      * <p>
@@ -347,6 +349,7 @@ public class LevelController implements ContactListener {
         setFailure(false);
         world.setContactListener(this);
         sensorFixtures = new ObjectSet<Fixture>();
+//        this.camera = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
     }
 
     /**
@@ -532,10 +535,16 @@ public class LevelController implements ContactListener {
 
 
         // Create platforms
-        PlatformModel platforms = new PlatformModel(levelData.get("platforms"));
+        PlatformModel platforms = new PlatformModel(levelData.get("platforms"),"platform");
         platforms.setDrawScale(scale);
         platforms.setTexture(earthTile);
         addObject(platforms);
+
+        // Create spiked platforms
+        PlatformModel spikedPlatforms = new SpikedPlatformModel(levelData.get("spikedPlatforms"));
+        spikedPlatforms.setDrawScale(scale);
+        spikedPlatforms.setTexture(earthTile); //TODO: Change spikedPlatform texture
+        addObject(spikedPlatforms);
 
         // This world is heavier
         world.setGravity(new Vector2(0, defaults.getFloat("gravity", 0)));
@@ -612,6 +621,7 @@ public class LevelController implements ContactListener {
         Vector2 origin = level.getOrigin();
 
         platforms.startRotation(isClockwise, origin);
+        level.getGoalDoor().startRotation(isClockwise,origin);
         if (avatar.isGrounded()&&platformNotRotating){
             avatar.startRotation(isClockwise, origin);
         }
@@ -627,7 +637,7 @@ public class LevelController implements ContactListener {
      * Will only rotate once, and spamming will not queue more rotations.
      */
     public void rotateClockwise() {
-        rotate(true, !level.getPlatforms().getIsRotating());
+        rotate(true, !level.getPlatforms().isRotating());
     }
 
     /**
@@ -635,7 +645,7 @@ public class LevelController implements ContactListener {
      * Will only rotate once, and spamming will not queue more rotations.
      */
     public void rotateCounterClockwise() {
-        rotate(false, !level.getPlatforms().getIsRotating());
+        rotate(false, !level.getPlatforms().isRotating());
     }
 
     /**
@@ -749,7 +759,12 @@ public class LevelController implements ContactListener {
     public void update(float horizontal, boolean didRotate, boolean didAntiRotate) {
         // Process actions in object model
         moveAnt(horizontal);
-        level.getPlayer().applyForce();
+        PlayerModel avatar  = level.getPlayer();
+        PlatformModel platforms = level.getPlatforms();
+        avatar.applyForce();
+        if(avatar.isGrounded() && platforms.isRotating() && !avatar.isRotating()){
+            avatar.startRotation(platforms.getRemainingAngle(), platforms.isClockwise(), level.getOrigin());
+        }
 
         // Process AI action
         // 1. Loop over all chaser bee,
@@ -760,6 +775,9 @@ public class LevelController implements ContactListener {
             bee.applyForce();
             if(!bee.isGrounded()){
                 bee.getSensorFixtures().clear();
+            }
+            if(bee.isGrounded() && platforms.isRotating() && !bee.isRotating()){
+                bee.startRotation(platforms.getRemainingAngle(), platforms.isClockwise(), level.getOrigin());
             }
         }
 
@@ -835,6 +853,25 @@ public class LevelController implements ContactListener {
         try {
             Obstacle bd1 = (Obstacle) body1.getUserData();
             Obstacle bd2 = (Obstacle) body2.getUserData();
+
+            // See if anything collided with a spikedPlatform
+            boolean bd1isCharacterModel = bd1.getClass().getSuperclass().getSimpleName().equals("CharacterModel") ||
+                    bd1.getClass().getSuperclass().getSuperclass().getSimpleName().equals("CharacterModel");
+            boolean bd2isCharacterModel = bd2.getClass().getSuperclass().getSimpleName().equals("CharacterModel") ||
+                    bd2.getClass().getSuperclass().getSuperclass().getSimpleName().equals("CharacterModel");
+
+            if (((bd1.getName().contains("spikedPlatform")) && bd2isCharacterModel) ||
+            bd2.getName().contains("spikedPlatform") && bd1isCharacterModel){
+                if (avatar == bd1 || avatar == bd2){
+                    setFailure(true);
+                }
+
+                if (bd1isCharacterModel){
+                    bd1.markRemoved(true);
+                } else {
+                    bd2.markRemoved(true);
+                }
+            }
 
             // See if we have landed on the ground.
             if (((avatar.getSensorName().equals(fd2) && avatar != bd1) && (bd1.getName().contains("platform")) &&

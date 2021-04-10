@@ -30,13 +30,13 @@ public class PlatformModel extends Obstacle {
 	 *
 	 * @param data  	The physics constants and polygon information for the platforms in this model
 	 */
-	public PlatformModel(JsonValue data) {
+	public PlatformModel(JsonValue data, String name) {
 		super(0,0);
 		bodies = new Array<PolygonObstacle>();
 
         this.data = data;
 
-		String pname = "platform";
+		String pname = name;
 
 		for (int ii = 0; ii < data.size; ii++) {
 			PolygonObstacle obj;
@@ -53,8 +53,20 @@ public class PlatformModel extends Obstacle {
 		rotationAngle = (float) Math.PI/3;
 		rotationSpeed = (float) Math.PI/3;
     }
+	
+	public PlatformModel() {
+		super(0,0);
+		bodies = new Array<PolygonObstacle>();
+		data = null;
+
+		//Probably replace the following code with json data
+		rotationAngle = (float) Math.PI/3;
+		rotationSpeed = (float) Math.PI/3;
+	}
 
 	public Iterable<PolygonObstacle> getBodies() { return bodies; }
+
+	public Array<PolygonObstacle> getArrayBodies() {return bodies;}
 
 
 	/**
