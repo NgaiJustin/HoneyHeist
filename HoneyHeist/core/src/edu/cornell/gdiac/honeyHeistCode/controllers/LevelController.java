@@ -535,10 +535,16 @@ public class LevelController implements ContactListener {
 
 
         // Create platforms
-        PlatformModel platforms = new PlatformModel(levelData.get("platforms"));
+        PlatformModel platforms = new PlatformModel(levelData.get("platforms"),"platform");
         platforms.setDrawScale(scale);
         platforms.setTexture(earthTile);
         addObject(platforms);
+
+        // Create spiked platforms
+        PlatformModel spikedPlatforms = new SpikedPlatformModel(levelData.get("spikedPlatforms"));
+        spikedPlatforms.setDrawScale(scale);
+        spikedPlatforms.setTexture(earthTile); //TODO: Change spikedPlatform texture
+        addObject(spikedPlatforms);
 
         // This world is heavier
         world.setGravity(new Vector2(0, defaults.getFloat("gravity", 0)));
@@ -847,6 +853,25 @@ public class LevelController implements ContactListener {
         try {
             Obstacle bd1 = (Obstacle) body1.getUserData();
             Obstacle bd2 = (Obstacle) body2.getUserData();
+
+            // See if anything collided with a spikedPlatform
+            boolean bd1isCharacterModel = bd1.getClass().getSuperclass().getSimpleName().equals("CharacterModel") ||
+                    bd1.getClass().getSuperclass().getSuperclass().getSimpleName().equals("CharacterModel");
+            boolean bd2isCharacterModel = bd2.getClass().getSuperclass().getSimpleName().equals("CharacterModel") ||
+                    bd2.getClass().getSuperclass().getSuperclass().getSimpleName().equals("CharacterModel");
+
+            if (((bd1.getName().contains("spikedPlatform")) && bd2isCharacterModel) ||
+            bd2.getName().contains("spikedPlatform") && bd1isCharacterModel){
+                if (avatar == bd1 || avatar == bd2){
+                    setFailure(true);
+                }
+
+                if (bd1isCharacterModel){
+                    bd1.markRemoved(true);
+                } else {
+                    bd2.markRemoved(true);
+                }
+            }
 
             // See if we have landed on the ground.
             if (((avatar.getSensorName().equals(fd2) && avatar != bd1) && (bd1.getName().contains("platform")) &&
