@@ -24,7 +24,7 @@ import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.physics.box2d.*;
 import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.audio.SoundBuffer;
-import edu.cornell.gdiac.honeyHeistCode.controllers.aiControllers.AIController;
+import edu.cornell.gdiac.honeyHeistCode.controllers.aiControllers.AISingleCharacterController;
 import edu.cornell.gdiac.honeyHeistCode.controllers.InputController;
 import edu.cornell.gdiac.honeyHeistCode.obstacle.Obstacle;
 import edu.cornell.gdiac.util.PooledList;
@@ -112,7 +112,7 @@ public class GameplayController implements Screen {
     /** Level Controller */
     private LevelController levelController;
     /** AI Controller */
-    private AIController aiController;
+    private AISingleCharacterController aiController;
     /** JsonValue constants for AI Controller */
     private JsonValue aiConstants;
     /** JsonValue constants for level Controller */
@@ -403,6 +403,10 @@ public class GameplayController implements Screen {
 //            debug = !debug;
             levelController.setDebug(!levelController.isDebug());
         }
+
+        if (input.didDebugAI()) {
+        	levelController.setAIDebug(!levelController.isAIDebug());
+		}
 
         // Handle resets
         if (input.didReset()) {

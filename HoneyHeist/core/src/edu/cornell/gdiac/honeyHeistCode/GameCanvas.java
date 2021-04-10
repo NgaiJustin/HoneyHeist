@@ -66,6 +66,9 @@ public class GameCanvas {
 	
 	/** Rendering context for the debug outlines */
 	private ShapeRenderer debugRender;
+
+	/** Rendering context for AI */
+	private ShapeRenderer aIDebugRenderer;
 	
 	/** Track whether or not we are active (for error checking) */
 	private DrawPass active;
@@ -245,7 +248,7 @@ public class GameCanvas {
 	 * This method raises an IllegalStateException if called while drawing is
 	 * active (e.g. in-between a begin-end pair).
 	 *
-	 * @param fullscreen Whether this canvas should change to fullscreen.
+	 * @param value Whether this canvas should change to fullscreen.
 	 * @param desktop 	 Whether to use the current desktop resolution
 	 */	 
 	public void setFullscreen(boolean value, boolean desktop) {
@@ -566,7 +569,7 @@ public class GameCanvas {
 	 * the texture will be unscaled.  The bottom left of the texture will be positioned
 	 * at the given coordinates.
 	 *region
-	 * @param image The texture to draw
+	 * @param region The texture to draw
 	 * @param tint  The color tint
 	 * @param x 	The x-coordinate of the bottom left corner
 	 * @param y 	The y-coordinate of the bottom left corner
@@ -668,11 +671,10 @@ public class GameCanvas {
 	 * The local transformations in this method are applied in the following order: 
 	 * scaling, then rotation, then translation (e.g. placement at (sx,sy)).
 	 *
-	 * @param image The region to draw
+	 * @param region The region to draw
 	 * @param tint  The color tint
 	 * @param ox 	The x-coordinate of texture origin (in pixels)
 	 * @param oy 	The y-coordinate of texture origin (in pixels)
-	 * @param transform  The image transform
 	 */	
 	public void draw(TextureRegion region, Color tint, float ox, float oy, Affine2 affine) {
 		if (active != DrawPass.STANDARD) {
@@ -707,14 +709,14 @@ public class GameCanvas {
 	 * @param x 	The x-coordinate of the bottom left corner
 	 * @param y 	The y-coordinate of the bottom left corner
 	 */	
-	public void draw(PolygonRegion region, float x, float y) {
+	public void draw(PolygonRegion region, Color tint, float x, float y) {
 		if (active != DrawPass.STANDARD) {
 			Gdx.app.error("GameCanvas", "Cannot draw without active begin()", new IllegalStateException());
 			return;
 		}
 		
 		// Unlike Lab 1, we can shortcut without a master drawing method
-    	spriteBatch.setColor(Color.WHITE);
+    	spriteBatch.setColor(tint);
 		spriteBatch.draw(region, x,  y);
 	}
 	
@@ -848,7 +850,6 @@ public class GameCanvas {
 	 * @param tint  The color tint
 	 * @param ox 	The x-coordinate of texture origin (in pixels)
 	 * @param oy 	The y-coordinate of texture origin (in pixels)
-	 * @param transform  The image transform
 	 */	
 	public void draw(PolygonRegion region, Color tint, float ox, float oy, Affine2 affine) {
 		if (active != DrawPass.STANDARD) {
@@ -1133,7 +1134,7 @@ public class GameCanvas {
     	debugRender.setColor(color);
     	debugRender.ellipse(x0-w, y0-h, 2*w, 2*h, 12);
     }
-    
+
 	/**
 	 * Compute the affine transform (and store it in local) for this image.
 	 * 

@@ -89,6 +89,12 @@ public class InputController {
      */
     private boolean debugPressed;
     private boolean debugPrevious;
+
+    /**
+     * Whether the debug for AI was pressed.
+     */
+    private boolean debugAIPressed;
+    private boolean debugAIPrevious;
     /**
      * Whether the exit button was pressed.
      */
@@ -288,6 +294,15 @@ public class InputController {
 	}
 
     /**
+     * Returns true if the player wants to go toggle the debug mode.
+     *
+     * @return true if the player wants to go toggle the debug mode.
+     */
+    public boolean didDebugAI() {
+        return debugAIPressed && !debugAIPrevious;
+    }
+
+    /**
      * Returns true if the exit button was pressed.
      *
      * @return true if the exit button was pressed.
@@ -335,6 +350,7 @@ public class InputController {
 //		secondPrevious = secondPressed;
 		resetPrevious = resetPressed;
 		debugPrevious  = debugPressed;
+		debugAIPrevious = debugAIPressed;
 		exitPrevious = exitPressed;
 		nextPrevious = nextPressed;
 //		prevPrevious = prevPressed;
@@ -408,6 +424,7 @@ public class InputController {
         nextPressed = (secondary && nextPressed) || (Gdx.input.isKeyPressed(Input.Keys.N));
         exitPressed = (secondary && exitPressed) || (Gdx.input.isKeyPressed(Input.Keys.ESCAPE));
         debugPressed = (secondary && debugPressed) || (Gdx.input.isKeyPressed(Input.Keys.X));
+        debugAIPressed = (secondary && debugAIPressed) || (Gdx.input.isKeyPressed(Input.Keys.Z));
         // Directional controls
         horizontal = (secondary ? horizontal : 0.0f);
         if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {

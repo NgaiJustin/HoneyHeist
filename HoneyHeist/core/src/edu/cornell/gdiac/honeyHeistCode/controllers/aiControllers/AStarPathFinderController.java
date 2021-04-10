@@ -1,7 +1,9 @@
 package edu.cornell.gdiac.honeyHeistCode.controllers.aiControllers;
 
 import com.badlogic.gdx.utils.BinaryHeap;
-import edu.cornell.gdiac.honeyHeistCode.models.aiModels.*;
+import edu.cornell.gdiac.honeyHeistCode.controllers.aiControllers.aiModels.AIConnectionModel;
+import edu.cornell.gdiac.honeyHeistCode.controllers.aiControllers.aiModels.AIGraphModel;
+import edu.cornell.gdiac.honeyHeistCode.controllers.aiControllers.aiModels.AINodeModel;
 import java.util.HashMap;
 import com.badlogic.gdx.math.Vector2;
 
