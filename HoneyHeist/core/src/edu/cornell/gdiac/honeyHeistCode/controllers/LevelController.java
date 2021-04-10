@@ -535,13 +535,13 @@ public class LevelController implements ContactListener {
 
 
         // Create platforms
-        PlatformModel platforms = new PlatformModel(levelData.get("platforms"),"platform");
+        PlatformModel platforms = new PlatformModel(levelData.get("platformPos"),"platform");
         platforms.setDrawScale(scale);
         platforms.setTexture(earthTile);
         addObject(platforms);
 
         // Create spiked platforms
-        PlatformModel spikedPlatforms = new SpikedPlatformModel(levelData.get("spikedPlatforms"));
+        PlatformModel spikedPlatforms = new SpikedPlatformModel(levelData.get("spikedPlatformPos"));
         spikedPlatforms.setDrawScale(scale);
         spikedPlatforms.setTexture(earthTile); //TODO: Change spikedPlatform texture
         addObject(spikedPlatforms);
