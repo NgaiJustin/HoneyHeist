@@ -20,18 +20,16 @@ public class LevelSelector implements Screen, InputProcessor, ControllerListener
 
     /** Background texture for start-up */
     private Texture background;
-//    /** Play button to display when done */
-    private Texture playButton;
-    /** Play button to display when done */
+    /** levelOne button */
     private Texture levelOne;
-    /** Play button to display when done */
+    /** levelTwo button */
     private Texture levelTwo;
-    /** Play button to display when done */
+    /** levelThree button */
     private Texture levelThree;
     /** Title texture */
     private Texture title;
-//    /** Texture atlas to support a progress bar */
-//    private final Texture statusBar;
+    /** selected level number */
+    private int levelNumber;
 
 //    // statusBar is a "texture atlas." Break it up into parts.
 //    /** Left cap to the status background (grey region) */
@@ -93,6 +91,15 @@ public class LevelSelector implements Screen, InputProcessor, ControllerListener
      */
     public int getPressState() {
         return pressState;
+    }
+
+    /**
+     * Returns the selected level number.
+     *
+     * @return the selected level number.
+     */
+    public int getLevelNumber() {
+        return levelNumber;
     }
 
     /**
@@ -222,11 +229,6 @@ public class LevelSelector implements Screen, InputProcessor, ControllerListener
      *
      * @param delta Number of seconds since last animation frame
      */
-//    private void update(float delta) {
-//        if (levelOne == null && levelTwo == null && levelThree == null) {
-//            assets.update(budget);
-//        }
-//    }
     private void update(float delta) {
         if (levelOne == null && levelTwo == null && levelThree == null) {
             assets.update(budget);
@@ -248,29 +250,6 @@ public class LevelSelector implements Screen, InputProcessor, ControllerListener
      * of using the single render() method that LibGDX does.  We will talk about why we
      * prefer this in lecture.
      */
-//    private void draw() {
-//        // TO DO
-//        canvas.begin();
-//        canvas.draw(background, 0, 0);
-//        canvas.draw(title, 50, 50);
-//        Color tint;
-//        if (levelOne != null) {
-//            tint = pressState == 1 ? Color.WHITE: Color.GRAY;
-//            canvas.draw(levelOne, tint, levelOne.getWidth()/2f, levelOne.getHeight()/2f,
-//                    centerX/2f, centerY, 0, BUTTON_SCALE*scale, BUTTON_SCALE*scale);
-//        }
-//        if (levelTwo != null) {
-//            tint = pressState == 2 ? Color.GRAY: Color.WHITE;
-//            canvas.draw(levelTwo, tint, levelTwo.getWidth()/2f, levelTwo.getHeight()/2f,
-//                    centerX, centerY, 0, BUTTON_SCALE*scale, BUTTON_SCALE*scale);
-//        }
-//        if (levelThree != null) {
-//            tint = pressState == 3 ? Color.GRAY: Color.WHITE;
-//            canvas.draw(levelThree, tint, levelThree.getWidth()/2f, levelThree.getHeight()/2f,
-//                    centerX*1.5f, centerY, 0, BUTTON_SCALE*scale, BUTTON_SCALE*scale);
-//        }
-//        canvas.end();
-//    }
     private void draw() {
         canvas.begin();
         canvas.draw(background, 0, 0);
@@ -420,6 +399,8 @@ public class LevelSelector implements Screen, InputProcessor, ControllerListener
      */
     public boolean touchUp(int screenX, int screenY, int pointer, int button) {
         if (pressState == 1 || pressState == 2 || pressState == 3) {
+            // set the selected level number according to the pressState
+            levelNumber = pressState;
             pressState = 0;
             return false;
         }
