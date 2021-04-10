@@ -15,7 +15,6 @@ package edu.cornell.gdiac.honeyHeistCode;
 
 import com.badlogic.gdx.*;
 import edu.cornell.gdiac.honeyHeistCode.controllers.EditorController;
-import edu.cornell.gdiac.honeyHeistCode.controllers.LevelController;
 import edu.cornell.gdiac.honeyHeistCode.controllers.LoadingMode;
 import edu.cornell.gdiac.util.*;
 import edu.cornell.gdiac.assets.*;
@@ -36,14 +35,14 @@ public class GDXRoot extends Game implements ScreenListener {
 	private GameCanvas canvas;
 	/** Player mode for the asset loading screen (CONTROLLER CLASS) */
 	private LoadingMode loading;
-	/** Player mode for the the game proper (CONTROLLER CLASS) */
-	private int current;
+//	/** Player mode for the the game proper (CONTROLLER CLASS) */
+//	private int current;
 //	/** List of all WorldControllers */
 //	private WorldController[] controllers;
 	// new editing
 	/** GameplayController */
 	private GameplayController controller;
-	/** Level Editor Controller */
+	/** Level Editor Controller + GUI (Screen) */
 	private EditorController editorController;
 
 	/**
@@ -65,11 +64,10 @@ public class GDXRoot extends Game implements ScreenListener {
 		loading = new LoadingMode("assets.json",canvas,1);
 
 		// Initialize the game world
-//		controllers = new WorldController[1];
-//		controllers[0] = new LevelController();
 		controller = new GameplayController();
+
+		// Initialize editor controller and modes
 		editorController = new EditorController();
-//		current = 0;
 		loading.setScreenListener(this);
 
 		setScreen(loading);
@@ -160,7 +158,6 @@ public class GDXRoot extends Game implements ScreenListener {
 //		} else if (exitCode == WorldController.EXIT_PREV) {
 		} else if (exitCode == GameplayController.EXIT_PREV) {
 //			current = (current+controllers.length-1) % controllers.length;
-//			controllers[current].reset();
 //			setScreen(controllers[current]);
 			controller.reset();
 			setScreen(controller);

@@ -22,7 +22,12 @@
                     "cols": 6
                 }
             }
-        }
+        },
+      "editor:antButton":"editor/antButton.png",
+      "editor:beeButton":"editor/beeButton.png",
+      "editor:platformButton":"editor/platformButton.png",
+      "editor:goalButton":"editor/goalButton.png",
+      "editor:selectModeButton":"editor/selectModeButton.png",
     },
     "jsons"  : {
         "platform:constants": "platform/constants.json",

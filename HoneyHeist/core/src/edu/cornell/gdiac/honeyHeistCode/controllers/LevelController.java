@@ -10,7 +10,9 @@
  */
 package edu.cornell.gdiac.honeyHeistCode.controllers;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -314,6 +316,8 @@ public class LevelController implements ContactListener {
      */
     protected ObjectSet<Fixture> sensorFixtures;
 
+//    OrthographicCamera camera;
+
     /**
      * Creates and initialize a new instance of the platformer game
      * <p>
@@ -345,6 +349,7 @@ public class LevelController implements ContactListener {
         setFailure(false);
         world.setContactListener(this);
         sensorFixtures = new ObjectSet<Fixture>();
+//        this.camera = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
     }
 
     /**
