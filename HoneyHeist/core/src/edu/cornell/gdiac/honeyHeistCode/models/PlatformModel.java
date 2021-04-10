@@ -54,6 +54,39 @@ public class PlatformModel extends Obstacle {
 		rotationSpeed = (float) Math.PI/3;
     }
 
+	/**
+	 * Creates a new platform model with the given data.
+	 *
+	 * The size is expressed in physics units NOT pixels.  In order for
+	 * drawing to work properly, you MUST set the drawScale. The drawScale
+	 * converts the physics units to pixels.
+	 *
+	 * @param data  	The physics constants and polygon information for the platforms in this model
+	 */
+	public PlatformModel(JsonValue data, String name) {
+		super(0,0);
+		bodies = new Array<PolygonObstacle>();
+
+		this.data = data;
+
+		String pname = name;
+
+		for (int ii = 0; ii < data.size; ii++) {
+			PolygonObstacle obj;
+			obj = new PolygonObstacle(data.get(ii).asFloatArray(), 0, 0);
+			obj.setBodyType(BodyDef.BodyType.StaticBody);
+			obj.setDensity(data.getFloat( "density", 0.0f ));
+			obj.setFriction(data.getFloat( "friction", 0.0f ));
+			obj.setRestitution(data.getFloat( "restitution", 0.0f ));
+			obj.setName(pname+ii);
+			bodies.add(obj);
+		}
+
+		//Probably replace the following code with json data
+		rotationAngle = (float) Math.PI/3;
+		rotationSpeed = (float) Math.PI/3;
+	}
+
 	public Iterable<PolygonObstacle> getBodies() { return bodies; }
 
 
