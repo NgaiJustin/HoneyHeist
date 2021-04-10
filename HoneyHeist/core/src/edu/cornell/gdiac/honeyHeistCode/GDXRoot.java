@@ -35,6 +35,8 @@ public class GDXRoot extends Game implements ScreenListener {
 	private GameCanvas canvas; 
 	/** Player mode for the asset loading screen (CONTROLLER CLASS) */
 	private LoadingMode loading;
+	/** Player mode for level selector (CONTROLLER CLASS) */
+	private LevelSelector levelSelector;
 	/** Player mode for the the game proper (CONTROLLER CLASS) */
 	private int current;
 //	/** List of all WorldControllers */
@@ -60,12 +62,14 @@ public class GDXRoot extends Game implements ScreenListener {
 	public void create() {
 		canvas  = new GameCanvas();
 		loading = new LoadingMode("assets.json",canvas,1);
-
+//		levelSelector = new LevelSelector("assets.json",canvas,1);
 		// Initialize the game world
 //		controllers = new WorldController[1];
 //		controllers[0] = new LevelController();
 		controller = new GameplayController();
 //		current = 0;
+//		levelSelector.setScreenListener(this);
+//		setScreen(levelSelector);
 		loading.setScreenListener(this);
 
 		setScreen(loading);
@@ -122,7 +126,7 @@ public class GDXRoot extends Game implements ScreenListener {
 	 */
 	public void exitScreen(Screen screen, int exitCode) {
 		if (screen == loading) {
-			// new editing start
+			levelSelector = new LevelSelector("assets.json", canvas, 1);
 //			for(int ii = 0; ii < controllers.length; ii++) {
 //				directory = loading.getAssets();
 //				controllers[ii].gatherAssets(directory);
@@ -131,18 +135,27 @@ public class GDXRoot extends Game implements ScreenListener {
 //			}
 //			controllers[current].reset();
 //			setScreen(controllers[current]);
-			directory = loading.getAssets();
+
+//			directory = loading.getAssets();
+//			controller.gatherAssets(directory);
+//			controller.setScreenListener(this);
+//			controller.setCanvas(canvas);
+//			controller.reset();
+//			setScreen(controller);
+			levelSelector.setScreenListener(this);
+			setScreen(levelSelector);
+			loading.dispose();
+			loading = null;
+		} else if (screen == levelSelector) {
+			directory = levelSelector.getAssets();
 			controller.gatherAssets(directory);
 			controller.setScreenListener(this);
 			controller.setCanvas(canvas);
 			controller.reset();
 			setScreen(controller);
-			// new editing end
-			
-			loading.dispose();
-			loading = null;
 
-			// new editing start
+			levelSelector.dispose();
+			levelSelector = null;
 //		} else if (exitCode == WorldController.EXIT_NEXT) {
 		} else if (exitCode == GameplayController.EXIT_NEXT) {
 //			current = (current+1) % controllers.length;
