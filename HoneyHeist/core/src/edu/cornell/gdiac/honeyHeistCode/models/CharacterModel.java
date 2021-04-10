@@ -166,7 +166,7 @@ public class CharacterModel extends CapsuleObstacle {
                 height * data.get("shrink").getFloat(1));
         setDensity(data.getFloat("density", 0));
         setFriction(data.getFloat("friction", 0));
-        setFixedRotation(true);
+        setFixedRotation(false);
 
         maxspeed = data.getFloat("maxspeed", 0);
         damping = data.getFloat("damping", 0);
@@ -229,8 +229,10 @@ public class CharacterModel extends CapsuleObstacle {
                     setBodyType(BodyDef.BodyType.DynamicBody);
                     sticking = false;
                     isGrounded = false;
-                    this.setAngle(0);
                 }
+            }
+            if(!isGrounded){
+                this.setAngle(0);
             }
             return;
         }
