@@ -771,7 +771,7 @@ public class LevelController implements ContactListener {
         // 2. For each bee, moveChaserBee(...);
         // TO BE IMPLEMENTED
 
-//        moveChaserBeeFromStoredAIControllers();
+        aIController.moveAIControlledCharacters();
 
         for(AbstractBeeModel bee : level.getBees()){
             bee.applyForce();

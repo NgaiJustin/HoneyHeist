@@ -30,8 +30,7 @@ public class AIController {
         for (AISingleCharacterController aICharacterController: aICharacterControllers) {
             aICharacterController.updateAIController();
             CharacterModel bee = aICharacterController.getControlledCharacter();
-            //System.out.println(aIController.getMovementHorizontalDirection());
-            bee.setMovement(aICharacterController.getMovementHorizontalDirection() * bee.getForce());
+            bee.setMovement(aICharacterController.getMovementDirection().x * bee.getForce());
         }
     }
 

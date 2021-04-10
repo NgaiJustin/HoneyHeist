@@ -20,18 +20,17 @@ import java.util.Random;
 
 
 /**
- * This is the AI Controller which is responsible for character pathfinding and decision making.
+ * This is the AI Single Character Controller which is responsible for character pathfinding and decision making.
  * The AI Controller will calculate a decision/pathfinding towards a "target" (currently specified as a Vector2)
  * and return a vector which is the direction in which the controlled character should move.
  * The AI Controlled supports getting the direction as a Vector2 through getDirection(). It also supports getting the
  * character it is controlling through getControlledCharacter(). Both will be needed in order to pass on the information to
  * Level Controller.
- * Currently, there is only one behavior that the AI Controller supports which is returning the direction of the target.
- *
- * If you want only horizontal or vertical directions, there are function that support that.
  *
  * If you want the AIController to target the player, you will need to put the position vector of the player into target.
  * Since that vector 2 is a reference, it should update with the movement of the player during runtime.
+ *
+ *
  */
 public class AISingleCharacterController {
 	/**
@@ -77,7 +76,6 @@ public class AISingleCharacterController {
     private static final int ticksBeforeChangeInRandomDirection = 120;
 	private static final int ticksBeforeChangeInChaseDirection = 15;
     private Vector2 target;
-    private Vector2 offset;
     private DirectedLineSegment lineToTarget;
     private DirectedLineSegment tempLineSegment;
     private Vector2 direction;
@@ -102,7 +100,6 @@ public class AISingleCharacterController {
 			case 0:
 				this.target = levelModel.getPlayer().getPosition();
 		}
-		this.offset = new Vector2(data.get("offset").getFloat("x"), data.get("offset").getFloat("y"));
 		this.wanderSpeedFactor = data.getFloat("wander_speed_factor");
 		this.chaseSpeedFactor = data.getFloat("chase_speed_factor");
 
@@ -133,38 +130,38 @@ public class AISingleCharacterController {
 		return direction;
 	}
 
-	/**
-	 * Returns the horizontal direction which the controlled enemy should move.
-	 *
-	 * @return The direction that the enemy should move.
-	 */
-	public float getMovementHorizontalDirection() {
-		return direction.x;
-	}
+//	/**
+//	 * Returns the horizontal direction which the controlled enemy should move.
+//	 *
+//	 * @return The direction that the enemy should move.
+//	 */
+//	public float getMovementHorizontalDirection() {
+//		return direction.x;
+//	}
+//
+//	/**
+//	 * Returns the horizontal direction which the controlled enemy should move.
+//	 *
+//	 * @return The direction that the enemy should move.
+//	 */
+//	public float getMovementHorizontalDirection1orNeg1() {
+//		if (direction.x > 0) {
+//			return 1;
+//		} else if (direction.x == 0) {
+//			return 0;
+//		} else {
+//			return -1;
+//		}
+//	}
 
-	/**
-	 * Returns the horizontal direction which the controlled enemy should move.
-	 *
-	 * @return The direction that the enemy should move.
-	 */
-	public float getMovementHorizontalDirection1orNeg1() {
-		if (direction.x > 0) {
-			return 1;
-		} else if (direction.x == 0) {
-			return 0;
-		} else {
-			return -1;
-		}
-	}
-
-	/**
-	 * Returns the horizontal direction which the controlled enemy should move.
-	 *
-	 * @return The direction that the enemy should move.
-	 */
-	public float getMovementVerticalDirection() {
-		return direction.y;
-	}
+//	/**
+//	 * Returns the vertical direction which the controlled enemy should move.
+//	 *
+//	 * @return The direction that the enemy should move.
+//	 */
+//	public float getMovementVerticalDirection() {
+//		return direction.y;
+//	}
 
 
 	/**
@@ -189,13 +186,6 @@ public class AISingleCharacterController {
 	 */
 	public void setTarget(Vector2 target) {
 		this.target = target;
-	}
-
-	/**
-	 * Sets the offset through two floats.
-	 */
-	public void setOffset(float x, float y) {
-		this.offset.set(x, y);
 	}
 
 	/**
