@@ -439,6 +439,17 @@ public class PolygonObstacle extends SimpleObstacle {
 			canvas.draw(region,Color.WHITE,0,0,getX()*drawScale.x,getY()*drawScale.y,getAngle(),1,1);
 		}
 	}
+	/**
+	 * Draws the physics object. With tint.
+	 *
+	 * @param canvas Drawing context
+	 * @param tint the tint color
+	 */
+	public void draw(GameCanvas canvas, Color tint) {
+		if (region != null) {
+			canvas.draw(region,tint,0,0,getX()*drawScale.x,getY()*drawScale.y,getAngle(),1,1);
+		}
+	}
 
 	/**
 	 * Draws the outline of the physics body.

@@ -6,13 +6,13 @@ will have an AI Controller assigned to them.
 
 It is dependent on Level Model in order for the character to get information about the level.
  */
-package edu.cornell.gdiac.honeyHeistCode.controllers;
+package edu.cornell.gdiac.honeyHeistCode.controllers.aiControllers;
 
 import com.badlogic.gdx.math.Vector2;
 import edu.cornell.gdiac.honeyHeistCode.models.AbstractBeeModel;
+import edu.cornell.gdiac.honeyHeistCode.models.CharacterModel;
 import edu.cornell.gdiac.honeyHeistCode.models.LevelModel;
 import edu.cornell.gdiac.honeyHeistCode.models.PlatformModel;
-import edu.cornell.gdiac.honeyHeistCode.obstacle.Obstacle;
 import edu.cornell.gdiac.honeyHeistCode.obstacle.PolygonObstacle;
 import com.badlogic.gdx.utils.JsonValue;
 
@@ -20,20 +20,19 @@ import java.util.Random;
 
 
 /**
- * This is the AI Controller which is responsible for character pathfinding and decision making.
+ * This is the AI Single Character Controller which is responsible for character pathfinding and decision making.
  * The AI Controller will calculate a decision/pathfinding towards a "target" (currently specified as a Vector2)
  * and return a vector which is the direction in which the controlled character should move.
  * The AI Controlled supports getting the direction as a Vector2 through getDirection(). It also supports getting the
  * character it is controlling through getControlledCharacter(). Both will be needed in order to pass on the information to
  * Level Controller.
- * Currently, there is only one behavior that the AI Controller supports which is returning the direction of the target.
- *
- * If you want only horizontal or vertical directions, there are function that support that.
  *
  * If you want the AIController to target the player, you will need to put the position vector of the player into target.
  * Since that vector 2 is a reference, it should update with the movement of the player during runtime.
+ *
+ *
  */
-public class AIController {
+public class AISingleCharacterController {
 	/**
 	 * Enumeration of the type of AI Controller
 	 */
@@ -66,7 +65,7 @@ public class AIController {
 	}
 
 	private CharacterType characterType;
-    private AbstractBeeModel controlledCharacter;
+    private CharacterModel controlledCharacter;
     private LevelModel levelModel;
     private float chaseRadius;
     private float wanderSpeedFactor;
@@ -77,7 +76,6 @@ public class AIController {
     private static final int ticksBeforeChangeInRandomDirection = 120;
 	private static final int ticksBeforeChangeInChaseDirection = 15;
     private Vector2 target;
-    private Vector2 offset;
     private DirectedLineSegment lineToTarget;
     private DirectedLineSegment tempLineSegment;
     private Vector2 direction;
@@ -89,11 +87,10 @@ public class AIController {
 	 * Creates an AI Controller for the given enemy model
 	 *
 	 * @param levelModel the level that the enemy is in.
-	 * @param target the target which this AI Controller is trying to chase.
 	 * @param controlledCharacter the enemy that this AI Controller controls.
 	 *
 	 */
-	public AIController(LevelModel levelModel, AbstractBeeModel controlledCharacter, JsonValue data) {
+	public AISingleCharacterController(LevelModel levelModel, CharacterModel controlledCharacter, JsonValue data) {
 		this.levelModel = levelModel;
         this.controlledCharacter = controlledCharacter;
 
@@ -103,7 +100,6 @@ public class AIController {
 			case 0:
 				this.target = levelModel.getPlayer().getPosition();
 		}
-		this.offset = new Vector2(data.get("offset").getFloat("x"), data.get("offset").getFloat("y"));
 		this.wanderSpeedFactor = data.getFloat("wander_speed_factor");
 		this.chaseSpeedFactor = data.getFloat("chase_speed_factor");
 
@@ -134,38 +130,38 @@ public class AIController {
 		return direction;
 	}
 
-	/**
-	 * Returns the horizontal direction which the controlled enemy should move.
-	 *
-	 * @return The direction that the enemy should move.
-	 */
-	public float getMovementHorizontalDirection() {
-		return direction.x;
-	}
+//	/**
+//	 * Returns the horizontal direction which the controlled enemy should move.
+//	 *
+//	 * @return The direction that the enemy should move.
+//	 */
+//	public float getMovementHorizontalDirection() {
+//		return direction.x;
+//	}
+//
+//	/**
+//	 * Returns the horizontal direction which the controlled enemy should move.
+//	 *
+//	 * @return The direction that the enemy should move.
+//	 */
+//	public float getMovementHorizontalDirection1orNeg1() {
+//		if (direction.x > 0) {
+//			return 1;
+//		} else if (direction.x == 0) {
+//			return 0;
+//		} else {
+//			return -1;
+//		}
+//	}
 
-	/**
-	 * Returns the horizontal direction which the controlled enemy should move.
-	 *
-	 * @return The direction that the enemy should move.
-	 */
-	public float getMovementHorizontalDirection1orNeg1() {
-		if (direction.x > 0) {
-			return 1;
-		} else if (direction.x == 0) {
-			return 0;
-		} else {
-			return -1;
-		}
-	}
-
-	/**
-	 * Returns the horizontal direction which the controlled enemy should move.
-	 *
-	 * @return The direction that the enemy should move.
-	 */
-	public float getMovementVerticalDirection() {
-		return direction.y;
-	}
+//	/**
+//	 * Returns the vertical direction which the controlled enemy should move.
+//	 *
+//	 * @return The direction that the enemy should move.
+//	 */
+//	public float getMovementVerticalDirection() {
+//		return direction.y;
+//	}
 
 
 	/**
@@ -173,7 +169,7 @@ public class AIController {
 	 *
 	 * @return the character model which is controlled by the AI Controller.
 	 */
-	public AbstractBeeModel getControlledCharacter() {
+	public CharacterModel getControlledCharacter() {
 		return controlledCharacter;
 	}
 
@@ -192,13 +188,6 @@ public class AIController {
 		this.target = target;
 	}
 
-	/**
-	 * Sets the offset through two floats.
-	 */
-	public void setOffset(float x, float y) {
-		this.offset.set(x, y);
-	}
-	
 	/**
 	 * Updates the vector 2 between the enemy object and the target.
 	 */
