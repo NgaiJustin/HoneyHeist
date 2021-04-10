@@ -8,6 +8,7 @@ import com.badlogic.gdx.controllers.Controller;
 import com.badlogic.gdx.controllers.ControllerListener;
 import com.badlogic.gdx.controllers.ControllerMapping;
 
+import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.assets.*;
 import edu.cornell.gdiac.honeyHeistCode.GameCanvas;
 import edu.cornell.gdiac.util.*;
@@ -30,6 +31,8 @@ public class LevelSelector implements Screen, InputProcessor, ControllerListener
     private Texture title;
     /** selected level number */
     private int levelNumber;
+    /** number of total levels */
+    private int totalLevelNum;
 
 //    // statusBar is a "texture atlas." Break it up into parts.
 //    /** Left cap to the status background (grey region) */
@@ -181,6 +184,8 @@ public class LevelSelector implements Screen, InputProcessor, ControllerListener
         levelOne = null;
         levelTwo = null;
         levelThree = null;
+//        JsonValue constants = internal.getEntry("levelSelector", JsonValue.class);
+//        totalLevelNum = constants.getInt("totalLevels", 0);
         background = internal.getEntry( "background", Texture.class );
         background.setFilter( TextureFilter.Linear, TextureFilter.Linear );
         title = internal.getEntry("title", Texture.class);
@@ -254,7 +259,7 @@ public class LevelSelector implements Screen, InputProcessor, ControllerListener
         canvas.begin();
         canvas.draw(background, 0, 0);
         canvas.draw(title, Color.WHITE, title.getWidth()/2f, title.getHeight()/2f,
-                centerX/2f, centerY*1.5f, 0, BUTTON_SCALE*scale, BUTTON_SCALE*scale);
+                centerX, centerY*1.5f, 0, BUTTON_SCALE*scale, BUTTON_SCALE*scale);
         if (levelOne != null) {
             Color tint = (pressState == 1 ? Color.GRAY: Color.WHITE);
             canvas.draw(levelOne, tint, levelOne.getWidth()/2f, levelOne.getHeight()/2f,

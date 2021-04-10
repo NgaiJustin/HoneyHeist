@@ -2,6 +2,7 @@
 	"textures": {
         "background": "shared/loadingtemp.png",
 		"play": "shared/play.png",
+        "totalLevels": 3,
         "one": "shared/one.png",
         "two": "shared/two.png",
         "three": "shared/three.png",
