@@ -535,7 +535,7 @@ public class LevelController implements ContactListener {
 
 
         // Create platforms
-        PlatformModel platforms = new PlatformModel(levelData.get("platforms"));
+        PlatformModel platforms = new PlatformModel(levelData.get("platforms"),"platform");
         platforms.setDrawScale(scale);
         platforms.setTexture(earthTile);
         addObject(platforms);
