@@ -63,29 +63,32 @@ public class LevelModel {
         this.bounds = bounds;
     }
 
+    public LevelModel() {
+    }
+
     public PlatformModel getPlatforms() {
         return platforms;
     }
 
-//    public void setPlatforms(PlatformModel platforms) { this.platforms = platforms; }
+    public void setPlatforms(PlatformModel platforms) { this.platforms = platforms; }
 
     public PlayerModel getPlayer() {
         return playerModel;
     }
 
-//    public void setPlayer(PlayerModel playerModel) { this.playerModel = playerModel; }
+    public void setPlayer(PlayerModel playerModel) { this.playerModel = playerModel; }
 
     public Array<AbstractBeeModel> getBees() {return bees;}
 
-//    public void setBees(Array<AbstractBeeModel> bees) { this.bees = bees; }
+    public void setBees(Array<AbstractBeeModel> bees) { this.bees = bees; }
 
     public BoxObstacle getGoalDoor() {return goalDoor;}
 
-//    public void setGoalDoor(BoxObstacle goalDoor) { this.goalDoor = goalDoor; }
+    public void setGoalDoor(BoxObstacle goalDoor) { this.goalDoor = goalDoor; }
 
     public Vector2 getOrigin() {return origin;}
 
-//    public void setOrigin(Vector2 origin) { this.origin = origin; }
+    public void setOrigin(Vector2 origin) { this.origin = origin; }
 
     public Rectangle getBounds() {return bounds;}
 }

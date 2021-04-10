@@ -1010,7 +1010,14 @@ public abstract class Obstacle {
 	 *
 	 * @return	true = currently rotating, false = not rotating
 	 */
-	public boolean getIsRotating() { return isRotating; }
+	public boolean isRotating() { return isRotating; }
+
+	/**
+	 * returns a flag indicating whether or not the obstacle is rotating in the clockwise direction
+	 *
+	 * @return	true = clockwise, false = counter clockwise
+	 */
+	public boolean isClockwise() { return isClockwise; }
 
 	/// Abstract Methods
 	/**
@@ -1059,6 +1066,15 @@ public abstract class Obstacle {
 		sticking = true;
 		this.isClockwise = isClockwise;
 		addRotation(rotationAngle);
+	}
+	public void startRotation(float rotationAmount, boolean isClockwise, Vector2 point){
+		if (isRotating) return;
+		setBodyType(BodyDef.BodyType.StaticBody);
+		stageCenter = point;
+		isRotating = true;
+		sticking = true;
+		this.isClockwise = isClockwise;
+		addRotation(rotationAmount);
 	}
 
 	/**

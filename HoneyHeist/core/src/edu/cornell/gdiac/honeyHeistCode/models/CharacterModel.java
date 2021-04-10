@@ -166,7 +166,7 @@ public class CharacterModel extends CapsuleObstacle {
                 height * data.get("shrink").getFloat(1));
         setDensity(data.getFloat("density", 0));
         setFriction(data.getFloat("friction", 0));
-        setFixedRotation(true);
+        setFixedRotation(false);
 
         maxspeed = data.getFloat("maxspeed", 0);
         damping = data.getFloat("damping", 0);
@@ -229,8 +229,10 @@ public class CharacterModel extends CapsuleObstacle {
                     setBodyType(BodyDef.BodyType.DynamicBody);
                     sticking = false;
                     isGrounded = false;
-                    this.setAngle(0);
                 }
+            }
+            if(!isGrounded){
+                this.setAngle(0);
             }
             return;
         }
@@ -267,7 +269,8 @@ public class CharacterModel extends CapsuleObstacle {
         // Velocity too high, clamp it
         if (Math.abs(getVX()) >= getMaxSpeed()) {
             setVX(Math.signum(getVX()) * getMaxSpeed());
-        } else {
+        }
+        if((Math.copySign(1.0f,getVX())!=Math.copySign(1.0f,getMovement()))||!(Math.abs(getVX()) >= getMaxSpeed())){
             forceCache.set(getMovement(), 0);
             body.applyForce(forceCache, getPosition(), true);
         }
@@ -279,6 +282,10 @@ public class CharacterModel extends CapsuleObstacle {
         if(!isGrounded){
             setVY(Math.min(0f,getVY()));
         }
+
+        /*if(isGrounded){
+            setVY(Math.min(-0.145f,getVY()));
+        }*/
     }
     /**
      * Draws the outline of the physics body.
