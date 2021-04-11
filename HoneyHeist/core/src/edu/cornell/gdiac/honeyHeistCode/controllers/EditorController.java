@@ -362,7 +362,9 @@ public class EditorController extends WorldController implements InputProcessor 
                         Vector2 previousClick = clickCache.get(clickCache.size - 2);
                         Vector2 currentClick = clickCache.get(clickCache.size - 1);
 
-                        newPlatform(rectFromTwoPoints(previousClick, currentClick));
+                        if (currentClick.x != previousClick.x || currentClick.y != previousClick.y) {
+                            newPlatform(rectFromTwoPoints(previousClick, currentClick));
+                        }
                         clickCache.clear();
                         drawOutline = false;
                     }
@@ -497,8 +499,9 @@ public class EditorController extends WorldController implements InputProcessor 
 
                         Vector2 previousClick = clickCache.get(clickCache.size - 2);
                         Vector2 currentClick = clickCache.get(clickCache.size - 1);
-
-                        newSpikedPlatform(rectFromTwoPoints(previousClick, currentClick));
+                        if (currentClick.x != previousClick.x || currentClick.y != previousClick.y) {
+                            newSpikedPlatform(rectFromTwoPoints(previousClick, currentClick));
+                        }
                         clickCache.clear();
                         drawOutline = false;
                     }
