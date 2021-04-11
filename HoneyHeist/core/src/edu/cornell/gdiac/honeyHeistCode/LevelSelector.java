@@ -14,6 +14,8 @@ import edu.cornell.gdiac.assets.*;
 import edu.cornell.gdiac.honeyHeistCode.GameCanvas;
 import edu.cornell.gdiac.util.*;
 
+import java.util.Arrays;
+
 public class LevelSelector implements Screen, InputProcessor, ControllerListener {
     /** Internal assets for this loading screen */
     private AssetDirectory internal;
@@ -42,6 +44,8 @@ public class LevelSelector implements Screen, InputProcessor, ControllerListener
     private JsonValue allLevelData;
     /** JsonValue data for the selected data */
     private JsonValue selectedLevelData;
+    /** level buttons, should have the size specified by allLevelData */
+    private Texture[] buttons;
 
 //    // statusBar is a "texture atlas." Break it up into parts.
 //    /** Left cap to the status background (grey region) */
@@ -188,22 +192,22 @@ public class LevelSelector implements Screen, InputProcessor, ControllerListener
         internal.loadAssets();
         internal.finishLoading();
 
-        // Load the next two images immediately.
-//        playButton = null;
-        levelOne = null;
-        levelTwo = null;
-        levelThree = null;
-//        JsonValue constants = internal.getEntry("levelSelector", JsonValue.class);
-//        totalLevelNum = constants.getInt("totalLevels", 0);
-        background = internal.getEntry( "background", Texture.class );
-        background.setFilter( TextureFilter.Linear, TextureFilter.Linear );
-        title = internal.getEntry("title", Texture.class);
-        displayFont = internal.getEntry("times",BitmapFont.class);
         // get the level data
         JsonValue levelData = internal.getEntry("levelData", JsonValue.class);
         totalLevelNum = levelData.get("totalNum").asInt();
         allLevelData = levelData.get("levels");
-        System.out.println(totalLevelNum);
+        buttons = new Texture[totalLevelNum];
+        // initailize the buttons to null
+        Arrays.fill(buttons, null);
+
+        // Load the next two images immediately.
+//        levelOne = null;
+//        levelTwo = null;
+//        levelThree = null;
+        background = internal.getEntry( "background", Texture.class );
+        background.setFilter( TextureFilter.Linear, TextureFilter.Linear );
+        title = internal.getEntry("title", Texture.class);
+        displayFont = internal.getEntry("times",BitmapFont.class);
 
         // No progress so far.
         progress = 0;
@@ -240,16 +244,33 @@ public class LevelSelector implements Screen, InputProcessor, ControllerListener
      * @param delta Number of seconds since last animation frame
      */
     private void update(float delta) {
-        if (levelOne == null && levelTwo == null && levelThree == null) {
+        boolean flag = true;
+        for (Texture button : buttons) {
+            if (button != null) {
+                flag = false;
+                break;
+            }
+        }
+        if (flag) {
             assets.update(budget);
             this.progress = assets.getProgress();
             if (progress >= 1.0f) {
                 this.progress = 1.0f;
-                levelOne = internal.getEntry("button", Texture.class);
-                levelTwo = internal.getEntry("button", Texture.class);
-                levelThree = internal.getEntry("button", Texture.class);
+                for (int i=0; i<buttons.length; i++) {
+                    buttons[i] = internal.getEntry("button", Texture.class);
+                }
             }
         }
+//        if (levelOne == null && levelTwo == null && levelThree == null) {
+//            assets.update(budget);
+//            this.progress = assets.getProgress();
+//            if (progress >= 1.0f) {
+//                this.progress = 1.0f;
+//                levelOne = internal.getEntry("button", Texture.class);
+//                levelTwo = internal.getEntry("button", Texture.class);
+//                levelThree = internal.getEntry("button", Texture.class);
+//            }
+//        }
     }
 
     /**
@@ -264,24 +285,41 @@ public class LevelSelector implements Screen, InputProcessor, ControllerListener
         canvas.draw(background, 0, 0);
         canvas.draw(title, Color.WHITE, title.getWidth()/2f, title.getHeight()/2f,
                 centerX, centerY*1.5f, 0, 2, 2);
-        if (levelOne != null) {
-            Color tint = (pressState == 1 ? Color.GRAY: Color.WHITE);
-            // draw the button
-            canvas.draw(levelOne, tint, levelOne.getWidth()/2f, levelOne.getHeight()/2f,
-                    centerX/2f, centerY/2f, 0, BUTTON_SCALE*scale, BUTTON_SCALE*scale);
-            // draw the letter
-            canvas.drawText("1", displayFont, centerX/2f-COUNTER_OFFSET, centerY/2f+COUNTER_OFFSET);
+        Color tint;
+        for (int i=0; i<buttons.length; i++) {
+            if (buttons[i] != null) {
+                // pressState is one bigger than the button index
+                tint = (pressState == i+1 ? Color.GRAY: Color.WHITE);
+                // draw the button
+                Texture button = buttons[i];
+                // pos_offset helps to decide the position of the button
+                float pos_offset = (i+1)/(float)totalLevelNum;
+                canvas.draw(button, tint, button.getWidth()/2f, button.getHeight()/2f,
+                    centerX*pos_offset, centerY/2f, 0, BUTTON_SCALE*scale,
+                        BUTTON_SCALE*scale);
+                // draw the letter
+                canvas.drawText("1", displayFont, centerX*pos_offset-COUNTER_OFFSET,
+                        centerY/2f+COUNTER_OFFSET);
+            }
         }
-        if (levelTwo != null) {
-            Color tint = (pressState == 2 ? Color.GRAY: Color.WHITE);
-            canvas.draw(levelTwo, tint, levelTwo.getWidth()/2f, levelTwo.getHeight()/2f,
-                    centerX, centerY/2f, 0, BUTTON_SCALE*scale, BUTTON_SCALE*scale);
-        }
-        if (levelThree != null) {
-            Color tint = (pressState == 3 ? Color.GRAY: Color.WHITE);
-            canvas.draw(levelThree, tint, levelThree.getWidth()/2f, levelThree.getHeight()/2f,
-                    centerX*1.5f, centerY/2f, 0, BUTTON_SCALE*scale, BUTTON_SCALE*scale);
-        }
+//        if (levelOne != null) {
+//            Color tint = (pressState == 1 ? Color.GRAY: Color.WHITE);
+//            // draw the button
+//            canvas.draw(levelOne, tint, levelOne.getWidth()/2f, levelOne.getHeight()/2f,
+//                    centerX/2f, centerY/2f, 0, BUTTON_SCALE*scale, BUTTON_SCALE*scale);
+//            // draw the letter
+//            canvas.drawText("1", displayFont, centerX/2f-COUNTER_OFFSET, centerY/2f+COUNTER_OFFSET);
+//        }
+//        if (levelTwo != null) {
+//            Color tint = (pressState == 2 ? Color.GRAY: Color.WHITE);
+//            canvas.draw(levelTwo, tint, levelTwo.getWidth()/2f, levelTwo.getHeight()/2f,
+//                    centerX, centerY/2f, 0, BUTTON_SCALE*scale, BUTTON_SCALE*scale);
+//        }
+//        if (levelThree != null) {
+//            Color tint = (pressState == 3 ? Color.GRAY: Color.WHITE);
+//            canvas.draw(levelThree, tint, levelThree.getWidth()/2f, levelThree.getHeight()/2f,
+//                    centerX*1.5f, centerY/2f, 0, BUTTON_SCALE*scale, BUTTON_SCALE*scale);
+//        }
         canvas.end();
     }
 
@@ -365,9 +403,19 @@ public class LevelSelector implements Screen, InputProcessor, ControllerListener
      * @return whether to hand the event to other listeners.
      */
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-        if ((levelOne == null && levelTwo == null && levelThree == null) || pressState == 0) {
+        boolean flag = true;
+        for (Texture b : buttons) {
+            if (b != null) {
+                flag = false;
+                break;
+            }
+        }
+        if (flag || pressState == 0) {
             return true;
         }
+//        if ((levelOne == null && levelTwo == null && levelThree == null) || pressState == 0) {
+//            return true;
+//        }
 
         // Flip to match graphics coordinates
         screenY = heightY-screenY;
@@ -375,27 +423,37 @@ public class LevelSelector implements Screen, InputProcessor, ControllerListener
         // TODO: Fix scaling
         // Play button is a circle.
         float radius, dist;
-        if (levelOne != null) {
-            radius = BUTTON_SCALE*scale*levelOne.getWidth()/2.0f;
-            dist = (screenX-centerX/2f)*(screenX-centerX/2f)+(screenY-centerY/2f)*(screenY-centerY/2f);
-            if (dist < radius*radius) {
-                pressState = 1;
+        for (int i=0; i<buttons.length; i++) {
+            if (buttons[i] != null) {
+                radius = BUTTON_SCALE*scale*buttons[i].getWidth()/2.0f;
+                float offset = (i+1)/(float)totalLevelNum;
+                dist = (screenX-centerX*offset)*(screenX-centerX*offset)+(screenY-centerY/2f)*(screenY-centerY/2f);
+                if (dist < radius*radius) {
+                    pressState = i+1;
+                }
             }
         }
-        if (levelTwo != null) {
-            radius = BUTTON_SCALE*scale*levelTwo.getWidth()/2.0f;
-            dist = (screenX-centerX)*(screenX-centerX)+(screenY-centerY/2f)*(screenY-centerY/2f);
-            if (dist < radius*radius) {
-                pressState = 2;
-            }
-        }
-        if (levelThree != null) {
-            radius = BUTTON_SCALE*scale*levelThree.getWidth()/2.0f;
-            dist = (screenX-centerX*1.5f)*(screenX-centerX*1.5f)+(screenY-centerY/2f)*(screenY-centerY/2f);
-            if (dist < radius*radius) {
-                pressState = 3;
-            }
-        }
+//        if (levelOne != null) {
+//            radius = BUTTON_SCALE*scale*levelOne.getWidth()/2.0f;
+//            dist = (screenX-centerX/2f)*(screenX-centerX/2f)+(screenY-centerY/2f)*(screenY-centerY/2f);
+//            if (dist < radius*radius) {
+//                pressState = 1;
+//            }
+//        }
+//        if (levelTwo != null) {
+//            radius = BUTTON_SCALE*scale*levelTwo.getWidth()/2.0f;
+//            dist = (screenX-centerX)*(screenX-centerX)+(screenY-centerY/2f)*(screenY-centerY/2f);
+//            if (dist < radius*radius) {
+//                pressState = 2;
+//            }
+//        }
+//        if (levelThree != null) {
+//            radius = BUTTON_SCALE*scale*levelThree.getWidth()/2.0f;
+//            dist = (screenX-centerX*1.5f)*(screenX-centerX*1.5f)+(screenY-centerY/2f)*(screenY-centerY/2f);
+//            if (dist < radius*radius) {
+//                pressState = 3;
+//            }
+//        }
         return false;
     }
     /**
@@ -410,7 +468,8 @@ public class LevelSelector implements Screen, InputProcessor, ControllerListener
      * @return whether to hand the event to other listeners.
      */
     public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-        if (pressState == 1 || pressState == 2 || pressState == 3) {
+        if (pressState >= 1 && pressState <= totalLevelNum) {
+//        if (pressState == 1 || pressState == 2 || pressState == 3) {
             // set the selected level number according to the pressState
             levelNumber = pressState;
             selectedLevelData = allLevelData.get(levelNumber-1);
