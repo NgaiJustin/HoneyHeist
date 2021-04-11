@@ -8,6 +8,7 @@ import com.badlogic.gdx.controllers.Controller;
 import com.badlogic.gdx.controllers.ControllerListener;
 import com.badlogic.gdx.controllers.ControllerMapping;
 
+import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.assets.*;
 import edu.cornell.gdiac.honeyHeistCode.GameCanvas;
@@ -35,8 +36,12 @@ public class LevelSelector implements Screen, InputProcessor, ControllerListener
     private int totalLevelNum;
     /** The font for numbers of level displayed */
     private BitmapFont displayFont;
-    /** Offset for the shell counter message on the screen */
+    /** Offset for the number message on the screen */
     private static final float COUNTER_OFFSET   = 5.0f;
+    /** JsonValue data for all level data */
+    private JsonValue allLevelData;
+    /** JsonValue data for the selected data */
+    private JsonValue selectedLevelData;
 
 //    // statusBar is a "texture atlas." Break it up into parts.
 //    /** Left cap to the status background (grey region) */
@@ -194,16 +199,11 @@ public class LevelSelector implements Screen, InputProcessor, ControllerListener
         background.setFilter( TextureFilter.Linear, TextureFilter.Linear );
         title = internal.getEntry("title", Texture.class);
         displayFont = internal.getEntry("times",BitmapFont.class);
-//        statusBar = internal.getEntry( "progress", Texture.class );
-
-        // Break up the status bar texture into regions
-//        statusBkgLeft = internal.getEntry( "progress.backleft", TextureRegion.class );
-//        statusBkgRight = internal.getEntry( "progress.backright", TextureRegion.class );
-//        statusBkgMiddle = internal.getEntry( "progress.background", TextureRegion.class );
-//
-//        statusFrgLeft = internal.getEntry( "progress.foreleft", TextureRegion.class );
-//        statusFrgRight = internal.getEntry( "progress.foreright", TextureRegion.class );
-//        statusFrgMiddle = internal.getEntry( "progress.foreground", TextureRegion.class );
+        // get the level data
+        JsonValue levelData = internal.getEntry("levelData", JsonValue.class);
+        totalLevelNum = levelData.get("totalNum").asInt();
+        allLevelData = levelData.get("levels");
+        System.out.println(totalLevelNum);
 
         // No progress so far.
         progress = 0;
@@ -413,6 +413,8 @@ public class LevelSelector implements Screen, InputProcessor, ControllerListener
         if (pressState == 1 || pressState == 2 || pressState == 3) {
             // set the selected level number according to the pressState
             levelNumber = pressState;
+            selectedLevelData = allLevelData.get(levelNumber-1);
+            System.out.println(selectedLevelData.get("test").asInt());
             pressState = 0;
             return false;
         }
