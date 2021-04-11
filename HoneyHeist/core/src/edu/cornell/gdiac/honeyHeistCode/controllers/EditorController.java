@@ -393,7 +393,7 @@ public class EditorController extends WorldController implements InputProcessor 
                 }
             }
 
-            //PLACE GROUNDED ENEMY MODE
+            //PLACE LARVA MODE
             if (mode == 2) {
                 if (input.didMouseClick()) {
                     clickCache.add(new Vector2(input.getCrossHair().x, input.getCrossHair().y));
@@ -488,7 +488,7 @@ public class EditorController extends WorldController implements InputProcessor 
                 }
             }
 
-            //PLACE SPIKED PLATFORM
+            //PLACE SPIKED PLATFORM MODE
             if (mode == 5){
                 if (input.didMouseClick()) {
                     clickCache.add(new Vector2(input.getCrossHair().x, input.getCrossHair().y));
@@ -518,7 +518,7 @@ public class EditorController extends WorldController implements InputProcessor 
                 }
             }
 
-            //PLACE HONEYPATCH
+            //PLACE HONEYPATCH MODE
             if (mode == 6){
                 if (input.didMouseClick()) {
                     clickCache.add(new Vector2(input.getCrossHair().x, input.getCrossHair().y));
@@ -555,7 +555,7 @@ public class EditorController extends WorldController implements InputProcessor 
                 }
             }
 
-            //PLACE FLYING BEE
+            //PLACE BEE MODE
             if (mode == 7){
                 if (input.didMouseClick()) {
                     clickCache.add(new Vector2(input.getCrossHair().x, input.getCrossHair().y));
@@ -716,7 +716,8 @@ public class EditorController extends WorldController implements InputProcessor 
 
 
     /**
-     * Creates a rectangle based on the two points a and b
+     * Creates a rectangle based on the two points a and b,
+     * with a default width or a specified width
      *
      * @param a the first point
      * @param b the second point
@@ -807,12 +808,12 @@ public class EditorController extends WorldController implements InputProcessor 
         String modeText = "MODE: ";
         if(mode == 0){modeText += "Place Platform";}
         if(mode == 1){modeText += "Place Player";}
-        if(mode == 2){modeText += "Place Grounded Enemy";}
+        if(mode == 2){modeText += "Place Larva";}
         if(mode == 3){modeText += "Place Goal Door";}
         if(mode == 4){modeText += "Select";}
         if(mode == 5){modeText += "Place Spiked Platform";}
         if(mode == 6){modeText += "Place Honeypatch";}
-        if(mode == 7){modeText += "Place Flying Enemy";}
+        if(mode == 7){modeText += "Place Bee";}
 
         // Draw mode text
         canvas.begin();
