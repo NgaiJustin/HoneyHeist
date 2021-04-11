@@ -45,6 +45,11 @@ public class LevelModel {
      * Reference to the spiked platforms
      */
     private SpikedPlatformModel spikedPlatforms;
+
+    /**
+     * Reference to the honeypatches
+     */
+    private HoneypatchModel honeyPatches;
     /**
      * Reference to the origin of the world
      */
@@ -60,12 +65,14 @@ public class LevelModel {
      * The game has default gravity and other settings
      */
     public LevelModel(PlayerModel playerModel, Array<AbstractBeeModel> bees, BoxObstacle goalDoor,
-                      PlatformModel platforms, SpikedPlatformModel spikedPlatforms, Rectangle bounds) {
+                      PlatformModel platforms, SpikedPlatformModel spikedPlatforms,
+                      HoneypatchModel honeyPatches, Rectangle bounds) {
         this.playerModel = playerModel;
         this.bees = bees;
         this.goalDoor = goalDoor;
         this.platforms = platforms;
         this.spikedPlatforms = spikedPlatforms;
+        this.honeyPatches = honeyPatches;
         this.origin = new Vector2(bounds.width/2,bounds.height/2);
         this.bounds = bounds;
     }
@@ -92,6 +99,10 @@ public class LevelModel {
     public BoxObstacle getGoalDoor() {return goalDoor;}
 
     public void setGoalDoor(BoxObstacle goalDoor) { this.goalDoor = goalDoor; }
+
+    public HoneypatchModel getHoneyPatches() {return honeyPatches;}
+
+    public void setHoneyPatches(HoneypatchModel honeyPatches) {this.honeyPatches = honeyPatches;}
 
     public Vector2 getOrigin() {return origin;}
 

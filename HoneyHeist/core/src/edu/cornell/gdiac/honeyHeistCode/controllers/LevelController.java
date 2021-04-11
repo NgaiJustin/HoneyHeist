@@ -568,7 +568,7 @@ public class LevelController implements ContactListener {
 
 
         // Create platforms
-        PlatformModel platforms = new PlatformModel(levelData.get("platforms"),"platform");
+        PlatformModel platforms = new PlatformModel(levelData.get("platforms"));
         platforms.setDrawScale(scale);
         platforms.setTexture(earthTile);
         addObject(platforms);
@@ -578,6 +578,12 @@ public class LevelController implements ContactListener {
         spikedPlatforms.setDrawScale(scale);
         spikedPlatforms.setTexture(earthTile); //TODO: Change spikedPlatform texture
         addObject(spikedPlatforms);
+
+        // Create honeypatches
+        HoneypatchModel honeyPatches = new HoneypatchModel(levelData.get("honeypatches"),1f);
+        honeyPatches.setDrawScale(scale);
+        honeyPatches.setTexture(earthTile); //TODO: Change honeyPatch texture
+        addObject(honeyPatches);
 
         // This world is heavier
         world.setGravity(new Vector2(0, defaults.getFloat("gravity", 0)));
@@ -595,7 +601,7 @@ public class LevelController implements ContactListener {
         // Create chaser bees
 
         Array<AbstractBeeModel> bees = new Array<AbstractBeeModel>();
-        level = new LevelModel(avatar,bees,goalDoor,platforms, spikedPlatforms, new Rectangle(bounds));
+        level = new LevelModel(avatar,bees,goalDoor,platforms, spikedPlatforms, honeyPatches, new Rectangle(bounds));
 
 
         aIController = new AIController(level, whiteSquare);
