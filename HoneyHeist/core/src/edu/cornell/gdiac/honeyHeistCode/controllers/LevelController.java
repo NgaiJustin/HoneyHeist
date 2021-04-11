@@ -49,6 +49,8 @@ import java.util.Iterator;
 public class LevelController implements ContactListener {
     /** The texture for walls and platforms */
     protected TextureRegion earthTile;
+    /** The texture for spiked platforms */
+    protected TextureRegion spikedTile;
     /** The texture for the exit condition */
     protected TextureRegion goalTile;
     /** The texture for the background */
@@ -572,7 +574,7 @@ public class LevelController implements ContactListener {
         addObject(platforms);
 
         // Create spiked platforms
-        PlatformModel spikedPlatforms = new SpikedPlatformModel(levelData.get("spikedPlatforms"));
+        SpikedPlatformModel spikedPlatforms = new SpikedPlatformModel(levelData.get("spikedPlatforms"));
         spikedPlatforms.setDrawScale(scale);
         spikedPlatforms.setTexture(earthTile); //TODO: Change spikedPlatform texture
         addObject(spikedPlatforms);
@@ -593,7 +595,7 @@ public class LevelController implements ContactListener {
         // Create chaser bees
 
         Array<AbstractBeeModel> bees = new Array<AbstractBeeModel>();
-        level = new LevelModel(avatar,bees,goalDoor,platforms,new Rectangle(bounds));
+        level = new LevelModel(avatar,bees,goalDoor,platforms, spikedPlatforms, new Rectangle(bounds));
 
 
         aIController = new AIController(level, whiteSquare);
@@ -689,16 +691,6 @@ public class LevelController implements ContactListener {
         player.animateAnt(PlayerModel.AntAnimations.WALK, direction != 0);
     }
 
-    /**
-     * Moves the chaserBee based on the direction given by AIController
-     *
-     * @param direction -1 = left, 1 = right, 0 = still
-     */
-    public void moveChaserBee(float direction, ChaserBeeModel bee) {
-        bee.setMovement(direction * bee.getForce());
-    }
-
-
 
     /**
      * Returns whether to process the update loop
@@ -791,6 +783,7 @@ public class LevelController implements ContactListener {
         // TO BE IMPLEMENTED
 
         aIController.moveAIControlledCharacters();
+//        aIController.updateAccessibility();
 
         for(AbstractBeeModel bee : level.getBees()){
             bee.applyForce();
@@ -991,7 +984,7 @@ public class LevelController implements ContactListener {
         canvas.begin();
         canvas.draw(background, 0, 0);
         if (aIDebug) {
-            aIController.drawDebug(canvas, scale);
+            aIController.drawDebugTileMap(canvas, scale);
         }
         for(Obstacle obj : objects) {
             obj.draw(canvas);
@@ -1003,7 +996,9 @@ public class LevelController implements ContactListener {
             for(Obstacle obj : objects) {
                 obj.drawDebug(canvas);
             }
-
+            if (aIDebug) {
+                aIController.drawDebugLines(canvas, scale);
+            }
             canvas.endDebug();
         }
 

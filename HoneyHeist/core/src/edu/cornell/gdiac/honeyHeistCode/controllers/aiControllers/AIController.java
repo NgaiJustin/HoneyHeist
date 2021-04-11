@@ -4,7 +4,6 @@ import com.badlogic.gdx.utils.Array;
 
 import edu.cornell.gdiac.honeyHeistCode.GameCanvas;
 import com.badlogic.gdx.math.Vector2;
-import edu.cornell.gdiac.honeyHeistCode.controllers.aiControllers.aiModels.AIGraphModel;
 import edu.cornell.gdiac.honeyHeistCode.models.LevelModel;
 import edu.cornell.gdiac.honeyHeistCode.models.CharacterModel;
 import com.badlogic.gdx.utils.JsonValue;
@@ -34,12 +33,20 @@ public class AIController {
         }
     }
 
-    public void drawDebug(GameCanvas canvas, Vector2 scale) {
-        for (AISingleCharacterController aICharacterController: aICharacterControllers) {
-            
-        }
+    public void updateAccessibility() {
+        aIGraphModel.updateAccessibility();
+    }
+
+    public void drawDebugTileMap(GameCanvas canvas, Vector2 scale) {
+
         aIGraphModel.setTextures();
         aIGraphModel.drawDebug(canvas, scale);
+    }
+
+    public void drawDebugLines(GameCanvas canvas, Vector2 scale) {
+        for (AISingleCharacterController aICharacterController: aICharacterControllers) {
+            aICharacterController.drawDebug(canvas, scale);
+        }
     }
 
 }

@@ -1,9 +1,7 @@
 package edu.cornell.gdiac.honeyHeistCode.controllers.aiControllers;
 
 import com.badlogic.gdx.utils.BinaryHeap;
-import edu.cornell.gdiac.honeyHeistCode.controllers.aiControllers.aiModels.AIConnectionModel;
-import edu.cornell.gdiac.honeyHeistCode.controllers.aiControllers.aiModels.AIGraphModel;
-import edu.cornell.gdiac.honeyHeistCode.controllers.aiControllers.aiModels.AINodeModel;
+
 import java.util.HashMap;
 import com.badlogic.gdx.math.Vector2;
 
@@ -27,10 +25,10 @@ public class AStarPathFinderController  {
 
     static class NodeRecord extends BinaryHeap.Node {
         /** The reference to the node. */
-        AINodeModel node;
+        AIGraphModel.AINodeModel node;
 
         /** The incoming connection to the node */
-        AIConnectionModel connection;
+        AIGraphModel.AIConnectionModel connection;
 
         /** The actual cost from the start node. */
         float costSoFar;

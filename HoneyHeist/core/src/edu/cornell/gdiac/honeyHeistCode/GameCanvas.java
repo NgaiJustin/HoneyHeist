@@ -1136,6 +1136,51 @@ public class GameCanvas {
     }
 
 	/**
+	 * Draws a line with a specified color.
+	 *
+	 * @param x0
+	 * @param y0
+	 * @param x1
+	 * @param y1
+	 * @param color
+	 * @param sx
+	 * @param sy
+	 */
+	public void drawLine(Color color, float x0, float y0, float x1, float y1, float sx, float sy) {
+		if (active != DrawPass.DEBUG) {
+			Gdx.app.error("GameCanvas", "Cannot draw without active beginDebug()", new IllegalStateException());
+			return;
+		}
+
+		local.setToScaling(sx,sy);
+		local.translate(0,0);
+		local.rotateRad(0);
+
+		debugRender.setColor(color);
+		vertex.x = x0; vertex.y = y0;
+		local.applyTo(vertex);
+		x0 = vertex.x; y0 = vertex.y;
+		vertex.x = x1; vertex.y = y1;
+		local.applyTo(vertex);
+		x1 = vertex.x; y1 = vertex.y;
+		debugRender.line(x0, y0, x1, y1);
+	}
+
+
+	public void drawCircle(float radius, Color color, float x, float y, float sx, float sy) {
+		if (active != DrawPass.DEBUG) {
+			Gdx.app.error("GameCanvas", "Cannot draw without active beginDebug()", new IllegalStateException());
+			return;
+		}
+
+		float x0 = x*sx;
+		float y0 = y*sy;
+		float w = radius*sx;
+		float h = radius*sy;
+		debugRender.setColor(color);
+		debugRender.ellipse(x0-w, y0-h, 2*w, 2*h, 12);
+	}
+	/**
 	 * Compute the affine transform (and store it in local) for this image.
 	 * 
 	 * @param ox 	The x-coordinate of texture origin (in pixels)

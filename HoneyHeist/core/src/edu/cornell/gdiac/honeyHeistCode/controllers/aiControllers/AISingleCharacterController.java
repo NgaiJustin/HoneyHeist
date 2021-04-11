@@ -8,8 +8,9 @@ It is dependent on Level Model in order for the character to get information abo
  */
 package edu.cornell.gdiac.honeyHeistCode.controllers.aiControllers;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector2;
-import edu.cornell.gdiac.honeyHeistCode.models.AbstractBeeModel;
+import edu.cornell.gdiac.honeyHeistCode.GameCanvas;
 import edu.cornell.gdiac.honeyHeistCode.models.CharacterModel;
 import edu.cornell.gdiac.honeyHeistCode.models.LevelModel;
 import edu.cornell.gdiac.honeyHeistCode.models.PlatformModel;
@@ -296,14 +297,14 @@ public class AISingleCharacterController {
     private boolean isLineCollidingWithAPlatform(DirectedLineSegment line) {
 		PlatformModel platforms = levelModel.getPlatforms();
 		for (PolygonObstacle platform : platforms.getBodies()) {
-			if (doesLineSegmentIntersectsPolygon(line, platform.getVertices())) {
+			if (doesPolygonIntersectLine(line, platform.getTrueVertices())) {
 				return true;
 			}
 		}
 		return false;
     }
 
-    private boolean doesLineSegmentIntersectsPolygon(DirectedLineSegment line, float[] vertices) {
+    public boolean doesPolygonIntersectLine(DirectedLineSegment line, float[] vertices) {
 		for (int i = 0; i < vertices.length; i += 2) {
 			int x1Index = i;
 			int y1Index = i + 1;
@@ -346,78 +347,20 @@ public class AISingleCharacterController {
 		return true;
 	}
 
-	public class DirectedLineSegment {
-    	float x1;
-    	float y1;
-    	float x2;
-    	float y2;
-
-    	Vector2 direction;
-
-    	public DirectedLineSegment() {
-			this.x1 = 0;
-			this.y1 = 0;
-			this.x2 = 0;
-			this.y2 = 0;
-			direction = new Vector2();
+	public void drawDebug(GameCanvas gameCanvas, Vector2 scale) {
+    	if (state == FSMState.CHASE) {
+			gameCanvas.drawCircle(chaseRadius, Color.RED, controlledCharacter.getPosition().x, controlledCharacter.getPosition().y, scale.x, scale.y);
+		}
+    	else {
+			gameCanvas.drawCircle(chaseRadius, Color.YELLOW, controlledCharacter.getPosition().x, controlledCharacter.getPosition().y, scale.x, scale.y);
 		}
 
-    	public DirectedLineSegment (float x1, float y1, float x2, float y2) {
-    		this();
-			set(x1, y1, x2, y2);
+    	if (isLineCollidingWithAPlatform(lineToTarget)) {
+    		gameCanvas.drawLine(Color.RED, lineToTarget.x1, lineToTarget.y1, lineToTarget.x2, lineToTarget.y2, scale.x, scale.y);
 		}
-
-		public DirectedLineSegment (Vector2 startPoint, Vector2 endPoint) {
-			this();
-    		set(startPoint, endPoint);
-		}
-
-		public void set(float x1, float y1, float x2, float y2) {
-			this.x1 = x1;
-			this.y1 = y1;
-			this.x2 = x2;
-			this.y2 = y2;
-			direction.set((x2 - x1), (y2 - y1));
-		}
-
-		public void set(Vector2 startPoint, Vector2 endPoint) {
-			set(startPoint.x, startPoint.y, endPoint.x, endPoint.y);
-		}
-
-		public float dst() {
-    		return (float)Math.sqrt(Math.pow((x2 - x1), 2) + Math.pow((y2 - y1), 2));
-		}
-
-		public Vector2 getDirection() {
-			return direction;
-		}
-
-		public boolean intersects(DirectedLineSegment line) {
-			int dir1 = orientation(this.x1, this.y1, this.x2, this.y2, line.x1, line.y1);
-			int dir2 = orientation(this.x1, this.y1, this.x2, this.y2, line.x2, line.y2);
-			int dir3 = orientation(line.x1, line.y1, line.x2, line.y2, this.x1, this.y1);
-			int dir4 = orientation(line.x1, line.y1, line.x2, line.y2, this.x2, this.y2);
-
-			if (dir1 != dir2 && dir3 != dir4) {return true;}
-			return false;
-    	}
-
-		private int orientation(float x1, float y1, float x2, float y2, float x3, float y3) {
-			float val = (y2 - y1) * (x3 - x2) - (x2 - x1) * (y3 - y2);
-			if (val == 0) {return 0;}
-			else if (val < 0) {return -1;}
-			else {return 1;}
-		}
-
-		@Override
-		public String toString() {
-			return "DirectedLineSegment{" +
-					"x1=" + x1 +
-					", y1=" + y1 +
-					", x2=" + x2 +
-					", y2=" + y2 +
-					", direction=" + direction +
-					'}';
+		else {
+			gameCanvas.drawLine(Color.YELLOW, lineToTarget.x1, lineToTarget.y1, lineToTarget.x2, lineToTarget.y2, scale.x, scale.y);
 		}
 	}
+
 }
