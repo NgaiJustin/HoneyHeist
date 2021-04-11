@@ -15,6 +15,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 
 import edu.cornell.gdiac.honeyHeistCode.obstacle.BoxObstacle;
+import edu.cornell.gdiac.honeyHeistCode.obstacle.PolygonObstacle;
 
 /**
  * A class holding all game objects contained within a level,
@@ -51,6 +52,10 @@ public class LevelModel {
      */
     private HoneypatchModel honeyPatches;
     /**
+     * Reference to the levelBackground
+     */
+    private PolygonObstacle levelBackground;
+    /**
      * Reference to the origin of the world
      */
     private Vector2 origin;
@@ -66,13 +71,14 @@ public class LevelModel {
      */
     public LevelModel(PlayerModel playerModel, Array<AbstractBeeModel> bees, BoxObstacle goalDoor,
                       PlatformModel platforms, SpikedPlatformModel spikedPlatforms,
-                      HoneypatchModel honeyPatches, Rectangle bounds) {
+                      HoneypatchModel honeyPatches, PolygonObstacle levelBackground, Rectangle bounds) {
         this.playerModel = playerModel;
         this.bees = bees;
         this.goalDoor = goalDoor;
         this.platforms = platforms;
         this.spikedPlatforms = spikedPlatforms;
         this.honeyPatches = honeyPatches;
+        this.levelBackground = levelBackground;
         this.origin = new Vector2(bounds.width/2,bounds.height/2);
         this.bounds = bounds;
     }
@@ -109,4 +115,8 @@ public class LevelModel {
     public void setOrigin(Vector2 origin) { this.origin = origin; }
 
     public Rectangle getBounds() {return bounds;}
+
+    public void setLevelBackground(PolygonObstacle bg) {this.levelBackground = bg; }
+
+    public PolygonObstacle getLevelBackground() { return levelBackground; }
 }
