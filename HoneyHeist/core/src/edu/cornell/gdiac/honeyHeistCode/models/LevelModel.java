@@ -77,6 +77,8 @@ public class LevelModel {
         return platforms;
     }
 
+    public SpikedPlatformModel getSpikedPlatforms() {return spikedPlatforms;}
+
     public void setPlatforms(PlatformModel platforms) { this.platforms = platforms; }
 
     public PlayerModel getPlayer() {

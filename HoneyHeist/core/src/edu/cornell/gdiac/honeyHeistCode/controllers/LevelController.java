@@ -10,9 +10,7 @@
  */
 package edu.cornell.gdiac.honeyHeistCode.controllers;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -50,7 +48,7 @@ public class LevelController implements ContactListener {
     /** The texture for walls and platforms */
     protected TextureRegion earthTile;
     /** The texture for spiked platforms */
-    protected TextureRegion spikedTile;
+    protected TextureRegion poisonTile;
     /** The texture for the exit condition */
     protected TextureRegion goalTile;
     /** The texture for the background */
@@ -298,6 +296,12 @@ public class LevelController implements ContactListener {
      * Texture asset for chaser bee avatar
      */
     private TextureRegion chaserBeeTexture;
+
+    /**
+     * Texture asset for chaser bee avatar
+     */
+    private TextureRegion flyingBeeTexture;
+
     /**
      * Texture asset for testEnemy avatar
      */
@@ -392,7 +396,8 @@ public class LevelController implements ContactListener {
      */
     public void gatherAssets(AssetDirectory directory) {
         avatarTexture = new TextureRegion(directory.getEntry("platform:ant", Texture.class));
-        chaserBeeTexture = new TextureRegion(directory.getEntry("platform:chaserBee", Texture.class));
+        chaserBeeTexture = new TextureRegion(directory.getEntry("platform:larvae", Texture.class));
+        flyingBeeTexture = new TextureRegion(directory.getEntry("platform:flyingBee", Texture.class));
         sleeperBeeTexture = new TextureRegion(directory.getEntry("platform:sleeperBee", Texture.class));
 
         walkingPlayer = directory.getEntry( "platform:walk.pacing", FilmStrip.class );
@@ -408,6 +413,7 @@ public class LevelController implements ContactListener {
 
         // Allocate the world tiles
         earthTile = new TextureRegion(directory.getEntry( "shared:earth", Texture.class ));
+        poisonTile = new TextureRegion(directory.getEntry( "shared:poisonWall", Texture.class));
         goalTile  = new TextureRegion(directory.getEntry( "shared:goal", Texture.class ));
         background = new TextureRegion(directory.getEntry( "shared:background",  Texture.class ));
         displayFont = directory.getEntry( "shared:retro" ,BitmapFont.class);
@@ -575,8 +581,8 @@ public class LevelController implements ContactListener {
 
         // Create spiked platforms
         SpikedPlatformModel spikedPlatforms = new SpikedPlatformModel(levelData.get("spikedPlatforms"));
-        spikedPlatforms.setDrawScale(scale);
-        spikedPlatforms.setTexture(earthTile); //TODO: Change spikedPlatform texture
+        spikedPlatforms.setDrawScale(scale.x, scale.y);
+        spikedPlatforms.setTexture(poisonTile); //TODO: Change spikedPlatform texture
         addObject(spikedPlatforms);
 
         // This world is heavier
@@ -595,7 +601,7 @@ public class LevelController implements ContactListener {
         // Create chaser bees
 
         Array<AbstractBeeModel> bees = new Array<AbstractBeeModel>();
-        level = new LevelModel(avatar,bees,goalDoor,platforms, spikedPlatforms, new Rectangle(bounds));
+        level = new LevelModel(avatar,bees,goalDoor,platforms,spikedPlatforms, new Rectangle(bounds));
 
 
         aIController = new AIController(level, whiteSquare);
@@ -612,6 +618,17 @@ public class LevelController implements ContactListener {
             bees.add(chaserBee);
             addObject(chaserBee);
             aIController.createAIForSingleCharacter(chaserBee, constants.get("GroundedBee").get("ai_controller_options"));
+        }
+
+        JsonValue flyingBeePositions = levelData.get("flyingBeePos");
+        for (int i=0; i<flyingBeePositions.size; i++){
+            float[] pos = flyingBeePositions.get(i).asFloatArray();
+            FlyingBeeModel flyingBee = new FlyingBeeModel(constants.get("FlyingBee"), pos[0], pos[1], dwidth, dheight);
+            flyingBee.setDrawScale(scale);
+            flyingBee.setTexture(flyingBeeTexture);
+            bees.add(flyingBee);
+            addObject(flyingBee);
+            aIController.createAIForSingleCharacter(flyingBee, constants.get("FlyingBee").get("ai_controller_options"));
         }
 
 
@@ -648,11 +665,14 @@ public class LevelController implements ContactListener {
      */
     public void rotate(boolean isClockwise, boolean platformNotRotating){
         PlatformModel platforms = level.getPlatforms();
+        SpikedPlatformModel spikedPlatforms = level.getSpikedPlatforms();
         PlayerModel avatar = level.getPlayer();
         Array<AbstractBeeModel> bees = level.getBees();
         Vector2 origin = level.getOrigin();
 
         platforms.startRotation(isClockwise, origin);
+        spikedPlatforms.startRotation(isClockwise, origin);
+
         level.getGoalDoor().startRotation(isClockwise,origin);
         if (avatar.isGrounded()&&platformNotRotating){
             avatar.startRotation(isClockwise, origin);
