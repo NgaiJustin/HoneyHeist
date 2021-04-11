@@ -28,7 +28,7 @@ public class HoneypatchModel extends PlatformModel {
     public void draw(GameCanvas canvas) {
         // Delegate to components
         for(PolygonObstacle obj : bodies) {
-            Color tint = Color.PINK;
+            Color tint = Color.RED;
             tint.set(tint.r,tint.g,tint.b,0.5f);
             obj.draw(canvas,tint);
         }
