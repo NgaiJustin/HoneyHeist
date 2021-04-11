@@ -74,12 +74,12 @@ public class AISingleCharacterController {
 
     private FSMState state;
     private long ticks;
-    private static final int ticksBeforeChangeInRandomDirection = 120;
+    private static final int ticksBeforeChangeInRandomDirection = 15;
 	private static final int ticksBeforeChangeInChaseDirection = 15;
     private Vector2 target;
     private DirectedLineSegment lineToTarget;
     private DirectedLineSegment tempLineSegment;
-    private Vector2 direction;
+    private DirectedLineSegment direction;
     private Vector2 temp;
 
     Random random = new Random();
@@ -108,8 +108,10 @@ public class AISingleCharacterController {
 		ticks = 0;
 		lineToTarget = new DirectedLineSegment(controlledCharacter.getPosition(), target);
 		tempLineSegment = new DirectedLineSegment();
-		direction = new Vector2();
+		direction = new DirectedLineSegment();
 		temp = new Vector2();
+
+		initDirection();
 	}
 
 	/**
@@ -128,7 +130,7 @@ public class AISingleCharacterController {
 	 * @return The direction that the enemy should move.
 	 */
 	public Vector2 getMovementDirection() {
-		return direction;
+		return direction.getDirection();
 	}
 
 //	/**
@@ -202,7 +204,6 @@ public class AISingleCharacterController {
 	 */
 	private void updateFSMState() {
 		float distanceToPlayer = controlledCharacter.getPosition().dst(levelModel.getPlayer().getPosition());
-//		System.out.println(isLineCollidingWithAPlatform(lineToTarget));
 		switch (this.state) {
 			case WANDER:
 				if (distanceToPlayer < chaseRadius && !isLineCollidingWithAPlatform(lineToTarget)) {
@@ -223,20 +224,36 @@ public class AISingleCharacterController {
 		switch (this.state) {
 			case WANDER:
 				if (ticks % ticksBeforeChangeInRandomDirection == 0) {
-					if (direction.isZero()) {
-						setDirectionToRandomHorizontal();
+					if (characterType == CharacterType.GROUNDED_CHARACTER) {
+						direction.setByVector(controlledCharacter.getPosition(), direction.getDirection());
+						if (isLineCollidingWithAPlatform(direction)) {
+							changeToOppositeDirection();
+						}
 					}
-					changeToOppositeDirection();
-					direction.nor();
-					direction.scl(wanderSpeedFactor);
+//					else {
+//						setDirectionToRandomDirection();
+//						for (int i = 0; i < 5; i++) {
+//							if (isLineCollidingWithAPlatform(direction)) {
+//								setDirectionToRandomDirection();
+//							}
+//						}
+//					}
+					direction.setByVector(controlledCharacter.getPosition(),direction.getDirection().nor());
 				}
 				break;
 
 			case CHASE:
-				if (ticks % ticksBeforeChangeInChaseDirection == 0) {
-					setDirectionToGoTowardsTarget();
-				}
+				setDirectionToGoTowardsTarget();
 				break;
+		}
+	}
+
+	private void initDirection() {
+		if (characterType == CharacterType.GROUNDED_CHARACTER) {
+			setDirectionToRandomHorizontal();
+		}
+		else {
+			setDirectionToRandomDirection();
 		}
 	}
 
@@ -245,9 +262,10 @@ public class AISingleCharacterController {
 	 */
 	private void setDirectionToRandomDirection() {
 		int angle = random.nextInt(360);
-		direction.set(1,0);
-		direction.setAngleDeg(angle);
-		direction.nor();
+		temp.set(1,0);
+		temp.setAngleDeg(angle * 90);
+		temp.nor();
+		direction.setByVector(controlledCharacter.getPosition(), temp.scl(chaseSpeedFactor));
 	}
 
 	/**
@@ -255,39 +273,53 @@ public class AISingleCharacterController {
 	 */
 	private void setDirectionToRandom4CardinalDirection() {
 		int angle = random.nextInt(4);
-		direction.set(1,0);
-		direction.setAngleDeg(angle * 90);
-		direction.nor();
+		temp.set(1,0);
+		temp.setAngleDeg(angle * 90);
+		temp.nor();
+		direction.setByVector(controlledCharacter.getPosition(), temp);
+	}
+
+	/**
+	 * Sets the direction vector to be a random direction limited to 12 cardinal directions each sepearated by 30 degree increments.
+	 */
+	private void setDirectionToRandom12() {
+		int angle = random.nextInt(12);
+		temp.set(1,0);
+		temp.setAngleDeg(angle * 30);
+		temp.nor();
+		direction.setByVector(controlledCharacter.getPosition(), temp);
 	}
 
 	private void setDirectionToRandomHorizontal() {
 		int fiftyFifty = random.nextInt(2);
 		if (fiftyFifty > 0) {
-			direction.set(1, 0);
+			temp.set(1, 0);
 		} else {
-			direction.set(-1, 0);
+			temp.set(-1, 0);
 		}
+		direction.setByVector(controlledCharacter.getPosition(), temp);
 	}
 
-	/**
-	 * Sets the direction to the opposite direction of it's current direction.
-	 */
 	private void changeToOppositeDirection() {
-		direction.scl(-1);
+		temp.set(direction.getDirection());
+		temp.scl(-1);
+		direction.setByVector(controlledCharacter.getPosition(), temp);
 	}
+
 	/**
 	 * Set the direction vector to go towards the specified target.
 	 */
 	private void setDirectionToGoTowardsTarget() {
-		direction.set(lineToTarget.getDirection());
+		temp.set(lineToTarget.getDirection());
 		if (characterType == CharacterType.GROUNDED_CHARACTER) {
-			if (direction.x >= 0) {
-				direction.set(1,0);
+			if (temp.x >= 0) {
+				temp.set(1,0);
 			} else {
-				direction.set(-1,0);
+				temp.set(-1,0);
 			}
 		}
-		direction.nor();
+		temp.nor();
+		direction.setByVector(controlledCharacter.getPosition(),temp);
 	}
 
 	/**
@@ -296,7 +328,13 @@ public class AISingleCharacterController {
 	 */
     private boolean isLineCollidingWithAPlatform(DirectedLineSegment line) {
 		PlatformModel platforms = levelModel.getPlatforms();
+		PlatformModel poisonPlatforms = levelModel.getSpikedPlatforms();
 		for (PolygonObstacle platform : platforms.getBodies()) {
+			if (doesPolygonIntersectLine(line, platform.getTrueVertices())) {
+				return true;
+			}
+		}
+		for (PolygonObstacle platform : poisonPlatforms.getBodies()) {
 			if (doesPolygonIntersectLine(line, platform.getTrueVertices())) {
 				return true;
 			}
@@ -348,18 +386,26 @@ public class AISingleCharacterController {
 	}
 
 	public void drawDebug(GameCanvas gameCanvas, Vector2 scale) {
-    	if (state == FSMState.CHASE) {
-			gameCanvas.drawCircle(chaseRadius, Color.RED, controlledCharacter.getPosition().x, controlledCharacter.getPosition().y, scale.x, scale.y);
-		}
-    	else {
-			gameCanvas.drawCircle(chaseRadius, Color.YELLOW, controlledCharacter.getPosition().x, controlledCharacter.getPosition().y, scale.x, scale.y);
-		}
+//    	if (state == FSMState.CHASE) {
+//			gameCanvas.drawCircle(chaseRadius, Color.RED, controlledCharacter.getPosition().x, controlledCharacter.getPosition().y, scale.x, scale.y);
+//		}
+//    	else {
+//			gameCanvas.drawCircle(chaseRadius, Color.YELLOW, controlledCharacter.getPosition().x, controlledCharacter.getPosition().y, scale.x, scale.y);
+//		}
+//
+//    	if (isLineCollidingWithAPlatform(lineToTarget)) {
+//    		gameCanvas.drawLine(Color.RED, lineToTarget.x1, lineToTarget.y1, lineToTarget.x2, lineToTarget.y2, scale.x, scale.y);
+//		}
+//		else {
+//			gameCanvas.drawLine(Color.YELLOW, lineToTarget.x1, lineToTarget.y1, lineToTarget.x2, lineToTarget.y2, scale.x, scale.y);
+//		}
 
-    	if (isLineCollidingWithAPlatform(lineToTarget)) {
-    		gameCanvas.drawLine(Color.RED, lineToTarget.x1, lineToTarget.y1, lineToTarget.x2, lineToTarget.y2, scale.x, scale.y);
+		if (isLineCollidingWithAPlatform(direction)) {
+			gameCanvas.drawLine(Color.RED, direction.x1, direction.y1, direction.x2, direction.y2, scale.x, scale.y);
 		}
 		else {
-			gameCanvas.drawLine(Color.YELLOW, lineToTarget.x1, lineToTarget.y1, lineToTarget.x2, lineToTarget.y2, scale.x, scale.y);
+			System.out.println(direction.toString());
+			gameCanvas.drawLine(Color.BLUE, direction.x1, direction.y1, direction.x2, direction.y2, scale.x, scale.y);
 		}
 	}
 

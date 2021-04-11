@@ -25,6 +25,7 @@ public class AIController {
         aICharacterControllers.add(new AISingleCharacterController (levelModel, characterModel, data));
     }
 
+
     public void moveAIControlledCharacters() {
         for (AISingleCharacterController aICharacterController: aICharacterControllers) {
             aICharacterController.updateAIController();
