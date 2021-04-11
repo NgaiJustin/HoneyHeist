@@ -29,6 +29,7 @@ import edu.cornell.gdiac.honeyHeistCode.controllers.aiControllers.AIController;
 import edu.cornell.gdiac.honeyHeistCode.models.*;
 import edu.cornell.gdiac.honeyHeistCode.obstacle.BoxObstacle;
 import edu.cornell.gdiac.honeyHeistCode.obstacle.Obstacle;
+import edu.cornell.gdiac.honeyHeistCode.obstacle.PolygonObstacle;
 import edu.cornell.gdiac.util.FilmStrip;
 import edu.cornell.gdiac.util.PooledList;
 import edu.cornell.gdiac.util.ScreenListener;
@@ -53,6 +54,8 @@ public class LevelController implements ContactListener {
     protected TextureRegion goalTile;
     /** The texture for the background */
     protected TextureRegion background;
+    /** The texture for the tilesBackground */
+    protected TextureRegion tilesBackground;
     /** The texture for AI Nodes, used for debugging */
     protected TextureRegion whiteSquare;
     /** The font for giving messages to the player */
@@ -416,6 +419,7 @@ public class LevelController implements ContactListener {
         poisonTile = new TextureRegion(directory.getEntry( "shared:poisonWall", Texture.class));
         goalTile  = new TextureRegion(directory.getEntry( "shared:goal", Texture.class ));
         background = new TextureRegion(directory.getEntry( "shared:background",  Texture.class ));
+        tilesBackground = new TextureRegion(directory.getEntry("shared:tilesBackground", Texture.class));
         displayFont = directory.getEntry( "shared:retro" ,BitmapFont.class);
 
         // This is just for Debugging.
@@ -507,6 +511,20 @@ public class LevelController implements ContactListener {
      * Lays out the game geography.
      */
     public void populateLevel() {
+        JsonValue defaults = constants.get("defaults");
+        //Create background
+        PolygonObstacle levelBackground;
+        levelBackground = new PolygonObstacle(levelData.get("background").asFloatArray(), 0, 0);
+        levelBackground.setBodyType(BodyDef.BodyType.StaticBody);
+        levelBackground.setDensity(defaults.getFloat( "density", 0.0f ));
+        levelBackground.setFriction(defaults.getFloat( "friction", 0.0f ));
+        levelBackground.setRestitution(defaults.getFloat( "restitution", 0.0f ));
+        levelBackground.setName("background");
+        levelBackground.setDrawScale(scale);
+        levelBackground.setTexture(tilesBackground);
+        levelBackground.setSensor(true);
+        addObject(levelBackground);
+
         // Add level goal
         float dwidth = goalTile.getRegionWidth() / scale.x;
         float dheight = goalTile.getRegionHeight() / scale.y;
@@ -525,20 +543,6 @@ public class LevelController implements ContactListener {
         goalDoor.setName("goal");
         addObject(goalDoor);
 
-        JsonValue defaults = constants.get("defaults");
-        /*
-        PolygonObstacle obj;
-        obj = new PolygonObstacle(platformPointsFromJson(constants.get("testPlatform")), 0, 0);
-        obj.setBodyType(BodyDef.BodyType.StaticBody);
-        obj.setDensity(defaults.getFloat( "density", 0.0f ));
-        obj.setFriction(defaults.getFloat( "friction", 0.0f ));
-        obj.setRestitution(defaults.getFloat( "restitution", 0.0f ));
-        obj.setName("testPlatform");
-        obj.setDrawScale(scale);
-        obj.setTexture(earthTile);
-        addObject(obj);
-
-         */
 
         // Create the hexagon level
 
@@ -572,18 +576,24 @@ public class LevelController implements ContactListener {
         }
         */
 
-
         // Create platforms
-        PlatformModel platforms = new PlatformModel(levelData.get("platforms"),"platform");
+        PlatformModel platforms = new PlatformModel(levelData.get("platformPos"));
         platforms.setDrawScale(scale);
         platforms.setTexture(earthTile);
         addObject(platforms);
 
         // Create spiked platforms
-        SpikedPlatformModel spikedPlatforms = new SpikedPlatformModel(levelData.get("spikedPlatforms"));
-        spikedPlatforms.setDrawScale(scale.x, scale.y);
+        SpikedPlatformModel spikedPlatforms = new SpikedPlatformModel(levelData.get("spikedPlatformPos"));
+        spikedPlatforms.setDrawScale(scale);
         spikedPlatforms.setTexture(poisonTile); //TODO: Change spikedPlatform texture
+
         addObject(spikedPlatforms);
+
+        // Create honeypatches
+        HoneypatchModel honeyPatches = new HoneypatchModel(levelData.get("honeypatchPos"),0.5f);
+        honeyPatches.setDrawScale(scale);
+        honeyPatches.setTexture(earthTile); //TODO: Change honeyPatch texture
+        addObject(honeyPatches);
 
         // This world is heavier
         world.setGravity(new Vector2(0, defaults.getFloat("gravity", 0)));
@@ -601,7 +611,8 @@ public class LevelController implements ContactListener {
         // Create chaser bees
 
         Array<AbstractBeeModel> bees = new Array<AbstractBeeModel>();
-        level = new LevelModel(avatar,bees,goalDoor,platforms,spikedPlatforms, new Rectangle(bounds));
+        level = new LevelModel(avatar,bees,goalDoor,platforms, spikedPlatforms, honeyPatches, levelBackground, new Rectangle(bounds));
+
 
 
         aIController = new AIController(level, whiteSquare);
@@ -672,6 +683,8 @@ public class LevelController implements ContactListener {
 
         platforms.startRotation(isClockwise, origin);
         spikedPlatforms.startRotation(isClockwise, origin);
+        level.getHoneyPatches().startRotation(isClockwise,origin);
+        level.getLevelBackground().startRotation(isClockwise,origin);
 
         level.getGoalDoor().startRotation(isClockwise,origin);
         if (avatar.isGrounded()&&platformNotRotating){
@@ -924,7 +937,27 @@ public class LevelController implements ContactListener {
                     bee.setGrounded(true);
                     bee.getSensorFixtures().add(bee == bd1 ? fix2 : fix1); // Could have more than one ground
                 }
+                if (((bee.getSensorName().equals(fd2) && bee != bd1)&&(bd1.getName().contains("honeypatch")) &&
+                        !bee.getSensorFixtures().contains(fix1)) ||
+                    ((bee.getSensorName().equals(fd1) && bee != bd2)&&(bd2.getName().contains("honeypatch")) &&
+                        !bee.getSensorFixtures().contains(fix2))) {
+                    bee.setGrounded(true);
+                    bee.setInHoney(true);
+                    bee.getSensorFixtures().add(bee == bd1 ? fix2 : fix1); // Could have more than one ground
+                    bee.setMaxspeed(level.getHoneyPatches().getSlowSpeed());
+                }
             }
+            // Check for honeypatch
+            if (((avatar.getSensorName().equals(fd2) && avatar != bd1) && (bd1.getName().contains("honeypatch")) &&
+                        !sensorFixtures.contains(fix1)) ||
+                ((avatar.getSensorName().equals(fd1)&& avatar != bd2) && (bd2.getName().contains("honeypatch")) &&
+                        !sensorFixtures.contains(fix2))) {
+                avatar.setGrounded(true);
+                avatar.setInHoney(true);
+                sensorFixtures.add(avatar == bd1 ? fix2 : fix1);
+                avatar.setMaxspeed(level.getHoneyPatches().getSlowSpeed());
+            }
+
             // Check for win condition
             if (!isFailure() && !isComplete() &&
                     ((bd1 == avatar && bd2.getClass().getSuperclass() == AbstractBeeModel.class) ||
@@ -974,10 +1007,29 @@ public class LevelController implements ContactListener {
                     avatar.setGrounded(false);
                 }
             }
+            if (((avatar.getSensorName().equals(fd2) && avatar != bd1)&&(bd1.getName().contains("honeypatch")))  ||
+                    ((avatar.getSensorName().equals(fd1) && avatar != bd2)&&(bd2.getName().contains("honeypatch")))) {
+                sensorFixtures.remove(avatar == bd1 ? fix2 : fix1);
+                avatar.setDefaultMaxspeed();
+                avatar.setInHoney(false);
+                if (sensorFixtures.size == 0) {
+                    avatar.setGrounded(false);
+                }
+            }
+
             for(AbstractBeeModel bee : bees) {
                 if (((bee.getSensorName().equals(fd2) && bee != bd1)&&(bd1.getName().contains("platform"))) ||
                         ((bee.getSensorName().equals(fd1) && bee != bd2)&&(bd2.getName().contains("platform")))) {
                     bee.getSensorFixtures().remove(bee == bd1 ? fix2 : fix1);
+                    if (bee.getSensorFixtures().size == 0) {
+                        bee.setGrounded(false);
+                    }
+                }
+                if (((bee.getSensorName().equals(fd2) && bee != bd1)&&(bd1.getName().contains("honeypatch"))) ||
+                        ((bee.getSensorName().equals(fd1) && bee != bd2)&&(bd2.getName().contains("honeypatch")))) {
+                    bee.getSensorFixtures().remove(bee == bd1 ? fix2 : fix1);
+                    bee.setDefaultMaxspeed();
+                    bee.setInHoney(false);
                     if (bee.getSensorFixtures().size == 0) {
                         bee.setGrounded(false);
                     }

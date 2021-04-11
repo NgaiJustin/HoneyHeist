@@ -14,6 +14,11 @@
         "shared:goal":   "shared/goaldoor.png",
         "shared:background": "shared/background.png",
         "shared:whiteSquare": "shared/whiteSquare.png",
+        "shared:tilesBackground": {
+          "file": "shared/tilesBackground.png",
+          "wrapU": "repeated",
+          "wrapV": "repeated"
+        },
         "platform:ant":  "platform/ant.png",
         "platform:sleeperBee":  "platform/sleeperBee.png",
         "platform:larvae":  "platform/larvae.png",
@@ -41,7 +46,7 @@
     "jsons"  : {
         "platform:constants": "platform/constants.json",
         "platform:constants2": "platform/constants2.json",
-        "platform:prototypeLevel": "platform/prototypeLevel.json",
+        "platform:prototypeLevel": "platform/prototypeLevel.json"
     },
     "sounds" : {
         "platform:jump" : "platform/jump.mp3",
