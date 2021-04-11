@@ -593,7 +593,8 @@ public class LevelController implements ContactListener {
         HoneypatchModel honeyPatches = new HoneypatchModel(levelData.get("honeypatchPos"),0.5f);
         honeyPatches.setDrawScale(scale);
         honeyPatches.setTexture(earthTile); //TODO: Change honeyPatch texture
-        addObject(honeyPatches);
+        //dont add yet so that it can overlap
+        //addObject(honeyPatches);
 
         // This world is heavier
         world.setGravity(new Vector2(0, defaults.getFloat("gravity", 0)));
@@ -641,6 +642,9 @@ public class LevelController implements ContactListener {
             addObject(flyingBee);
             aIController.createAIForSingleCharacter(flyingBee, constants.get("FlyingBee").get("ai_controller_options"));
         }
+
+        //add honeypatches last so that they cover other objects
+        addObject(honeyPatches);
 
 
         /*

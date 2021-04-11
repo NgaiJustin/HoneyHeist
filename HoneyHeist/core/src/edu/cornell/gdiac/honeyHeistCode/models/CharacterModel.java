@@ -240,7 +240,7 @@ public class CharacterModel extends CapsuleObstacle {
         sensorShape = new PolygonShape();
         JsonValue sensorjv = data.get("sensor");
         sensorShape.setAsBox(sensorjv.getFloat("shrink", 0) * getWidth()/1.6f ,
-                sensorjv.getFloat("height", 0)*2f, sensorCenter, 0.0f);
+                sensorjv.getFloat("height", 0)*1.5f, sensorCenter, 0.0f);
         sensorDef.shape = sensorShape;
 
         // Ground sensor to represent our feet
@@ -262,16 +262,16 @@ public class CharacterModel extends CapsuleObstacle {
                     isGrounded = false;
                 }
             }
-            if(!isGrounded||isInHoney){
-                /*float angle = getAngle();
-                int rotSpeed = ((maxspeed==defaultMaxspeed) ? 20 : 5);
+            if(!isGrounded||(isInHoney&&!sticking)){
+                float angle = getAngle();
+                int rotSpeed = ((isInHoney) ? 5 : 20);
                 if(angle<0) {
                     setAngle(Math.min(angle+dt*rotSpeed,0));
                 }
                 else if(angle>0) {
                     setAngle(Math.max(angle-dt*rotSpeed,0));
-                }*/
-                setAngle(0);
+                }
+                //setAngle(0);
             }
             return;
         }
