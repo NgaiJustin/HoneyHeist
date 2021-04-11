@@ -577,7 +577,7 @@ public class LevelController implements ContactListener {
         addObject(platforms);
 
         // Create spiked platforms
-        PlatformModel spikedPlatforms = new SpikedPlatformModel(levelData.get("spikedPlatformPos"));
+        SpikedPlatformModel spikedPlatforms = new SpikedPlatformModel(levelData.get("spikedPlatformPos"));
         spikedPlatforms.setDrawScale(scale);
         spikedPlatforms.setTexture(earthTile); //TODO: Change spikedPlatform texture
         addObject(spikedPlatforms);
@@ -598,7 +598,7 @@ public class LevelController implements ContactListener {
         // Create chaser bees
 
         Array<AbstractBeeModel> bees = new Array<AbstractBeeModel>();
-        level = new LevelModel(avatar,bees,goalDoor,platforms,levelBackground,new Rectangle(bounds));
+        level = new LevelModel(avatar,bees,goalDoor,platforms,spikedPlatforms,levelBackground,new Rectangle(bounds));
 
 
         aIController = new AIController(level, whiteSquare);
