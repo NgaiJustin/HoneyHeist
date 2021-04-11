@@ -8,6 +8,11 @@
         "shared:crosshair": "shared/crosshair.png",
         "shared:goal":   "shared/goaldoor.png",
         "shared:background": "shared/background.png",
+        "shared:tilesBackground": {
+          "file": "shared/tilesBackground.png",
+          "wrapU": "repeated",
+          "wrapV": "repeated"
+        },
         "platform:ant":  "platform/ant.png",
         "platform:sleeperBee":  "platform/sleeperBee.png",
         "platform:chaserBee":  "platform/chaserBee.png",

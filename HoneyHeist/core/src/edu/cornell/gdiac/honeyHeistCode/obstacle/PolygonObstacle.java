@@ -231,6 +231,24 @@ public class PolygonObstacle extends SimpleObstacle {
 		// Compute the bounds.
 		initShapes(points);
 		initBounds();
+
+		rotationAngle = (float) Math.PI/3;
+		rotationSpeed = (float) Math.PI/3;
+	}
+
+	public void update(float dt) {
+		if (!isRotating) return;
+
+		float rotationAmount = rotationSpeed * dt;
+		if (rotationAmount > remainingAngle){
+			rotationAmount = remainingAngle;
+			isRotating = false;
+		}
+		remainingAngle -= rotationAmount;
+		if (!isClockwise) {
+			rotationAmount *= -1;
+		}
+		rotateAboutPoint(rotationAmount, stageCenter);
 	}
 
 	/**

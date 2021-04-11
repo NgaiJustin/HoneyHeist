@@ -51,6 +51,8 @@ public class LevelController implements ContactListener {
     protected TextureRegion goalTile;
     /** The texture for the background */
     protected TextureRegion background;
+    /** The texture for the tilesBackground */
+    protected TextureRegion tilesBackground;
     /** The font for giving messages to the player */
     protected BitmapFont displayFont;
 
@@ -381,6 +383,7 @@ public class LevelController implements ContactListener {
         earthTile = new TextureRegion(directory.getEntry( "shared:earth", Texture.class ));
         goalTile  = new TextureRegion(directory.getEntry( "shared:goal", Texture.class ));
         background = new TextureRegion(directory.getEntry( "shared:background",  Texture.class ));
+        tilesBackground = new TextureRegion(directory.getEntry("shared:tilesBackground", Texture.class));
         displayFont = directory.getEntry( "shared:retro" ,BitmapFont.class);
     }
 
@@ -471,17 +474,17 @@ public class LevelController implements ContactListener {
     public void populateLevel() {
         JsonValue defaults = constants.get("defaults");
         //Create background
-        PolygonObstacle obj;
-        obj = new PolygonObstacle(levelData.get("background").asFloatArray(), 0, 0);
-        obj.setBodyType(BodyDef.BodyType.StaticBody);
-        obj.setDensity(defaults.getFloat( "density", 0.0f ));
-        obj.setFriction(defaults.getFloat( "friction", 0.0f ));
-        obj.setRestitution(defaults.getFloat( "restitution", 0.0f ));
-        obj.setName("background");
-        obj.setDrawScale(scale);
-        obj.setTexture(earthTile);
-        obj.setSensor(true);
-        addObject(obj);
+        PolygonObstacle levelBackground;
+        levelBackground = new PolygonObstacle(levelData.get("background").asFloatArray(), 0, 0);
+        levelBackground.setBodyType(BodyDef.BodyType.StaticBody);
+        levelBackground.setDensity(defaults.getFloat( "density", 0.0f ));
+        levelBackground.setFriction(defaults.getFloat( "friction", 0.0f ));
+        levelBackground.setRestitution(defaults.getFloat( "restitution", 0.0f ));
+        levelBackground.setName("background");
+        levelBackground.setDrawScale(scale);
+        levelBackground.setTexture(tilesBackground);
+        levelBackground.setSensor(true);
+        addObject(levelBackground);
 
         // Add level goal
         float dwidth = goalTile.getRegionWidth() / scale.x;
@@ -562,7 +565,7 @@ public class LevelController implements ContactListener {
         // Create chaser bees
 
         Array<AbstractBeeModel> bees = new Array<AbstractBeeModel>();
-        level = new LevelModel(avatar,bees,goalDoor,platforms,new Rectangle(bounds));
+        level = new LevelModel(avatar,bees,goalDoor,platforms,levelBackground,new Rectangle(bounds));
 
 
         aIControllers = new Array<AIController>();
@@ -624,6 +627,7 @@ public class LevelController implements ContactListener {
         Vector2 origin = level.getOrigin();
 
         platforms.startRotation(isClockwise, origin);
+        level.getLevelBackground().startRotation(isClockwise,origin);
         level.getGoalDoor().startRotation(isClockwise,origin);
         if (avatar.isGrounded()&&platformNotRotating){
             avatar.startRotation(isClockwise, origin);
