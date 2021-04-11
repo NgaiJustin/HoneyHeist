@@ -5,6 +5,7 @@
             "wrapU": "repeated",
             "wrapV": "repeated"
         },
+        "shared:crosshair": "shared/crosshair.png",
         "shared:goal":   "shared/goaldoor.png",
         "shared:background": "shared/background.png",
         "platform:ant":  "platform/ant.png",
@@ -21,7 +22,12 @@
                     "cols": 6
                 }
             }
-        }
+        },
+      "editor:antButton":"editor/antButton.png",
+      "editor:beeButton":"editor/beeButton.png",
+      "editor:platformButton":"editor/platformButton.png",
+      "editor:goalButton":"editor/goalButton.png",
+      "editor:selectModeButton":"editor/selectModeButton.png",
     },
     "jsons"  : {
         "platform:constants": "platform/constants.json",
@@ -31,12 +37,16 @@
     "sounds" : {
         "platform:jump" : "platform/jump.mp3",
         "platform:pew"  : "platform/pew.mp3",
-        "platform:plop" : "platform/plop.mp3",
+        "platform:plop" : "platform/plop.mp3"
     },
     "fonts": {
         "shared:retro": {
             "file": "shared/RetroGame.ttf",
             "size": 64
+        },
+        "shared:marker": {
+            "file": "shared/MarkerFelt.ttf",
+            "size": 40
         }
     }
 }
