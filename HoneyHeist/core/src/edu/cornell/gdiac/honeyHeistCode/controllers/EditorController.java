@@ -50,6 +50,10 @@ public class EditorController extends WorldController implements InputProcessor 
      */
     private TextureRegion chaserBeeTexture;
     /**
+     * Texture asset for chaser bee avatar
+     */
+    private TextureRegion flyingBeeTexture;
+    /**
      * Texture asset for testEnemy avatar
      */
     private TextureRegion sleeperBeeTexture;
@@ -190,7 +194,8 @@ public class EditorController extends WorldController implements InputProcessor 
         crosshairTexture  = new TextureRegion(directory.getEntry( "shared:crosshair", Texture.class ));
         background = new TextureRegion(directory.getEntry( "shared:background",  Texture.class ));
         avatarTexture = new TextureRegion(directory.getEntry("platform:ant", Texture.class));
-        chaserBeeTexture = new TextureRegion(directory.getEntry("platform:chaserBee", Texture.class));
+        chaserBeeTexture = new TextureRegion(directory.getEntry("platform:larvae", Texture.class));
+        flyingBeeTexture = new TextureRegion(directory.getEntry("platform:flyingBee", Texture.class));
         sleeperBeeTexture = new TextureRegion(directory.getEntry("platform:sleeperBee", Texture.class));
 
         walkingPlayer = directory.getEntry( "platform:walk.pacing", FilmStrip.class );

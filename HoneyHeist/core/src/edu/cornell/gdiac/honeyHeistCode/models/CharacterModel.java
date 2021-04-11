@@ -201,6 +201,7 @@ public class CharacterModel extends CapsuleObstacle {
         defaultMaxspeed = maxspeed;
         damping = data.getFloat("damping", 0);
         force = data.getFloat("force", 0);
+        setGravityScale(data.getFloat("gravityScale", 1));
         this.data = data;
 
         // Gameplay attributes
