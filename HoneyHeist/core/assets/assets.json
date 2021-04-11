@@ -8,6 +8,7 @@
         "shared:crosshair": "shared/crosshair.png",
         "shared:goal":   "shared/goaldoor.png",
         "shared:background": "shared/background.png",
+        "shared:whiteSquare": "shared/whiteSquare.png",
         "platform:ant":  "platform/ant.png",
         "platform:sleeperBee":  "platform/sleeperBee.png",
         "platform:chaserBee":  "platform/chaserBee.png",
@@ -28,6 +29,8 @@
       "editor:platformButton":"editor/platformButton.png",
       "editor:goalButton":"editor/goalButton.png",
       "editor:selectModeButton":"editor/selectModeButton.png",
+      "editor:saveButton":"editor/saveButton.png",
+      "editor:resetButton":"editor/resetButton.png"
     },
     "jsons"  : {
         "platform:constants": "platform/constants.json",

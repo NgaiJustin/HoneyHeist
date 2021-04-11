@@ -104,16 +104,23 @@ public class EditorController extends WorldController implements InputProcessor 
     // Fields for the Editor controller GUI
 //    private EditorOverlay overlay;
 //    private Stage stage;
+    private int buttonNum = 7;
+
     private Texture beeButton;
     private Texture antButton;
     private Texture platformButton;
     private Texture goalButton;
     private Texture selectModeButton;
-    private Boolean bbPressed = false;
-    private Boolean abPressed = false;
-    private Boolean pbPressed = false;
-    private Boolean gbPressed = false;
-    private Boolean smbPressed = false;
+    private Texture saveButton;
+    private Texture resetButton;
+
+    private Boolean bbPressed = false;  // Bee button
+    private Boolean abPressed = false;  // Ant button
+    private Boolean pbPressed = false;  // Platform button
+    private Boolean gbPressed = false;  // Goal button
+    private Boolean smbPressed = false; // Select mode button
+    private Boolean sbPressed = false;  // Save button
+    private Boolean rbPressed = false;  // Reset button
     private static float BUTTON_SCALE  = 0.17f;
 
     private float buttonX(){
@@ -121,23 +128,27 @@ public class EditorController extends WorldController implements InputProcessor 
     }
 
     private float smbY(){
-        return canvas.getHeight()/6;
+        return canvas.getHeight()/(buttonNum + 1) ;
     }
+
+    private float sbY() {return smbY() * 2;}
+
+    private float rbY() {return smbY() * 3;}
 
     private float gbY(){
-        return smbY() * 2;
-    }
-
-    private float pbY(){
-        return smbY() * 3;
-    }
-
-    private float abY(){
         return smbY() * 4;
     }
 
-    private float bbY(){
+    private float pbY(){
         return smbY() * 5;
+    }
+
+    private float abY(){
+        return smbY() * 6;
+    }
+
+    private float bbY(){
+        return smbY() * 7;
     }
 
     private void resetButtons(){
@@ -146,6 +157,8 @@ public class EditorController extends WorldController implements InputProcessor 
         pbPressed = false;
         gbPressed = false;
         smbPressed = false;
+        sbPressed = false;
+        rbPressed = false;
     }
 
 
@@ -195,6 +208,8 @@ public class EditorController extends WorldController implements InputProcessor 
         platformButton = directory.getEntry("editor:platformButton", Texture.class);
         goalButton = directory.getEntry("editor:goalButton", Texture.class);
         selectModeButton = directory.getEntry("editor:selectModeButton", Texture.class);
+        resetButton = directory.getEntry("editor:resetButton", Texture.class);
+        saveButton = directory.getEntry("editor:saveButton", Texture.class);
 
         super.gatherAssets(directory);
     }
@@ -305,6 +320,16 @@ public class EditorController extends WorldController implements InputProcessor 
                 else if (Math.abs(gbY() - clickY) < goalButton.getHeight()*BUTTON_SCALE/2){
                     this.gbPressed = true;
                     this.mode = 3;
+                }
+                // RESET BUTTON CLICKED
+                else if (Math.abs(rbY() - clickY) < resetButton.getHeight()*BUTTON_SCALE/2){
+                    this.rbPressed = true;
+                    reset();
+                }
+                // SAVE BUTTON CLICKED
+                else if (Math.abs(sbY() - clickY) < saveButton.getHeight()*BUTTON_SCALE/2){
+                    this.sbPressed = true;
+                    convertToJson();
                 }
                 // SELECT MODE BUTTON CLICKED
                 else if (Math.abs(smbY() - clickY) < selectModeButton.getHeight()*BUTTON_SCALE/2){
@@ -660,6 +685,12 @@ public class EditorController extends WorldController implements InputProcessor 
         // Fifth Button
         canvas.draw(selectModeButton,  smbPressed ? Color.GRAY : Color.WHITE, selectModeButton.getWidth() / 2,
                 selectModeButton.getHeight() / 2, BUTTON_X, smbY(), 0,
+                BUTTON_SCALE, BUTTON_SCALE);
+        canvas.draw(resetButton,  rbPressed ? Color.GRAY : Color.WHITE, resetButton.getWidth() / 2,
+                resetButton.getHeight() / 2, BUTTON_X, rbY(), 0,
+                BUTTON_SCALE, BUTTON_SCALE);
+        canvas.draw(saveButton,  sbPressed ? Color.GRAY : Color.WHITE, saveButton.getWidth() / 2,
+                saveButton.getHeight() / 2, BUTTON_X, sbY(), 0,
                 BUTTON_SCALE, BUTTON_SCALE);
         canvas.end();
 
