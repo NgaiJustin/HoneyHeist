@@ -45,10 +45,6 @@
         "enemy_type": 0,
         "chase_distance": 3,
         "target": 0,
-        "offset": {
-          "x" : 0,
-          "y" : 0
-        },
         "wander_speed_factor": 0.5,
         "chase_speed_factor": 1
       }
