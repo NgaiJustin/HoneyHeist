@@ -15,6 +15,9 @@ public class SpikedPlatformModel extends PlatformModel{
      * @param data The physics constants and polygon information for the platforms in this model
      */
     public SpikedPlatformModel(JsonValue data) {
-        super(data, "spikedPlatform");
+        super(data, "spiked");
+    }
+    public SpikedPlatformModel() {
+        super();
     }
 }

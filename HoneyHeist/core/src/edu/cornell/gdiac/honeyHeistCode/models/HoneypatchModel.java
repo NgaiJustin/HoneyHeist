@@ -15,6 +15,9 @@ public class HoneypatchModel extends PlatformModel {
         this.setSensor(true);
         this.slowSpeed = slowSpeed;
     }
+    public HoneypatchModel(){
+        super();
+    }
 
     public float getSlowSpeed() {
         return slowSpeed;

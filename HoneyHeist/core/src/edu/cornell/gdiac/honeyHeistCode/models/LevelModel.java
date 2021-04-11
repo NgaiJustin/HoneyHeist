@@ -90,9 +90,11 @@ public class LevelModel {
         return platforms;
     }
 
+    public void setPlatforms(PlatformModel platforms) { this.platforms = platforms; }
+
     public SpikedPlatformModel getSpikedPlatforms() {return spikedPlatforms;}
 
-    public void setPlatforms(PlatformModel platforms) { this.platforms = platforms; }
+    public void setSpikedPlatforms(SpikedPlatformModel spikedPlatforms) { this.spikedPlatforms = spikedPlatforms; }
 
     public PlayerModel getPlayer() {
         return playerModel;

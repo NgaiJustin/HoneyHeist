@@ -907,8 +907,8 @@ public class LevelController implements ContactListener {
             boolean bd2isCharacterModel = bd2.getClass().getSuperclass().getSimpleName().equals("CharacterModel") ||
                     bd2.getClass().getSuperclass().getSuperclass().getSimpleName().equals("CharacterModel");
 
-            if (((bd1.getName().contains("spikedPlatform")) && bd2isCharacterModel) ||
-            bd2.getName().contains("spikedPlatform") && bd1isCharacterModel){
+            if (((bd1.getName().contains("spiked")) && bd2isCharacterModel) ||
+            bd2.getName().contains("spiked") && bd1isCharacterModel){
                 if (avatar == bd1 || avatar == bd2){
                     setFailure(true);
                 }
