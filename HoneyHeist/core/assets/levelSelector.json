@@ -1,12 +1,10 @@
 {
 	"textures": {
-        "background": "shared/loadingtemp.png",
+        "background": "shared/background.png",
 		"play": "shared/play.png",
         "totalLevels": 3,
-        "one": "shared/one.png",
-        "two": "shared/two.png",
-        "three": "shared/three.png",
-        "title": "shared/title.png",
+        "button": "shared/button_level.png",
+        "title": "shared/levelslabel.png",
         "progress": {
             "file":      "shared/progressbar.png",
             "atlas":     {
@@ -18,5 +16,21 @@
                 "foreright"  : [384, 40, 400, 70]
             }
         }
-	}
+	},
+    "fonts": {
+        "times": {
+            "file": "fonts/TimesRoman.ttf",
+            "size": 32
+        }
+    },
+    "levels": {
+        "one": {
+            "goalPos": null,
+            "playerPos": [ 15.46875, 10.375 ],
+            "beePos": [],
+            "platformPos": [
+            [ 23.792831, 6.705802, 28.689743, 15.1875, 29.122757, 14.937499, 29.122757, 14.937499, 24.225845, 6.4558024, 23.792831, 6.705802 ]
+            ]
+        }
+    }
 }

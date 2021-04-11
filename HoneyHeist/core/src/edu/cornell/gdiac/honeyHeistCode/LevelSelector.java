@@ -33,6 +33,10 @@ public class LevelSelector implements Screen, InputProcessor, ControllerListener
     private int levelNumber;
     /** number of total levels */
     private int totalLevelNum;
+    /** The font for numbers of level displayed */
+    private BitmapFont displayFont;
+    /** Offset for the shell counter message on the screen */
+    private static final float COUNTER_OFFSET   = 5.0f;
 
 //    // statusBar is a "texture atlas." Break it up into parts.
 //    /** Left cap to the status background (grey region) */
@@ -59,7 +63,7 @@ public class LevelSelector implements Screen, InputProcessor, ControllerListener
 //    /** Ration of the bar height to the screen */
     private static float BAR_HEIGHT_RATIO = 0.25f;
     /** Height of the progress bar */
-    private static float BUTTON_SCALE  = 0.75f;
+    private static float BUTTON_SCALE  = 0.25f;
 
     /** Reference to GameCanvas created by the root */
     private GameCanvas canvas;
@@ -189,6 +193,7 @@ public class LevelSelector implements Screen, InputProcessor, ControllerListener
         background = internal.getEntry( "background", Texture.class );
         background.setFilter( TextureFilter.Linear, TextureFilter.Linear );
         title = internal.getEntry("title", Texture.class);
+        displayFont = internal.getEntry("times",BitmapFont.class);
 //        statusBar = internal.getEntry( "progress", Texture.class );
 
         // Break up the status bar texture into regions
@@ -240,10 +245,9 @@ public class LevelSelector implements Screen, InputProcessor, ControllerListener
             this.progress = assets.getProgress();
             if (progress >= 1.0f) {
                 this.progress = 1.0f;
-//                playButton = internal.getEntry("play",Texture.class);
-                levelOne = internal.getEntry("one", Texture.class);
-                levelTwo = internal.getEntry("two", Texture.class);
-                levelThree = internal.getEntry("three", Texture.class);
+                levelOne = internal.getEntry("button", Texture.class);
+                levelTwo = internal.getEntry("button", Texture.class);
+                levelThree = internal.getEntry("button", Texture.class);
             }
         }
     }
@@ -259,11 +263,14 @@ public class LevelSelector implements Screen, InputProcessor, ControllerListener
         canvas.begin();
         canvas.draw(background, 0, 0);
         canvas.draw(title, Color.WHITE, title.getWidth()/2f, title.getHeight()/2f,
-                centerX, centerY*1.5f, 0, BUTTON_SCALE*scale, BUTTON_SCALE*scale);
+                centerX, centerY*1.5f, 0, 2, 2);
         if (levelOne != null) {
             Color tint = (pressState == 1 ? Color.GRAY: Color.WHITE);
+            // draw the button
             canvas.draw(levelOne, tint, levelOne.getWidth()/2f, levelOne.getHeight()/2f,
                     centerX/2f, centerY/2f, 0, BUTTON_SCALE*scale, BUTTON_SCALE*scale);
+            // draw the letter
+            canvas.drawText("1", displayFont, centerX/2f-COUNTER_OFFSET, centerY/2f+COUNTER_OFFSET);
         }
         if (levelTwo != null) {
             Color tint = (pressState == 2 ? Color.GRAY: Color.WHITE);
