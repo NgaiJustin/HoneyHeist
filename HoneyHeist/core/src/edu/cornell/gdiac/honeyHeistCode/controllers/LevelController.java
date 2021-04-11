@@ -571,7 +571,7 @@ public class LevelController implements ContactListener {
         */
 
         // Create platforms
-        PlatformModel platforms = new PlatformModel(levelData.get("platforms"));
+        PlatformModel platforms = new PlatformModel(levelData.get("platformPos"));
         platforms.setDrawScale(scale);
         platforms.setTexture(earthTile);
         addObject(platforms);
@@ -583,7 +583,7 @@ public class LevelController implements ContactListener {
         addObject(spikedPlatforms);
 
         // Create honeypatches
-        HoneypatchModel honeyPatches = new HoneypatchModel(levelData.get("honeypatches"),0.5f);
+        HoneypatchModel honeyPatches = new HoneypatchModel(levelData.get("honeypatchPos"),0.5f);
         honeyPatches.setDrawScale(scale);
         honeyPatches.setTexture(earthTile); //TODO: Change honeyPatch texture
         addObject(honeyPatches);
