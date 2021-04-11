@@ -28,6 +28,7 @@ import edu.cornell.gdiac.honeyHeistCode.GameCanvas;
 import edu.cornell.gdiac.honeyHeistCode.models.*;
 import edu.cornell.gdiac.honeyHeistCode.obstacle.BoxObstacle;
 import edu.cornell.gdiac.honeyHeistCode.obstacle.Obstacle;
+import edu.cornell.gdiac.honeyHeistCode.obstacle.PolygonObstacle;
 import edu.cornell.gdiac.util.FilmStrip;
 import edu.cornell.gdiac.util.PooledList;
 import edu.cornell.gdiac.util.ScreenListener;
@@ -468,6 +469,20 @@ public class LevelController implements ContactListener {
      * Lays out the game geography.
      */
     public void populateLevel() {
+        JsonValue defaults = constants.get("defaults");
+        //Create background
+        PolygonObstacle obj;
+        obj = new PolygonObstacle(levelData.get("background").asFloatArray(), 0, 0);
+        obj.setBodyType(BodyDef.BodyType.StaticBody);
+        obj.setDensity(defaults.getFloat( "density", 0.0f ));
+        obj.setFriction(defaults.getFloat( "friction", 0.0f ));
+        obj.setRestitution(defaults.getFloat( "restitution", 0.0f ));
+        obj.setName("background");
+        obj.setDrawScale(scale);
+        obj.setTexture(earthTile);
+        obj.setSensor(true);
+        addObject(obj);
+
         // Add level goal
         float dwidth = goalTile.getRegionWidth() / scale.x;
         float dheight = goalTile.getRegionHeight() / scale.y;
@@ -486,20 +501,6 @@ public class LevelController implements ContactListener {
         goalDoor.setName("goal");
         addObject(goalDoor);
 
-        JsonValue defaults = constants.get("defaults");
-        /*
-        PolygonObstacle obj;
-        obj = new PolygonObstacle(platformPointsFromJson(constants.get("testPlatform")), 0, 0);
-        obj.setBodyType(BodyDef.BodyType.StaticBody);
-        obj.setDensity(defaults.getFloat( "density", 0.0f ));
-        obj.setFriction(defaults.getFloat( "friction", 0.0f ));
-        obj.setRestitution(defaults.getFloat( "restitution", 0.0f ));
-        obj.setName("testPlatform");
-        obj.setDrawScale(scale);
-        obj.setTexture(earthTile);
-        addObject(obj);
-
-         */
 
         // Create the hexagon level
 
@@ -532,7 +533,6 @@ public class LevelController implements ContactListener {
             }
         }
         */
-
 
         // Create platforms
         PlatformModel platforms = new PlatformModel(levelData.get("platformPos"),"platform");
@@ -603,6 +603,9 @@ public class LevelController implements ContactListener {
         aIControllers.add(chaserBeeAIController);
 
          */
+
+        // Create background polygon
+
 
         volume = constants.getFloat("volume", 1.0f);
     }
