@@ -29,8 +29,8 @@ public class AIController {
     public void moveAIControlledCharacters() {
         for (AISingleCharacterController aICharacterController: aICharacterControllers) {
             aICharacterController.updateAIController();
-            CharacterModel bee = aICharacterController.getControlledCharacter();
-            bee.setMovement(aICharacterController.getMovementDirection().x * bee.getForce());
+//            CharacterModel bee = aICharacterController.getControlledCharacter();
+//            bee.setMovement(aICharacterController.getMovementDirection().x * bee.getForce());
         }
     }
 
