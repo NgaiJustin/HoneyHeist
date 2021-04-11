@@ -25,6 +25,9 @@ import com.badlogic.gdx.utils.ObjectSet;
 import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.audio.SoundBuffer;
 import edu.cornell.gdiac.honeyHeistCode.GameCanvas;
+
+import edu.cornell.gdiac.honeyHeistCode.controllers.aiControllers.AIController;
+
 import edu.cornell.gdiac.honeyHeistCode.models.*;
 import edu.cornell.gdiac.honeyHeistCode.obstacle.BoxObstacle;
 import edu.cornell.gdiac.honeyHeistCode.obstacle.Obstacle;
@@ -46,10 +49,14 @@ import java.util.Iterator;
 public class LevelController implements ContactListener {
     /** The texture for walls and platforms */
     protected TextureRegion earthTile;
+    /** The texture for spiked platforms */
+    protected TextureRegion spikedTile;
     /** The texture for the exit condition */
     protected TextureRegion goalTile;
     /** The texture for the background */
     protected TextureRegion background;
+    /** The texture for AI Nodes, used for debugging */
+    protected TextureRegion whiteSquare;
     /** The font for giving messages to the player */
     protected BitmapFont displayFont;
 
@@ -101,6 +108,8 @@ public class LevelController implements ContactListener {
     private boolean failed;
     /** Whether or not debug mode is active */
     private boolean debug;
+    /** Whether or not debug mode is active for AI */
+    private boolean aIDebug;
     /** Countdown active for winning or losing */
     private int countdown;
 
@@ -126,6 +135,27 @@ public class LevelController implements ContactListener {
         debug = value;
     }
 
+    /**
+     * Returns true if debug mode is active.
+     *
+     * If true, all objects will display their physics bodies.
+     *
+     * @return true if debug mode is active.
+     */
+    public boolean isAIDebug( ) {
+        return aIDebug;
+    }
+
+    /**
+     * Sets whether debug mode is active.
+     *
+     * If true, all objects will display their physics bodies.
+     *
+     * @param value whether debug mode is active.
+     */
+    public void setAIDebug(boolean value) {
+        aIDebug = value;
+    }
     /**
      * Returns true if the level is completed.
      *
@@ -307,9 +337,9 @@ public class LevelController implements ContactListener {
 
 
     /**
-     * Reference to the AI Controllers
+     * Reference to the AI Controller
      */
-    private Array<AIController> aIControllers;
+    private AIController aIController;
 
     /**
      * Mark set to handle more sophisticated collision callbacks
@@ -381,6 +411,9 @@ public class LevelController implements ContactListener {
         goalTile  = new TextureRegion(directory.getEntry( "shared:goal", Texture.class ));
         background = new TextureRegion(directory.getEntry( "shared:background",  Texture.class ));
         displayFont = directory.getEntry( "shared:retro" ,BitmapFont.class);
+
+        // This is just for Debugging.
+        whiteSquare = new TextureRegion(directory.getEntry( "shared:whiteSquare", Texture.class ));
     }
 
     /**
@@ -541,7 +574,7 @@ public class LevelController implements ContactListener {
         addObject(platforms);
 
         // Create spiked platforms
-        PlatformModel spikedPlatforms = new SpikedPlatformModel(levelData.get("spikedPlatforms"));
+        SpikedPlatformModel spikedPlatforms = new SpikedPlatformModel(levelData.get("spikedPlatforms"));
         spikedPlatforms.setDrawScale(scale);
         spikedPlatforms.setTexture(earthTile); //TODO: Change spikedPlatform texture
         addObject(spikedPlatforms);
@@ -562,10 +595,10 @@ public class LevelController implements ContactListener {
         // Create chaser bees
 
         Array<AbstractBeeModel> bees = new Array<AbstractBeeModel>();
-        level = new LevelModel(avatar,bees,goalDoor,platforms,new Rectangle(bounds));
+        level = new LevelModel(avatar,bees,goalDoor,platforms, spikedPlatforms, new Rectangle(bounds));
 
 
-        aIControllers = new Array<AIController>();
+        aIController = new AIController(level, whiteSquare);
 
         dwidth = chaserBeeTexture.getRegionWidth() / scale.x;
         dheight = chaserBeeTexture.getRegionHeight() / scale.y;
@@ -578,8 +611,7 @@ public class LevelController implements ContactListener {
             chaserBee.setTexture(chaserBeeTexture);
             bees.add(chaserBee);
             addObject(chaserBee);
-            AIController chaserBeeAIController = new AIController(level, chaserBee, constants.get("GroundedBee").get("ai_controller_options"));
-            aIControllers.add(chaserBeeAIController);
+            aIController.createAIForSingleCharacter(chaserBee, constants.get("GroundedBee").get("ai_controller_options"));
         }
 
 
@@ -659,27 +691,6 @@ public class LevelController implements ContactListener {
         player.animateAnt(PlayerModel.AntAnimations.WALK, direction != 0);
     }
 
-    /**
-     * Moves the chaserBee based on the direction given by AIController
-     *
-     * @param direction -1 = left, 1 = right, 0 = still
-     */
-    public void moveChaserBee(float direction, ChaserBeeModel bee) {
-        bee.setMovement(direction * bee.getForce());
-    }
-
-    /**
-     * TO BE LATER DEPRECATED
-     *
-     */
-    private void moveChaserBeeFromStoredAIControllers() {
-        for (AIController aIController: aIControllers) {
-            aIController.updateAIController();
-            AbstractBeeModel bee = aIController.getControlledCharacter();
-            //System.out.println(aIController.getMovementHorizontalDirection());
-            bee.setMovement(aIController.getMovementHorizontalDirection() * bee.getForce());
-        }
-    }
 
     /**
      * Returns whether to process the update loop
@@ -770,7 +781,10 @@ public class LevelController implements ContactListener {
         // 1. Loop over all chaser bee,
         // 2. For each bee, moveChaserBee(...);
         // TO BE IMPLEMENTED
-        moveChaserBeeFromStoredAIControllers();
+
+        aIController.moveAIControlledCharacters();
+//        aIController.updateAccessibility();
+
         for(AbstractBeeModel bee : level.getBees()){
             bee.applyForce();
             if(!bee.isGrounded()){
@@ -969,6 +983,9 @@ public class LevelController implements ContactListener {
 
         canvas.begin();
         canvas.draw(background, 0, 0);
+        if (aIDebug) {
+            aIController.drawDebugTileMap(canvas, scale);
+        }
         for(Obstacle obj : objects) {
             obj.draw(canvas);
         }
@@ -978,6 +995,9 @@ public class LevelController implements ContactListener {
             canvas.beginDebug();
             for(Obstacle obj : objects) {
                 obj.drawDebug(canvas);
+            }
+            if (aIDebug) {
+                aIController.drawDebugLines(canvas, scale);
             }
             canvas.endDebug();
         }
