@@ -168,7 +168,7 @@ public class EditorController extends WorldController implements InputProcessor 
 
 
     /** Filehandler for saving and loading jsons */
-    private FileHandle file = Gdx.files.local("bin/savedLevel.json");
+    private FileHandle file = Gdx.files.local("savedLevel.json");
 
     /**
      * Creates and initialize a new instance of the platformer game
@@ -828,8 +828,9 @@ public class EditorController extends WorldController implements InputProcessor 
     public class Level{
         public float[] goalPos;
         public float[] playerPos;
-        public float[][] beePos;
+        public float[][] groundedBeePos;
         public float[][] platformPos;
+        public float[][] spikedPlatformPos;
 
         public Level(){
 
@@ -837,8 +838,9 @@ public class EditorController extends WorldController implements InputProcessor 
 
         public void setGoal(float[] goalPos) { this.goalPos = goalPos; }
         public void setPlayer(float[] playerPos) { this.playerPos = playerPos; }
-        public void setBee(float[][] beePos) { this.beePos = beePos; }
+        public void setBee(float[][] groundedBeePos) { this.groundedBeePos = groundedBeePos; }
         public void setPlatform(float[][] platformPos) { this.platformPos = platformPos; }
+        public void setSpikedPlatform(float[][] spikedPlatformPos) {this.spikedPlatformPos = spikedPlatformPos; }
 
     }
 
