@@ -25,7 +25,12 @@ public class CharacterModel extends CapsuleObstacle {
     /**
      * The maximum character speed
      */
-    private final float maxspeed;
+    private float maxspeed;
+
+    /**
+     * The default maximum character speed
+     */
+    private final float defaultMaxspeed;
 
     /**
      * The current horizontal movement of the character
@@ -39,6 +44,10 @@ public class CharacterModel extends CapsuleObstacle {
      * Whether our feet are on the ground
      */
     protected boolean isGrounded;
+    /**
+     * Whether the character is in honey
+     */
+    protected boolean isInHoney;
     /**
      * Sensor fixtures for isGrounded detection
      */
@@ -97,6 +106,15 @@ public class CharacterModel extends CapsuleObstacle {
     }
 
     /**
+     * Returns true if the bee is in honey.
+     *
+     * @return true if the bee is in honey.
+     */
+    public boolean isInHoney() {
+        return isInHoney;
+    }
+
+    /**
      * Sets whether the bee is on the ground.
      *
      * @param value whether the ant is on the ground.
@@ -104,6 +122,17 @@ public class CharacterModel extends CapsuleObstacle {
     public void setGrounded(boolean value) {
         isGrounded = value;
     }
+
+    /**
+     * Sets whether the bee is in honey.
+     *
+     * @param value whether the ant is in honey.
+     */
+    public void setInHoney(boolean value) { isInHoney = value; }
+
+    public void setMaxspeed(float speed){ maxspeed = speed; }
+
+    public void setDefaultMaxspeed(){ maxspeed = defaultMaxspeed; }
 
     /**
      * Returns how much force to apply to get the ant moving
@@ -169,8 +198,10 @@ public class CharacterModel extends CapsuleObstacle {
         setFixedRotation(false);
 
         maxspeed = data.getFloat("maxspeed", 0);
+        defaultMaxspeed = maxspeed;
         damping = data.getFloat("damping", 0);
         force = data.getFloat("force", 0);
+        setGravityScale(data.getFloat("gravityScale", 1));
         this.data = data;
 
         // Gameplay attributes
@@ -209,7 +240,7 @@ public class CharacterModel extends CapsuleObstacle {
         sensorShape = new PolygonShape();
         JsonValue sensorjv = data.get("sensor");
         sensorShape.setAsBox(sensorjv.getFloat("shrink", 0) * getWidth()/1.6f ,
-                sensorjv.getFloat("height", 0)*3f, sensorCenter, 0.0f);
+                sensorjv.getFloat("height", 0)*1.5f, sensorCenter, 0.0f);
         sensorDef.shape = sensorShape;
 
         // Ground sensor to represent our feet
@@ -231,8 +262,16 @@ public class CharacterModel extends CapsuleObstacle {
                     isGrounded = false;
                 }
             }
-            if(!isGrounded){
-                this.setAngle(0);
+            if(!isGrounded||(isInHoney&&!sticking)){
+                float angle = getAngle();
+                int rotSpeed = ((isInHoney) ? 5 : 20);
+                if(angle<0) {
+                    setAngle(Math.min(angle+dt*rotSpeed,0));
+                }
+                else if(angle>0) {
+                    setAngle(Math.max(angle-dt*rotSpeed,0));
+                }
+                //setAngle(0);
             }
             return;
         }

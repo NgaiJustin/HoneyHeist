@@ -10,9 +10,7 @@
  */
 package edu.cornell.gdiac.honeyHeistCode.controllers;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -51,7 +49,7 @@ public class LevelController implements ContactListener {
     /** The texture for walls and platforms */
     protected TextureRegion earthTile;
     /** The texture for spiked platforms */
-    protected TextureRegion spikedTile;
+    protected TextureRegion poisonTile;
     /** The texture for the exit condition */
     protected TextureRegion goalTile;
     /** The texture for the background */
@@ -301,6 +299,12 @@ public class LevelController implements ContactListener {
      * Texture asset for chaser bee avatar
      */
     private TextureRegion chaserBeeTexture;
+
+    /**
+     * Texture asset for chaser bee avatar
+     */
+    private TextureRegion flyingBeeTexture;
+
     /**
      * Texture asset for testEnemy avatar
      */
@@ -395,7 +399,8 @@ public class LevelController implements ContactListener {
      */
     public void gatherAssets(AssetDirectory directory) {
         avatarTexture = new TextureRegion(directory.getEntry("platform:ant", Texture.class));
-        chaserBeeTexture = new TextureRegion(directory.getEntry("platform:chaserBee", Texture.class));
+        chaserBeeTexture = new TextureRegion(directory.getEntry("platform:larvae", Texture.class));
+        flyingBeeTexture = new TextureRegion(directory.getEntry("platform:flyingBee", Texture.class));
         sleeperBeeTexture = new TextureRegion(directory.getEntry("platform:sleeperBee", Texture.class));
 
         walkingPlayer = directory.getEntry( "platform:walk.pacing", FilmStrip.class );
@@ -411,6 +416,7 @@ public class LevelController implements ContactListener {
 
         // Allocate the world tiles
         earthTile = new TextureRegion(directory.getEntry( "shared:earth", Texture.class ));
+        poisonTile = new TextureRegion(directory.getEntry( "shared:poisonWall", Texture.class));
         goalTile  = new TextureRegion(directory.getEntry( "shared:goal", Texture.class ));
         background = new TextureRegion(directory.getEntry( "shared:background",  Texture.class ));
         tilesBackground = new TextureRegion(directory.getEntry("shared:tilesBackground", Texture.class));
@@ -571,7 +577,7 @@ public class LevelController implements ContactListener {
         */
 
         // Create platforms
-        PlatformModel platforms = new PlatformModel(levelData.get("platformPos"),"platform");
+        PlatformModel platforms = new PlatformModel(levelData.get("platformPos"));
         platforms.setDrawScale(scale);
         platforms.setTexture(earthTile);
         addObject(platforms);
@@ -579,8 +585,16 @@ public class LevelController implements ContactListener {
         // Create spiked platforms
         SpikedPlatformModel spikedPlatforms = new SpikedPlatformModel(levelData.get("spikedPlatformPos"));
         spikedPlatforms.setDrawScale(scale);
-        spikedPlatforms.setTexture(earthTile); //TODO: Change spikedPlatform texture
+        spikedPlatforms.setTexture(poisonTile); //TODO: Change spikedPlatform texture
+
         addObject(spikedPlatforms);
+
+        // Create honeypatches
+        HoneypatchModel honeyPatches = new HoneypatchModel(levelData.get("honeypatchPos"),0.5f);
+        honeyPatches.setDrawScale(scale);
+        honeyPatches.setTexture(earthTile); //TODO: Change honeyPatch texture
+        //dont add yet so that it can overlap
+        //addObject(honeyPatches);
 
         // This world is heavier
         world.setGravity(new Vector2(0, defaults.getFloat("gravity", 0)));
@@ -598,7 +612,8 @@ public class LevelController implements ContactListener {
         // Create chaser bees
 
         Array<AbstractBeeModel> bees = new Array<AbstractBeeModel>();
-        level = new LevelModel(avatar,bees,goalDoor,platforms,spikedPlatforms,levelBackground,new Rectangle(bounds));
+        level = new LevelModel(avatar,bees,goalDoor,platforms, spikedPlatforms, honeyPatches, levelBackground, new Rectangle(bounds));
+
 
 
         aIController = new AIController(level, whiteSquare);
@@ -616,6 +631,20 @@ public class LevelController implements ContactListener {
             addObject(chaserBee);
             aIController.createAIForSingleCharacter(chaserBee, constants.get("GroundedBee").get("ai_controller_options"));
         }
+
+        JsonValue flyingBeePositions = levelData.get("flyingBeePos");
+        for (int i=0; i<flyingBeePositions.size; i++){
+            float[] pos = flyingBeePositions.get(i).asFloatArray();
+            FlyingBeeModel flyingBee = new FlyingBeeModel(constants.get("FlyingBee"), pos[0], pos[1], dwidth, dheight);
+            flyingBee.setDrawScale(scale);
+            flyingBee.setTexture(flyingBeeTexture);
+            bees.add(flyingBee);
+            addObject(flyingBee);
+            aIController.createAIForSingleCharacter(flyingBee, constants.get("FlyingBee").get("ai_controller_options"));
+        }
+
+        //add honeypatches last so that they cover other objects
+        addObject(honeyPatches);
 
 
         /*
@@ -651,12 +680,16 @@ public class LevelController implements ContactListener {
      */
     public void rotate(boolean isClockwise, boolean platformNotRotating){
         PlatformModel platforms = level.getPlatforms();
+        SpikedPlatformModel spikedPlatforms = level.getSpikedPlatforms();
         PlayerModel avatar = level.getPlayer();
         Array<AbstractBeeModel> bees = level.getBees();
         Vector2 origin = level.getOrigin();
 
         platforms.startRotation(isClockwise, origin);
+        spikedPlatforms.startRotation(isClockwise, origin);
+        level.getHoneyPatches().startRotation(isClockwise,origin);
         level.getLevelBackground().startRotation(isClockwise,origin);
+
         level.getGoalDoor().startRotation(isClockwise,origin);
         if (avatar.isGrounded()&&platformNotRotating){
             avatar.startRotation(isClockwise, origin);
@@ -878,8 +911,8 @@ public class LevelController implements ContactListener {
             boolean bd2isCharacterModel = bd2.getClass().getSuperclass().getSimpleName().equals("CharacterModel") ||
                     bd2.getClass().getSuperclass().getSuperclass().getSimpleName().equals("CharacterModel");
 
-            if (((bd1.getName().contains("spikedPlatform")) && bd2isCharacterModel) ||
-            bd2.getName().contains("spikedPlatform") && bd1isCharacterModel){
+            if (((bd1.getName().contains("spiked")) && bd2isCharacterModel) ||
+            bd2.getName().contains("spiked") && bd1isCharacterModel){
                 if (avatar == bd1 || avatar == bd2){
                     setFailure(true);
                 }
@@ -908,7 +941,27 @@ public class LevelController implements ContactListener {
                     bee.setGrounded(true);
                     bee.getSensorFixtures().add(bee == bd1 ? fix2 : fix1); // Could have more than one ground
                 }
+                if (((bee.getSensorName().equals(fd2) && bee != bd1)&&(bd1.getName().contains("honeypatch")) &&
+                        !bee.getSensorFixtures().contains(fix1)) ||
+                    ((bee.getSensorName().equals(fd1) && bee != bd2)&&(bd2.getName().contains("honeypatch")) &&
+                        !bee.getSensorFixtures().contains(fix2))) {
+                    bee.setGrounded(true);
+                    bee.setInHoney(true);
+                    bee.getSensorFixtures().add(bee == bd1 ? fix2 : fix1); // Could have more than one ground
+                    bee.setMaxspeed(level.getHoneyPatches().getSlowSpeed());
+                }
             }
+            // Check for honeypatch
+            if (((avatar.getSensorName().equals(fd2) && avatar != bd1) && (bd1.getName().contains("honeypatch")) &&
+                        !sensorFixtures.contains(fix1)) ||
+                ((avatar.getSensorName().equals(fd1)&& avatar != bd2) && (bd2.getName().contains("honeypatch")) &&
+                        !sensorFixtures.contains(fix2))) {
+                avatar.setGrounded(true);
+                avatar.setInHoney(true);
+                sensorFixtures.add(avatar == bd1 ? fix2 : fix1);
+                avatar.setMaxspeed(level.getHoneyPatches().getSlowSpeed());
+            }
+
             // Check for win condition
             if (!isFailure() && !isComplete() &&
                     ((bd1 == avatar && bd2.getClass().getSuperclass() == AbstractBeeModel.class) ||
@@ -958,10 +1011,29 @@ public class LevelController implements ContactListener {
                     avatar.setGrounded(false);
                 }
             }
+            if (((avatar.getSensorName().equals(fd2) && avatar != bd1)&&(bd1.getName().contains("honeypatch")))  ||
+                    ((avatar.getSensorName().equals(fd1) && avatar != bd2)&&(bd2.getName().contains("honeypatch")))) {
+                sensorFixtures.remove(avatar == bd1 ? fix2 : fix1);
+                avatar.setDefaultMaxspeed();
+                avatar.setInHoney(false);
+                if (sensorFixtures.size == 0) {
+                    avatar.setGrounded(false);
+                }
+            }
+
             for(AbstractBeeModel bee : bees) {
                 if (((bee.getSensorName().equals(fd2) && bee != bd1)&&(bd1.getName().contains("platform"))) ||
                         ((bee.getSensorName().equals(fd1) && bee != bd2)&&(bd2.getName().contains("platform")))) {
                     bee.getSensorFixtures().remove(bee == bd1 ? fix2 : fix1);
+                    if (bee.getSensorFixtures().size == 0) {
+                        bee.setGrounded(false);
+                    }
+                }
+                if (((bee.getSensorName().equals(fd2) && bee != bd1)&&(bd1.getName().contains("honeypatch"))) ||
+                        ((bee.getSensorName().equals(fd1) && bee != bd2)&&(bd2.getName().contains("honeypatch")))) {
+                    bee.getSensorFixtures().remove(bee == bd1 ? fix2 : fix1);
+                    bee.setDefaultMaxspeed();
+                    bee.setInHoney(false);
                     if (bee.getSensorFixtures().size == 0) {
                         bee.setGrounded(false);
                     }

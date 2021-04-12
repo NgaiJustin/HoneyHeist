@@ -40,6 +40,18 @@ public class DirectedLineSegment {
         set(startPoint.x, startPoint.y, endPoint.x, endPoint.y);
     }
 
+    public void setByVector(float x1, float y1, float xV2, float yV2) {
+        this.x1 = x1;
+        this.y1 = y1;
+        this.x2 = x1 + xV2;
+        this.y2 = y1 + yV2;
+        direction.set((x2 - x1), (y2 - y1));
+    }
+
+    public void setByVector(Vector2 startPoint, Vector2 vector) {
+        setByVector(startPoint.x, startPoint.y, vector.x, vector.y);
+    }
+
     public float dst() {
         return (float) Math.sqrt(Math.pow((x2 - x1), 2) + Math.pow((y2 - y1), 2));
     }

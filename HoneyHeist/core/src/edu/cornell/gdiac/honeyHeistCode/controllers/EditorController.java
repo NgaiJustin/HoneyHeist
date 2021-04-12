@@ -2,28 +2,19 @@ package edu.cornell.gdiac.honeyHeistCode.controllers;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputProcessor;
-import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
-import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.utils.JsonWriter;
 import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.audio.SoundBuffer;
-import edu.cornell.gdiac.honeyHeistCode.EditorOverlay;
-import edu.cornell.gdiac.honeyHeistCode.GameplayController;
 import edu.cornell.gdiac.honeyHeistCode.WorldController;
 import edu.cornell.gdiac.honeyHeistCode.models.*;
 import edu.cornell.gdiac.honeyHeistCode.obstacle.BoxObstacle;
@@ -50,6 +41,10 @@ public class EditorController extends WorldController implements InputProcessor 
      */
     private TextureRegion chaserBeeTexture;
     /**
+     * Texture asset for chaser bee avatar
+     */
+    private TextureRegion flyingBeeTexture;
+    /**
      * Texture asset for testEnemy avatar
      */
     private TextureRegion sleeperBeeTexture;
@@ -57,6 +52,9 @@ public class EditorController extends WorldController implements InputProcessor 
      * Texture asset for tilesBackground
      */
     private TextureRegion tilesBackground;
+
+    /** The texture for spiked platforms */
+    protected TextureRegion poisonTile;
 
     private BitmapFont modeFont;
 
@@ -104,6 +102,8 @@ public class EditorController extends WorldController implements InputProcessor 
     private PolygonShape outline;
 
     private boolean drawOutline;
+
+    private PolygonObstacle honeypatchPreview;
 
     // Fields for the Editor controller GUI
 //    private EditorOverlay overlay;
@@ -194,9 +194,11 @@ public class EditorController extends WorldController implements InputProcessor 
         crosshairTexture  = new TextureRegion(directory.getEntry( "shared:crosshair", Texture.class ));
         background = new TextureRegion(directory.getEntry( "shared:background",  Texture.class ));
         avatarTexture = new TextureRegion(directory.getEntry("platform:ant", Texture.class));
-        chaserBeeTexture = new TextureRegion(directory.getEntry("platform:chaserBee", Texture.class));
+        chaserBeeTexture = new TextureRegion(directory.getEntry("platform:larvae", Texture.class));
+        flyingBeeTexture = new TextureRegion(directory.getEntry("platform:flyingBee", Texture.class));
         sleeperBeeTexture = new TextureRegion(directory.getEntry("platform:sleeperBee", Texture.class));
         tilesBackground = new TextureRegion(directory.getEntry("shared:tilesBackground", Texture.class));
+        poisonTile = new TextureRegion(directory.getEntry( "shared:poisonWall", Texture.class));
 
         walkingPlayer = directory.getEntry( "platform:walk.pacing", FilmStrip.class );
 
@@ -262,6 +264,11 @@ public class EditorController extends WorldController implements InputProcessor 
 
         //Bees
         level.setBees(new Array<AbstractBeeModel>());
+
+        level.setSpikedPlatforms(new SpikedPlatformModel());
+        HoneypatchModel honeypatches = new HoneypatchModel();
+        addObject(honeypatches);
+        level.setHoneyPatches(honeypatches);
 
         //Platforms
         PlatformModel platforms = new PlatformModel(levelData.get("platformPos"),"platform");
@@ -380,7 +387,9 @@ public class EditorController extends WorldController implements InputProcessor 
                         Vector2 previousClick = clickCache.get(clickCache.size - 2);
                         Vector2 currentClick = clickCache.get(clickCache.size - 1);
 
-                        newPlatform(rectFromTwoPoints(previousClick, currentClick));
+                        if (currentClick.x != previousClick.x || currentClick.y != previousClick.y) {
+                            newPlatform(rectFromTwoPoints(previousClick, currentClick));
+                        }
                         clickCache.clear();
                         drawOutline = false;
                     }
@@ -411,7 +420,7 @@ public class EditorController extends WorldController implements InputProcessor 
                 }
             }
 
-            //PLACE BEE MODE
+            //PLACE LARVA MODE
             if (mode == 2) {
                 if (input.didMouseClick()) {
                     clickCache.add(new Vector2(input.getCrossHair().x, input.getCrossHair().y));
@@ -477,11 +486,19 @@ public class EditorController extends WorldController implements InputProcessor 
                         selector.deselect();
                     }
 
-                    //have to remove objects from level model + mark them to be deleted
+                    //have to remove objects from level model + mark them to be removed
                     if (input.didDelete()) {
                         if (selector.getObstacle().getName().contains("platform")) {
                             PolygonObstacle obj = (PolygonObstacle) selector.getObstacle();
                             level.getPlatforms().getArrayBodies().removeValue(obj, false);
+                        }
+                        if (selector.getObstacle().getName().contains("spiked")) {
+                            PolygonObstacle obj = (PolygonObstacle) selector.getObstacle();
+                            level.getSpikedPlatforms().getArrayBodies().removeValue(obj, false);
+                        }
+                        if (selector.getObstacle().getName().contains("honeypatch")) {
+                            PolygonObstacle obj = (PolygonObstacle) selector.getObstacle();
+                            level.getHoneyPatches().getArrayBodies().removeValue(obj, false);
                         }
                         if (selector.getObstacle().getClass() == PlayerModel.class) {
                             level.setPlayer(null);
@@ -495,6 +512,83 @@ public class EditorController extends WorldController implements InputProcessor 
                         }
                         selector.getObstacle().markRemoved(true);
                     }
+                }
+            }
+
+            //PLACE SPIKED PLATFORM MODE
+            if (mode == 5){
+                if (input.didMouseClick()) {
+                    clickCache.add(new Vector2(input.getCrossHair().x, input.getCrossHair().y));
+                    if (clickCache.size >= 2) {
+                        snapClick();
+
+                        Vector2 previousClick = clickCache.get(clickCache.size - 2);
+                        Vector2 currentClick = clickCache.get(clickCache.size - 1);
+                        if (currentClick.x != previousClick.x || currentClick.y != previousClick.y) {
+                            newSpikedPlatform(rectFromTwoPoints(previousClick, currentClick));
+                        }
+                        clickCache.clear();
+                        drawOutline = false;
+                    }
+                }
+                //if clicked once and in platform mode, update outline
+                if (clickCache.size == 1) {
+                    Vector2 currentClick = clickCache.get(0);
+                    Vector2 nearest = nearestPointAngle(currentClick, input.getCrossHair(), Math.PI / 3);
+                    if (currentClick.x != nearest.x || currentClick.y != nearest.y) {
+                        outline.set(rectFromTwoPoints(currentClick, nearest));
+                        drawOutline = true;
+                    }
+                }
+                if (input.didMouseRightClick()) {
+                    clickCache.clear();
+                    drawOutline = false;
+                }
+            }
+
+            //PLACE HONEYPATCH MODE
+            if (mode == 6){
+                if (input.didMouseClick()) {
+                    clickCache.add(new Vector2(input.getCrossHair().x, input.getCrossHair().y));
+                }
+                //if clicked once and in honeypatch mode, just draw line
+                if (clickCache.size == 1) {
+                    Vector2 currentClick = clickCache.get(0);
+                    if (currentClick.x != input.getCrossHair().x || currentClick.y != input.getCrossHair().y) {
+                        outline.set(rectFromTwoPoints(currentClick, input.getCrossHair(),0.01f));
+                        drawOutline = true;
+                    }
+                }
+                //if clicked twice or more, draw preview based on mouse pos
+                if (clickCache.size >= 2) {
+                    Vector2 currentClick = clickCache.get(clickCache.size-1);
+                    if (currentClick.x != input.getCrossHair().x || currentClick.y != input.getCrossHair().y) {
+                        drawOutline = false;
+                        float[] points = getPolyPoints(input.getCrossHair());
+
+                        //clear honeypatch preview
+                        if(honeypatchPreview !=null) {
+                            level.getHoneyPatches().getArrayBodies().removeValue(honeypatchPreview, false);
+                            honeypatchPreview.markRemoved(true);
+                        }
+                        //set new honeypatch preview
+                        honeypatchPreview = newHoneypatch(points);
+
+                        //right click to finalize shape
+                        if (input.didMouseRightClick()){
+                            clickCache.clear();
+                            honeypatchPreview = null;
+                        }
+                    }
+                }
+            }
+
+            //PLACE BEE MODE
+            if (mode == 7){
+                if (input.didMouseClick()) {
+                    clickCache.add(new Vector2(input.getCrossHair().x, input.getCrossHair().y));
+                    newFlyingBee();
+                    clickCache.clear();
                 }
             }
         }
@@ -516,6 +610,7 @@ public class EditorController extends WorldController implements InputProcessor 
         goalDoor.setDrawScale(scale);
         goalDoor.setTexture(goalTile);
         goalDoor.setName("goal");
+        goalDoor.setSensor(true);
         level.setGoalDoor(goalDoor);
         addObject(goalDoor);
         //goalDoor.setActive(false);
@@ -549,6 +644,32 @@ public class EditorController extends WorldController implements InputProcessor 
         level.getPlatforms().getArrayBodies().add(obj);
     }
 
+    private void newSpikedPlatform(float[] points) {
+        PolygonObstacle obj;
+        obj = new PolygonObstacle(points, 0, 0);
+        obj.setBodyType(BodyDef.BodyType.StaticBody);
+        obj.setDrawScale(scale);
+        obj.setTexture(poisonTile);
+        addObject(obj);
+        //obj.setActive(false);
+        obj.setName("spiked");
+        level.getSpikedPlatforms().getArrayBodies().add(obj);
+    }
+
+    private PolygonObstacle newHoneypatch(float[] points) {
+        PolygonObstacle obj;
+        obj = new PolygonObstacle(points, 0, 0);
+        obj.setBodyType(BodyDef.BodyType.StaticBody);
+        obj.setDrawScale(scale);
+        obj.setTexture(earthTile);
+        addObject(obj);
+        //obj.setActive(false);
+        obj.setName("honeypatch");
+        obj.setSensor(true);
+        level.getHoneyPatches().getArrayBodies().add(obj);
+        return obj;
+    }
+
     private void newChaserBee() {
         float dwidth = chaserBeeTexture.getRegionWidth() / scale.x;
         float dheight = chaserBeeTexture.getRegionHeight() / scale.y;
@@ -562,6 +683,21 @@ public class EditorController extends WorldController implements InputProcessor 
         addObject(chaserBee);
         //chaserBee.setActive(false);
         chaserBee.setGravityScale(0);
+    }
+
+    private void newFlyingBee() {
+        float dwidth = flyingBeeTexture.getRegionWidth() / scale.x;
+        float dheight = flyingBeeTexture.getRegionHeight() / scale.y;
+
+        FlyingBeeModel flyingBee = new FlyingBeeModel(constants.get("FlyingBee"),
+                clickCache.get(0).x, clickCache.get(0).y, dwidth, dheight);
+
+        flyingBee.setDrawScale(scale);
+        flyingBee.setTexture(flyingBeeTexture);
+        level.getBees().add(flyingBee);
+        addObject(flyingBee);
+        //chaserBee.setActive(false);
+        flyingBee.setGravityScale(0);
     }
 
     /**
@@ -608,7 +744,8 @@ public class EditorController extends WorldController implements InputProcessor 
 
 
     /**
-     * Creates a rectangle based on the two points a and b
+     * Creates a rectangle based on the two points a and b,
+     * with a default width or a specified width
      *
      * @param a the first point
      * @param b the second point
@@ -627,6 +764,39 @@ public class EditorController extends WorldController implements InputProcessor 
         };
         return result;
     }
+    private float[] rectFromTwoPoints(Vector2 a, Vector2 b, float width) {
+        Vector2 vec = new Vector2(b.x-a.x,b.y-a.y);
+        double angle = Math.atan(vec.y/vec.x);
+        angle += Math.PI/2;
+        Vector2 offset = new Vector2((float)Math.cos(angle)*width/2,(float)Math.sin(angle)*width/2);
+        float[] result = {
+                a.x+offset.x,a.y+offset.y,
+                a.x-offset.x,a.y-offset.y,
+                b.x-offset.x,b.y-offset.y,
+                b.x+offset.x,b.y+offset.y,
+        };
+        return result;
+    }
+
+    /**
+     * returns an array of floats based on the click cache and the current cursor position
+     * that can be used to construct a polygon.
+     *
+     * @param cursor    the current cursor position
+     * @return
+     */
+    private float[] getPolyPoints(Vector2 cursor) {
+        int size = clickCache.size*2+2;
+        float[] points = new float[size];
+        for(int i = 0; i<clickCache.size*2; i+=2){
+            Vector2 current = clickCache.get(i/2);
+            points[i] = current.x;
+            points[i+1] = current.y;
+        }
+        points[size-2] = cursor.x;
+        points[size-1] = cursor.y;
+        return points;
+    }
 
     /**
      * Draw the physics objects to the canvas
@@ -643,7 +813,13 @@ public class EditorController extends WorldController implements InputProcessor 
         canvas.begin();
         canvas.draw(background, 0, 0);
         for(Obstacle obj : objects) {
-            obj.draw(canvas);
+            if(obj.getClass() == PolygonObstacle.class) {
+                if (!obj.getName().contains("honeypatch")) {
+                    obj.draw(canvas);
+                }
+            }else{
+                obj.draw(canvas);
+            }
         }
 
         canvas.end();
@@ -660,9 +836,12 @@ public class EditorController extends WorldController implements InputProcessor 
         String modeText = "MODE: ";
         if(mode == 0){modeText += "Place Platform";}
         if(mode == 1){modeText += "Place Player";}
-        if(mode == 2){modeText += "Place Bee";}
+        if(mode == 2){modeText += "Place Larva";}
         if(mode == 3){modeText += "Place Goal Door";}
         if(mode == 4){modeText += "Select";}
+        if(mode == 5){modeText += "Place Spiked Platform";}
+        if(mode == 6){modeText += "Place Honeypatch";}
+        if(mode == 7){modeText += "Place Bee";}
 
         // Draw mode text
         canvas.begin();
@@ -674,7 +853,7 @@ public class EditorController extends WorldController implements InputProcessor 
         if(drawOutline){
             canvas.beginDebug();
             //System.out.print("drawline");
-            canvas.drawPhysics(outline,Color.RED,0,0,0,scale.x,scale.y);
+            canvas.drawPhysics(outline, Color.RED, 0, 0, 0, scale.x, scale.y);
             canvas.endDebug();
         }
 

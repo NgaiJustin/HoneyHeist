@@ -53,6 +53,30 @@ public class PlatformModel extends Obstacle {
 		rotationAngle = (float) Math.PI/3;
 		rotationSpeed = (float) Math.PI/3;
     }
+
+	public PlatformModel(JsonValue data) {
+		super(0,0);
+		bodies = new Array<PolygonObstacle>();
+
+		this.data = data;
+
+		String pname = "platform";
+
+		for (int ii = 0; ii < data.size; ii++) {
+			PolygonObstacle obj;
+			obj = new PolygonObstacle(data.get(ii).asFloatArray(), 0, 0);
+			obj.setBodyType(BodyDef.BodyType.StaticBody);
+			obj.setDensity(data.getFloat( "density", 0.0f ));
+			obj.setFriction(data.getFloat( "friction", 0.0f ));
+			obj.setRestitution(data.getFloat( "restitution", 0.0f ));
+			obj.setName(pname+ii);
+			bodies.add(obj);
+		}
+
+		//Probably replace the following code with json data
+		rotationAngle = (float) Math.PI/3;
+		rotationSpeed = (float) Math.PI/3;
+	}
 	
 	public PlatformModel() {
 		super(0,0);
@@ -202,6 +226,12 @@ public class PlatformModel extends Obstacle {
 			obj.setTexture(texture);
 		}
 
+	}
+
+	public void setSensor(boolean value) {
+		for(PolygonObstacle obj : bodies) {
+			obj.setSensor(value);
+		}
 	}
 	
 	public TextureRegion getTexture() {

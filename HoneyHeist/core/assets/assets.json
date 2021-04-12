@@ -5,6 +5,11 @@
             "wrapU": "repeated",
             "wrapV": "repeated"
         },
+        "shared:poisonWall" : {
+            "file": "shared/poisonWall.png",
+            "wrapU": "repeated",
+            "wrapV": "repeated"
+        },
         "shared:crosshair": "shared/crosshair.png",
         "shared:goal":   "shared/goaldoor.png",
         "shared:background": "shared/background.png",
@@ -16,7 +21,8 @@
         },
         "platform:ant":  "platform/ant.png",
         "platform:sleeperBee":  "platform/sleeperBee.png",
-        "platform:chaserBee":  "platform/chaserBee.png",
+        "platform:larvae":  "platform/larvae.png",
+        "platform:flyingBee": "platform/chaserBee.png",
         "platform:rope":  "platform/ropebridge.png",
         "platform:barrier": "platform/barrier.png",
         "platform:bullet":  "platform/bullet.png",
@@ -33,7 +39,7 @@
       "editor:beeButton":"editor/beeButton.png",
       "editor:platformButton":"editor/platformButton.png",
       "editor:goalButton":"editor/goalButton.png",
-      "editor:selectModeButton":"editor/selectModeButton.png"
+      "editor:selectModeButton":"editor/selectModeButton.png",
       "editor:saveButton":"editor/saveButton.png",
       "editor:resetButton":"editor/resetButton.png"
     },
