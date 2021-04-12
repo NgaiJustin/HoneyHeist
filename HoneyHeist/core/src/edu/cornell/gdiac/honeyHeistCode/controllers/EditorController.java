@@ -1026,9 +1026,11 @@ public class EditorController extends WorldController implements InputProcessor 
     public class Level{
         public float[] goalPos;
         public float[] playerPos;
-        public float[][] groundedBeePos;
+        public float[][] larvaPos;
+        public float[][] beePos;
         public float[][] platformPos;
         public float[][] spikedPlatformPos;
+        public float[][] honeypatchPos;
 
         public Level(){
 
@@ -1036,9 +1038,11 @@ public class EditorController extends WorldController implements InputProcessor 
 
         public void setGoal(float[] goalPos) { this.goalPos = goalPos; }
         public void setPlayer(float[] playerPos) { this.playerPos = playerPos; }
-        public void setBee(float[][] groundedBeePos) { this.groundedBeePos = groundedBeePos; }
+        public void setLarva(float[][] larvaPos) { this.larvaPos = larvaPos; }
+        public void setBee(float[][] beePos) { this.beePos = beePos; }
         public void setPlatform(float[][] platformPos) { this.platformPos = platformPos; }
         public void setSpikedPlatform(float[][] spikedPlatformPos) {this.spikedPlatformPos = spikedPlatformPos; }
+        public void setHoneypatch(float[][] honeypatchPos) { this.honeypatchPos = honeypatchPos; }
 
     }
 
