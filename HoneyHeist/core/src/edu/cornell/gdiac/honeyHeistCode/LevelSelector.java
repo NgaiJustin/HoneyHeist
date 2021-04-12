@@ -24,12 +24,10 @@ public class LevelSelector implements Screen, InputProcessor, ControllerListener
 
     /** Background texture for start-up */
     private Texture background;
-    /** levelOne button */
-    private Texture levelOne;
-    /** levelTwo button */
-    private Texture levelTwo;
-    /** levelThree button */
-    private Texture levelThree;
+    /** levelEditor button */
+    private Texture levelEditor;
+    /** is levelEditor button pressed */
+    private boolean pressLevelEditor;
     /** Title texture */
     private Texture title;
     /** selected level number */
@@ -46,6 +44,10 @@ public class LevelSelector implements Screen, InputProcessor, ControllerListener
     private JsonValue selectedLevelData;
     /** level buttons, should have the size specified by allLevelData */
     private Texture[] buttons;
+    /** Exit code for going to the playing level */
+    public static final int EXIT_QUIT = 0;
+    /** Exit code for going to the editor */
+    public static final int EXIT_EDITOR = 1;
 
 //    // statusBar is a "texture atlas." Break it up into parts.
 //    /** Left cap to the status background (grey region) */
@@ -200,14 +202,13 @@ public class LevelSelector implements Screen, InputProcessor, ControllerListener
         // initailize the buttons to null
         Arrays.fill(buttons, null);
 
-        // Load the next two images immediately.
-//        levelOne = null;
-//        levelTwo = null;
-//        levelThree = null;
         background = internal.getEntry( "background", Texture.class );
         background.setFilter( TextureFilter.Linear, TextureFilter.Linear );
         title = internal.getEntry("title", Texture.class);
         displayFont = internal.getEntry("times",BitmapFont.class);
+        // new
+        levelEditor = internal.getEntry("levelEditor", Texture.class);
+        pressLevelEditor = false;
 
         // No progress so far.
         progress = 0;
@@ -286,6 +287,13 @@ public class LevelSelector implements Screen, InputProcessor, ControllerListener
         canvas.draw(title, Color.WHITE, title.getWidth()/2f, title.getHeight()/2f,
                 centerX, centerY*1.5f, 0, 2, 2);
         Color tint;
+        // new
+        if (levelEditor != null) {
+            tint = (pressState == -2 ? Color.GRAY: Color.WHITE);
+            canvas.draw(levelEditor, tint, levelEditor.getWidth()/2f, levelEditor.getHeight()/2f,
+                    centerX/3f, centerY*1.5f, 0, BUTTON_SCALE*scale,
+                    BUTTON_SCALE*scale);
+        }
         for (int i=0; i<buttons.length; i++) {
             if (buttons[i] != null) {
                 // pressState is one bigger than the button index
@@ -337,9 +345,13 @@ public class LevelSelector implements Screen, InputProcessor, ControllerListener
             update(delta);
             draw();
 
+            if (isReady() && listener != null && pressLevelEditor) {
+                listener.exitScreen(this, EXIT_EDITOR);
+            }
+
             // We are are ready, notify our listener
-            if (isReady() && listener != null) {
-                listener.exitScreen(this, 0);
+            else if (isReady() && listener != null) {
+                listener.exitScreen(this, EXIT_QUIT);
             }
         }
     }
@@ -403,7 +415,7 @@ public class LevelSelector implements Screen, InputProcessor, ControllerListener
      * @return whether to hand the event to other listeners.
      */
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-        boolean flag = true;
+        boolean flag = levelEditor == null;
         for (Texture b : buttons) {
             if (b != null) {
                 flag = false;
@@ -431,6 +443,14 @@ public class LevelSelector implements Screen, InputProcessor, ControllerListener
                 if (dist < radius*radius) {
                     pressState = i+1;
                 }
+            }
+        }
+        if (levelEditor != null) {
+            radius = BUTTON_SCALE*scale*levelEditor.getWidth()/2.0f;
+            dist = (screenX-centerX/3f)*(screenX-centerX/3f)+(screenY-centerY*1.5f)*(screenY-centerY*1.5f);
+            if (dist < radius*radius) {
+                pressState = -2;
+                pressLevelEditor = true;
             }
         }
 //        if (levelOne != null) {
@@ -474,6 +494,9 @@ public class LevelSelector implements Screen, InputProcessor, ControllerListener
             levelNumber = pressState;
             selectedLevelData = allLevelData.get(levelNumber-1);
             System.out.println(selectedLevelData.get("test").asInt());
+            pressState = 0;
+            return false;
+        } else if (pressState == -2) {
             pressState = 0;
             return false;
         }

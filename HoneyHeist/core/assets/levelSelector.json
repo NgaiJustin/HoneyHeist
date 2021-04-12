@@ -4,6 +4,7 @@
 		"play": "shared/play.png",
         "totalLevels": 3,
         "button": "shared/button_level.png",
+        "levelEditor": "editor/levelEditor.png",
         "title": "shared/levelslabel.png",
         "progress": {
             "file":      "shared/progressbar.png",
