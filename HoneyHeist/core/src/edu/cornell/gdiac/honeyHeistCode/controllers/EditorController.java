@@ -53,6 +53,10 @@ public class EditorController extends WorldController implements InputProcessor 
      * Texture asset for testEnemy avatar
      */
     private TextureRegion sleeperBeeTexture;
+    /**
+     * Texture asset for tilesBackground
+     */
+    private TextureRegion tilesBackground;
 
     private BitmapFont modeFont;
 
@@ -192,6 +196,7 @@ public class EditorController extends WorldController implements InputProcessor 
         avatarTexture = new TextureRegion(directory.getEntry("platform:ant", Texture.class));
         chaserBeeTexture = new TextureRegion(directory.getEntry("platform:chaserBee", Texture.class));
         sleeperBeeTexture = new TextureRegion(directory.getEntry("platform:sleeperBee", Texture.class));
+        tilesBackground = new TextureRegion(directory.getEntry("shared:tilesBackground", Texture.class));
 
         walkingPlayer = directory.getEntry( "platform:walk.pacing", FilmStrip.class );
 
@@ -200,7 +205,7 @@ public class EditorController extends WorldController implements InputProcessor 
         plopSound = directory.getEntry("platform:plop", SoundBuffer.class);
 
         constants = directory.getEntry("platform:constants2", JsonValue.class);
-        levelData = directory.getEntry("platform:prototypeLevel", JsonValue.class);
+        levelData = directory.getEntry("platform:defaultLevel", JsonValue.class);
         modeFont = directory.getEntry("shared:marker",BitmapFont.class);
 
         beeButton = directory.getEntry("editor:beeButton", Texture.class);
@@ -242,10 +247,29 @@ public class EditorController extends WorldController implements InputProcessor 
     public void populateLevel() {
 
         volume = constants.getFloat("volume", 1.0f);
-
         level = new LevelModel();
+
+        //Background
+        PolygonObstacle levelBackground;
+        levelBackground = new PolygonObstacle(levelData.get("background").asFloatArray(), 0, 0);
+        levelBackground.setBodyType(BodyDef.BodyType.StaticBody);
+        levelBackground.setName("background");
+        levelBackground.setDrawScale(scale);
+        levelBackground.setTexture(tilesBackground);
+        levelBackground.setSensor(true);
+        addObject(levelBackground);
+        level.setLevelBackground(levelBackground);
+
+        //Bees
         level.setBees(new Array<AbstractBeeModel>());
-        level.setPlatforms(new PlatformModel());
+
+        //Platforms
+        PlatformModel platforms = new PlatformModel(levelData.get("platformPos"),"platform");
+        platforms.setDrawScale(scale);
+        platforms.setTexture(earthTile);
+        addObject(platforms);
+        level.setPlatforms(platforms);
+
         clickCache = new Array<Vector2>();
         outline = new PolygonShape();
 
