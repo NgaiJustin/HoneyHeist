@@ -41,7 +41,10 @@
       "editor:goalButton":"editor/goalButton.png",
       "editor:selectModeButton":"editor/selectModeButton.png",
       "editor:saveButton":"editor/saveButton.png",
-      "editor:resetButton":"editor/resetButton.png"
+      "editor:resetButton":"editor/resetButton.png",
+      "editor:larvaButton":"editor/larvaButton.png",
+      "editor:honeyPatchButton":"editor/honeyPatchButton.png",
+      "editor:spikedPlatformButton":"editor/spikedPlatformButton.png"
     },
     "jsons"  : {
         "platform:constants": "platform/constants.json",
