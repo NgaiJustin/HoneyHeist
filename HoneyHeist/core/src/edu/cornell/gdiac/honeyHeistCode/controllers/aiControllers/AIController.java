@@ -1,7 +1,7 @@
 package edu.cornell.gdiac.honeyHeistCode.controllers.aiControllers;
 
-import com.badlogic.gdx.utils.Array;
 
+import java.util.HashMap;
 import edu.cornell.gdiac.honeyHeistCode.GameCanvas;
 import com.badlogic.gdx.math.Vector2;
 import edu.cornell.gdiac.honeyHeistCode.models.LevelModel;
@@ -11,26 +11,30 @@ import com.badlogic.gdx.utils.JsonValue;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
 public class AIController {
-    Array<AISingleCharacterController> aICharacterControllers;
+    HashMap<CharacterModel, AISingleCharacterController> aICharacterControllers;
     AIGraphModel aIGraphModel;
     LevelModel levelModel;
 
     public AIController(LevelModel levelModel, TextureRegion whiteSquare) {
         this.levelModel = levelModel;
-        aICharacterControllers = new Array<AISingleCharacterController>();
+        aICharacterControllers = new HashMap<CharacterModel, AISingleCharacterController>();
         aIGraphModel = new AIGraphModel(levelModel, whiteSquare);
     }
 
     public void createAIForSingleCharacter(CharacterModel characterModel, JsonValue data) {
-        aICharacterControllers.add(new AISingleCharacterController (levelModel, characterModel, data));
+        aICharacterControllers.put(characterModel, new AISingleCharacterController (levelModel, characterModel, data));
+    }
+
+    public void deleteAIForSingleCharacter(CharacterModel characterModel) {
+        aICharacterControllers.remove(characterModel);
     }
 
 
     public void moveAIControlledCharacters() {
-        for (AISingleCharacterController aICharacterController: aICharacterControllers) {
+        for (AISingleCharacterController aICharacterController: aICharacterControllers.values()) {
             aICharacterController.updateAIController();
-//            CharacterModel bee = aICharacterController.getControlledCharacter();
-//            bee.setMovement(aICharacterController.getMovementDirection().x * bee.getForce());
+            CharacterModel bee = aICharacterController.getControlledCharacter();
+            bee.setMovement(aICharacterController.getMovementDirection().x * bee.getForce());
         }
     }
 
@@ -45,7 +49,7 @@ public class AIController {
     }
 
     public void drawDebugLines(GameCanvas canvas, Vector2 scale) {
-        for (AISingleCharacterController aICharacterController: aICharacterControllers) {
+        for (AISingleCharacterController aICharacterController: aICharacterControllers.values()) {
             aICharacterController.drawDebug(canvas, scale);
         }
     }

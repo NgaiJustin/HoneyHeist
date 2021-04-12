@@ -74,8 +74,8 @@ public class AISingleCharacterController {
 
     private FSMState state;
     private long ticks;
-    private static final int ticksBeforeChangeInRandomDirection = 15;
-	private static final int ticksBeforeChangeInChaseDirection = 15;
+    private static final int ticksBeforeChangeInRandomDirection = 120;
+	private static final int ticksBeforeChangeInChaseDirection = 5;
     private Vector2 target;
     private DirectedLineSegment lineToTarget;
     private DirectedLineSegment tempLineSegment;
@@ -85,7 +85,16 @@ public class AISingleCharacterController {
     Random random = new Random();
 
     /**
-	 * Creates an AI Controller for the given enemy model
+	 * Creates an AI Controller for the given enemy model.
+	 *
+	 * This is the class that uses the information stored in the "ai_controller_options" in the json.
+	 * Currently, "ai_controller_options" has 5 parameters.
+	 * "enemy_type": is the type of enemy. It currently supports two types.
+	 * 		Flying enemy (represented by putting in "0") and grounded enemy (represented by putting in "1").
+	 * "chase_distance": The distance that the enemy needs to be to it's target in order to chase the target.
+	 * "target": The target that the enemy AI has. Now it only has one option (the player, which is represented by putting in "0")
+	 * "wander_speed_factor": The factor in which speed is multiplied during the wander phase.
+	 * "chase_speed_factor": The factor in which speed is multiplied during the chase phase.
 	 *
 	 * @param levelModel the level that the enemy is in.
 	 * @param controlledCharacter the enemy that this AI Controller controls.
@@ -130,7 +139,13 @@ public class AISingleCharacterController {
 	 * @return The direction that the enemy should move.
 	 */
 	public Vector2 getMovementDirection() {
-		return direction.getDirection();
+		temp.set(direction.getDirection());
+		if (state == FSMState.WANDER) {
+			return temp.scl(wanderSpeedFactor);
+		}
+		else {
+			return temp.scl(chaseSpeedFactor);
+		}
 	}
 
 //	/**
@@ -223,23 +238,12 @@ public class AISingleCharacterController {
 	private void updateDirectionBasedOnState() {
 		switch (this.state) {
 			case WANDER:
-				if (ticks % ticksBeforeChangeInRandomDirection == 0) {
-					if (characterType == CharacterType.GROUNDED_CHARACTER) {
-						direction.setByVector(controlledCharacter.getPosition(), direction.getDirection());
-						if (isLineCollidingWithAPlatform(direction)) {
-							changeToOppositeDirection();
-						}
-					}
-//					else {
-//						setDirectionToRandomDirection();
-//						for (int i = 0; i < 5; i++) {
-//							if (isLineCollidingWithAPlatform(direction)) {
-//								setDirectionToRandomDirection();
-//							}
-//						}
-//					}
-					direction.setByVector(controlledCharacter.getPosition(),direction.getDirection().nor());
+				if (characterType == CharacterType.GROUNDED_CHARACTER) {
+					wanderDirectionForGroundedEnemy();
+				} else {
+					wanderDirectionForFlyingEnemy();
 				}
+				direction.setByVector(controlledCharacter.getPosition(),direction.getDirection().nor().scl(1.5f));
 				break;
 
 			case CHASE:
@@ -253,7 +257,26 @@ public class AISingleCharacterController {
 			setDirectionToRandomHorizontal();
 		}
 		else {
-			setDirectionToRandomDirection();
+			setDirectionToRandom12();
+		}
+	}
+
+	private void wanderDirectionForGroundedEnemy() {
+		direction.setByVector(controlledCharacter.getPosition(), direction.getDirection());
+		if (isLineCollidingWithAPlatform(direction)) {
+			changeToOppositeDirection();
+		}
+	}
+
+	private void wanderDirectionForFlyingEnemy() {
+		direction.setByVector(controlledCharacter.getPosition(), direction.getDirection());
+		if (ticks % ticksBeforeChangeInRandomDirection == 0 || isLineCollidingWithAPlatform(direction)) {
+			setDirectionToRandom12();
+			for (int i = 0; i < 10; i++) {
+				if (isLineCollidingWithAPlatform(direction)) {
+					setDirectionToRandom12();
+				}
+			}
 		}
 	}
 
@@ -263,7 +286,7 @@ public class AISingleCharacterController {
 	private void setDirectionToRandomDirection() {
 		int angle = random.nextInt(360);
 		temp.set(1,0);
-		temp.setAngleDeg(angle * 90);
+		temp.setAngleDeg(angle);
 		temp.nor();
 		direction.setByVector(controlledCharacter.getPosition(), temp.scl(chaseSpeedFactor));
 	}
@@ -386,25 +409,25 @@ public class AISingleCharacterController {
 	}
 
 	public void drawDebug(GameCanvas gameCanvas, Vector2 scale) {
-//    	if (state == FSMState.CHASE) {
-//			gameCanvas.drawCircle(chaseRadius, Color.RED, controlledCharacter.getPosition().x, controlledCharacter.getPosition().y, scale.x, scale.y);
-//		}
-//    	else {
-//			gameCanvas.drawCircle(chaseRadius, Color.YELLOW, controlledCharacter.getPosition().x, controlledCharacter.getPosition().y, scale.x, scale.y);
-//		}
-//
-//    	if (isLineCollidingWithAPlatform(lineToTarget)) {
-//    		gameCanvas.drawLine(Color.RED, lineToTarget.x1, lineToTarget.y1, lineToTarget.x2, lineToTarget.y2, scale.x, scale.y);
-//		}
-//		else {
-//			gameCanvas.drawLine(Color.YELLOW, lineToTarget.x1, lineToTarget.y1, lineToTarget.x2, lineToTarget.y2, scale.x, scale.y);
-//		}
+    	if (state == FSMState.CHASE) {
+			gameCanvas.drawCircle(chaseRadius, Color.RED, controlledCharacter.getPosition().x, controlledCharacter.getPosition().y, scale.x, scale.y);
+		}
+    	else {
+			gameCanvas.drawCircle(chaseRadius, Color.YELLOW, controlledCharacter.getPosition().x, controlledCharacter.getPosition().y, scale.x, scale.y);
+		}
+
+    	if (isLineCollidingWithAPlatform(lineToTarget)) {
+    		gameCanvas.drawLine(Color.RED, lineToTarget.x1, lineToTarget.y1, lineToTarget.x2, lineToTarget.y2, scale.x, scale.y);
+		}
+		else {
+			gameCanvas.drawLine(Color.YELLOW, lineToTarget.x1, lineToTarget.y1, lineToTarget.x2, lineToTarget.y2, scale.x, scale.y);
+		}
 
 		if (isLineCollidingWithAPlatform(direction)) {
 			gameCanvas.drawLine(Color.RED, direction.x1, direction.y1, direction.x2, direction.y2, scale.x, scale.y);
 		}
 		else {
-			System.out.println(direction.toString());
+			System.out.println(temp.toString());
 			gameCanvas.drawLine(Color.BLUE, direction.x1, direction.y1, direction.x2, direction.y2, scale.x, scale.y);
 		}
 	}
