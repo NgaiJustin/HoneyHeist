@@ -4,39 +4,42 @@
  * This is the primary class file for running the game.  It is the "static main" of
  * LibGDX.  In the first lab, we extended ApplicationAdapter.  In previous lab
  * we extended Game.  This is because of a weird graphical artifact that we do not
- * understand.  Transparencies (in 3D only) is failing when we use ApplicationAdapter.
+ * understand.  Transparencies (in 3D only) is failing when we use ApplicationAdapter. 
  * There must be some undocumented OpenGL code in setScreen.
  *
  * Author: Walker M. White
  * Based on original PhysicsDemo Lab by Don Holden, 2007
  * Updated asset version, 2/6/2021
  */
-package edu.cornell.gdiac.honeyHeistCode;
+ package edu.cornell.gdiac.honeyHeistCode;
 
 import com.badlogic.gdx.*;
+import edu.cornell.gdiac.honeyHeistCode.controllers.LevelController;
 import edu.cornell.gdiac.honeyHeistCode.controllers.EditorController;
 import edu.cornell.gdiac.honeyHeistCode.controllers.LoadingMode;
 import edu.cornell.gdiac.util.*;
 import edu.cornell.gdiac.assets.*;
 
 /**
- * Root class for a LibGDX.
- *
+ * Root class for a LibGDX.  
+ * 
  * This class is technically not the ROOT CLASS. Each platform has another class above
- * this (e.g. PC games use DesktopLauncher) which serves as the true root.  However,
- * those classes are unique to each platform, while this class is the same across all
- * plaforms. In addition, this functions as the root class all intents and purposes,
- * and you would draw it as a root class in an architecture specification.
+ * this (e.g. PC games use DesktopLauncher) which serves as the true root.  However, 
+ * those classes are unique to each platform, while this class is the same across all 
+ * plaforms. In addition, this functions as the root class all intents and purposes, 
+ * and you would draw it as a root class in an architecture specification.  
  */
 public class GDXRoot extends Game implements ScreenListener {
 	/** AssetManager to load game assets (textures, sounds, etc.) */
 	AssetDirectory directory;
 	/** Drawing context to display graphics (VIEW CLASS) */
-	private GameCanvas canvas;
+	private GameCanvas canvas; 
 	/** Player mode for the asset loading screen (CONTROLLER CLASS) */
 	private LoadingMode loading;
-//	/** Player mode for the the game proper (CONTROLLER CLASS) */
-//	private int current;
+	/** Player mode for level selector (CONTROLLER CLASS) */
+	private LevelSelector levelSelector;
+	/** Player mode for the the game proper (CONTROLLER CLASS) */
+	private int current;
 //	/** List of all WorldControllers */
 //	private WorldController[] controllers;
 	// new editing
@@ -64,8 +67,10 @@ public class GDXRoot extends Game implements ScreenListener {
 		loading = new LoadingMode("assets.json",canvas,1);
 
 		// Initialize the game world
+//		controllers = new WorldController[1];
+//		controllers[0] = new LevelController();
 		controller = new GameplayController();
-
+		// current = 0;
 		// Initialize editor controller and modes
 		editorController = new EditorController();
 		loading.setScreenListener(this);
@@ -73,8 +78,8 @@ public class GDXRoot extends Game implements ScreenListener {
 		setScreen(loading);
 	}
 
-	/**
-	 * Called when the Application is destroyed.
+	/** 
+	 * Called when the Application is destroyed. 
 	 *
 	 * This is preceded by a call to pause().
 	 */
@@ -90,7 +95,7 @@ public class GDXRoot extends Game implements ScreenListener {
 
 		canvas.dispose();
 		canvas = null;
-
+	
 		// Unload all of the resources
 		if (directory != null) {
 			directory.unloadAssets();
@@ -99,11 +104,11 @@ public class GDXRoot extends Game implements ScreenListener {
 		}
 		super.dispose();
 	}
-
+	
 	/**
-	 * Called when the Application is resized.
+	 * Called when the Application is resized. 
 	 *
-	 * This can happen at any point during a non-paused state but will never happen
+	 * This can happen at any point during a non-paused state but will never happen 
 	 * before a call to create().
 	 *
 	 * @param width  The new width in pixels
@@ -113,7 +118,7 @@ public class GDXRoot extends Game implements ScreenListener {
 		canvas.resize();
 		super.resize(width,height);
 	}
-
+	
 	/**
 	 * The given screen has made a request to exit its player mode.
 	 *
@@ -133,7 +138,20 @@ public class GDXRoot extends Game implements ScreenListener {
 //			}
 //			controllers[current].reset();
 //			setScreen(controllers[current]);
-			directory = loading.getAssets();
+
+//			directory = loading.getAssets();
+//			controller.gatherAssets(directory);
+//			controller.setScreenListener(this);
+//			controller.setCanvas(canvas);
+//			controller.reset();
+//			setScreen(controller);
+			levelSelector = new LevelSelector("assets.json", canvas, 1);
+			levelSelector.setScreenListener(this);
+			setScreen(levelSelector);
+			loading.dispose();
+			loading = null;
+		} else if (screen == levelSelector && exitCode == LevelSelector.EXIT_QUIT) {
+			directory = levelSelector.getAssets();
 			controller.gatherAssets(directory);
 			editorController.gatherAssets(directory);
 			controller.setScreenListener(this);
@@ -141,13 +159,19 @@ public class GDXRoot extends Game implements ScreenListener {
 			controller.setCanvas(canvas);
 			editorController.setCanvas(canvas);
 			controller.reset();
+			// set the level number
+
 			setScreen(controller);
-			// new editing end
 
-			loading.dispose();
-			loading = null;
-
-			// new editing start
+			levelSelector.dispose();
+			levelSelector = null;
+		} else if(screen == levelSelector && exitCode == LevelSelector.EXIT_EDITOR) {
+			directory = levelSelector.getAssets();
+			editorController.gatherAssets(directory);
+			editorController.setScreenListener(this);
+			editorController.setCanvas(canvas);
+			editorController.reset();
+			setScreen(editorController);
 //		} else if (exitCode == WorldController.EXIT_NEXT) {
 		} else if (exitCode == GameplayController.EXIT_NEXT) {
 //			current = (current+1) % controllers.length;
@@ -158,6 +182,7 @@ public class GDXRoot extends Game implements ScreenListener {
 //		} else if (exitCode == WorldController.EXIT_PREV) {
 		} else if (exitCode == GameplayController.EXIT_PREV) {
 //			current = (current+controllers.length-1) % controllers.length;
+//			controllers[current].reset();
 //			setScreen(controllers[current]);
 			controller.reset();
 			setScreen(controller);
