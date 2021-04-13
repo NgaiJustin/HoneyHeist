@@ -66,7 +66,7 @@ public class CharacterModel extends CapsuleObstacle {
     /**
      * Cache for internal force calculations
      */
-    private final Vector2 forceCache = new Vector2();
+    protected final Vector2 forceCache = new Vector2();
 
 
     /**
