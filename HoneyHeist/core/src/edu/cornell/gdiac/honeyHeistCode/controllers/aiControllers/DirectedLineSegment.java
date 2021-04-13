@@ -40,6 +40,10 @@ public class DirectedLineSegment {
         set(startPoint.x, startPoint.y, endPoint.x, endPoint.y);
     }
 
+    public void set(DirectedLineSegment line) {
+        set(line.x1, line.y1, line.x2, line.y2);
+    }
+
     public void setByVector(float x1, float y1, float xV2, float yV2) {
         this.x1 = x1;
         this.y1 = y1;
