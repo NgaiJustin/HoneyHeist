@@ -1068,11 +1068,11 @@ public class EditorController extends WorldController implements InputProcessor 
     public class Level{
         public float[] goalPos;
         public float[] playerPos;
-        public float[][] larvaPos;
-        public float[][] beePos;
+        public float[][] groundedBeePos;
+        public float[][] flyingBeePos;
         public float[][] platformPos;
         public float[][] spikedPlatformPos;
-        public float[][] honeypatchPos;
+        public float[][] honeyPatchPos;
 
         public Level(){
 
@@ -1080,11 +1080,11 @@ public class EditorController extends WorldController implements InputProcessor 
 
         public void setGoal(float[] goalPos) { this.goalPos = goalPos; }
         public void setPlayer(float[] playerPos) { this.playerPos = playerPos; }
-        public void setLarva(float[][] larvaPos) { this.larvaPos = larvaPos; }
-        public void setBee(float[][] beePos) { this.beePos = beePos; }
+        public void setLarva(float[][] larvaPos) { this.groundedBeePos = larvaPos; }
+        public void setBee(float[][] beePos) { this.flyingBeePos = beePos; }
         public void setPlatform(float[][] platformPos) { this.platformPos = platformPos; }
         public void setSpikedPlatform(float[][] spikedPlatformPos) {this.spikedPlatformPos = spikedPlatformPos; }
-        public void setHoneypatch(float[][] honeypatchPos) { this.honeypatchPos = honeypatchPos; }
+        public void setHoneyPatch(float[][] honeyPatchPos) { this.honeyPatchPos = honeyPatchPos; }
 
     }
 
@@ -1105,22 +1105,41 @@ public class EditorController extends WorldController implements InputProcessor 
 
         if (level.getBees()!=null){
             Array<AbstractBeeModel> bees = level.getBees();
-            float[][] beeArray = new float[bees.size][2];
-            for (int i=0; i<beeArray.length; i++) {
-                Vector2 beePos = bees.get(i).getPosition();
-                beeArray[i][0] = beePos.x;
-                beeArray[i][1] = beePos.y;
+            Array<AbstractBeeModel> larva = new Array<>();
+            Array<AbstractBeeModel> flyingBees = new Array<>();
+            for (AbstractBeeModel bee : bees){
+                if (bee.getClass() == ChaserBeeModel.class){
+                    larva.add(bee);
+                } else {
+                    flyingBees.add(bee);
+                }
             }
+            float[][] larvaArray = new float[larva.size][2];
+            float[][] beeArray = new float[flyingBees.size][2];
+            for (int i=0; i<larvaArray.length; i++) {
+                Vector2 larvaPos = larva.get(i).getPosition();
+                larvaArray[i][0] = larvaPos.x;
+                larvaArray[i][1] = larvaPos.y;
+            }
+            for (int i=0; i<beeArray.length; i++){
+                Vector2 beePos = flyingBees.get(i).getPosition();
+                beeArray[i][0] = beePos.x;
+                beeArray[i][0] = beePos.y;
+            }
+            jsonLevel.setLarva(larvaArray);
             jsonLevel.setBee(beeArray);
         }
 
         if (level.getPlatforms()!=null){
-            Array<PolygonObstacle> platforms = level.getPlatforms().getArrayBodies();
-            float[][] platformArray = new float[platforms.size][8];
-            for (int i=0; i<platformArray.length; i++){
-                platformArray[i] = platforms.get(i).getTrueVertices();
-            }
-            jsonLevel.setPlatform(platformArray);
+            jsonLevel.setPlatform(getPlatforms(0));
+        }
+
+        if (level.getSpikedPlatforms().getArrayBodies().size > 0){
+            jsonLevel.setSpikedPlatform(getPlatforms(1));
+        }
+
+        if (level.getHoneyPatches().getArrayBodies().size > 0){
+            jsonLevel.setHoneyPatch(getPlatforms(2));
         }
 
 
@@ -1128,6 +1147,21 @@ public class EditorController extends WorldController implements InputProcessor 
         json.setOutputType(JsonWriter.OutputType.json);
         file.writeString(json.prettyPrint(jsonLevel), false);
         System.out.println("saved");
+    }
+
+    private float[][] getPlatforms(int platformType){
+        Array<PolygonObstacle> platforms;
+        switch (platformType){
+            case 0: platforms = level.getPlatforms().getArrayBodies(); break;
+            case 1: platforms = level.getSpikedPlatforms().getArrayBodies(); break;
+            case 2: platforms = level.getHoneyPatches().getArrayBodies(); break;
+            default: platforms = new Array<>();
+        }
+        float[][] platformArray = new float[platforms.size][platforms.get(0).getTrueVertices().length];
+        for (int i=0; i<platformArray.length; i++){
+            platformArray[i] = platforms.get(i).getTrueVertices();
+        }
+        return platformArray;
     }
 
     // Methods for the GUI
