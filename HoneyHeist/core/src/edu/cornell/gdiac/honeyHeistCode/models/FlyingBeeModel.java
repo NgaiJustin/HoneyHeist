@@ -5,6 +5,8 @@ import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.JsonValue;
 
 public class FlyingBeeModel extends AbstractBeeModel{
+    private float vMovement;
+
     /**
      * Creates a bee avatar with the given physics data
      *
@@ -44,6 +46,51 @@ public class FlyingBeeModel extends AbstractBeeModel{
         sensorFixture.setUserData(getSensorName());
 
         return true;
+    }
+
+    public void setVMovement (float value) {
+        vMovement = value;
+        if (value > 1.0f) {
+            System.out.println("vertical movement might be too fast");
+        }
+    }
+
+    public float getVMovement () {
+        return vMovement;
+    }
+
+    @Override
+    public void applyForce() {
+        if (!isActive()) {
+            return;
+        }
+
+        // Don't want to be moving. Damp out player motion
+        if (getMovement() == 0f) {
+            forceCache.set(-getDamping() * getVX(), 0);
+            body.applyForce(forceCache, getPosition(), true);
+        }
+
+        // Velocity too high, clamp it
+        if (Math.abs(getVX()) >= getMaxSpeed()) {
+            setVX(Math.signum(getVX()) * getMaxSpeed());
+        }
+        if((Math.copySign(1.0f,getVX())!=Math.copySign(1.0f,getMovement()))||!(Math.abs(getVX()) >= getMaxSpeed())){
+            forceCache.set(getMovement(), getVMovement());
+            body.applyForce(forceCache, getPosition(), true);
+        }
+
+        if (isGrounded&&(Math.abs(getVY()) >= getMaxSpeed())) {
+            setVY(Math.signum(getVY()) * getMaxSpeed());
+        }
+
+        if(!isGrounded){
+            setVY(Math.min(0f,getVY()));
+        }
+
+        /*if(isGrounded){
+            setVY(Math.min(-0.145f,getVY()));
+        }*/
     }
 
 }
