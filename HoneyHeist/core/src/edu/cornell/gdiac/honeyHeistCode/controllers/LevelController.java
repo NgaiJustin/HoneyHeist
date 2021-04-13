@@ -811,8 +811,8 @@ public class LevelController implements ContactListener {
         PlatformModel platforms = level.getPlatforms();
         avatar.applyForce();
 
-        if((platforms.isRotating() && !avatar.isRotating()) &&
-                ((avatar.isGrounded() && !avatar.isInHoney())||avatar.isInHoney() && avatar.getHoneyTime()==0)){
+        if((platforms.isRotating() && !avatar.isRotating()) && avatar.isGrounded()){
+                //((avatar.isGrounded() && !avatar.isInHoney())||avatar.isInHoney() && avatar.getHoneyTime()==0)){
             avatar.startRotation(platforms.getRemainingAngle(), platforms.isClockwise(), level.getOrigin());
         }
 
@@ -829,8 +829,8 @@ public class LevelController implements ContactListener {
             if(!bee.isGrounded()){
                 bee.getSensorFixtures().clear();
             }
-            if((platforms.isRotating() && !bee.isRotating()) &&
-                    ((bee.isGrounded() && !bee.isInHoney())||bee.isInHoney() && bee.getHoneyTime()==0)){
+            if((platforms.isRotating() && !bee.isRotating()) && bee.isGrounded()){
+                    //((bee.isGrounded() && !bee.isInHoney())||bee.isInHoney() && bee.getHoneyTime()==0)){
                 bee.startRotation(platforms.getRemainingAngle(), platforms.isClockwise(), level.getOrigin());
             }
         }
@@ -948,9 +948,10 @@ public class LevelController implements ContactListener {
                         !bee.getSensorFixtures().contains(fix1)) ||
                     ((bee.getSensorName().equals(fd1) && bee != bd2)&&(bd2.getName().contains("honeypatch")) &&
                         !bee.getSensorFixtures().contains(fix2))) {
+                    System.out.print(bee.getSensorName()+"\n");
                     bee.setGrounded(true);
                     bee.setInHoney(true);
-                    bee.setHoneyTime(0.01f);
+                    //bee.setHoneyTime(0.01f);
                     bee.getSensorFixtures().add(bee == bd1 ? fix2 : fix1); // Could have more than one ground
                     bee.setMaxspeed(level.getHoneyPatches().getSlowSpeed());
                 }
@@ -962,7 +963,7 @@ public class LevelController implements ContactListener {
                         !sensorFixtures.contains(fix2))) {
                 avatar.setGrounded(true);
                 avatar.setInHoney(true);
-                avatar.setHoneyTime(0.01f);
+                //avatar.setHoneyTime(0.01f);
                 sensorFixtures.add(avatar == bd1 ? fix2 : fix1);
                 avatar.setMaxspeed(level.getHoneyPatches().getSlowSpeed());
             }

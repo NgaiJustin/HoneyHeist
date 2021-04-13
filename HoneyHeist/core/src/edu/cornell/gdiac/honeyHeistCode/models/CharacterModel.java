@@ -258,9 +258,9 @@ public class CharacterModel extends CapsuleObstacle {
 
     public void update(float dt) {
         if (!isRotating) {
-            if(honeyTime>0){
+            /*if(honeyTime>0){
                 honeyTime -= dt;
-            }
+            }*/
             if(stickTime>0){
                 stickTime -= dt;
             }

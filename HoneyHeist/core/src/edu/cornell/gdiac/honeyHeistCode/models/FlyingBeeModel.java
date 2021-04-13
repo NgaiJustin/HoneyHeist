@@ -31,7 +31,7 @@ public class FlyingBeeModel extends AbstractBeeModel{
         // To determine whether or not the ant is on the ground,
         // we create a thin sensor under his feet, which reports
         // collisions with the world but has no collision response.
-        Vector2 sensorCenter = new Vector2(0, -getHeight() / 6);
+        Vector2 sensorCenter = new Vector2(0, -getHeight() / 8);
         FixtureDef sensorDef = new FixtureDef();
         sensorDef.density = data.getFloat("density", 0);
         sensorDef.isSensor = true;
