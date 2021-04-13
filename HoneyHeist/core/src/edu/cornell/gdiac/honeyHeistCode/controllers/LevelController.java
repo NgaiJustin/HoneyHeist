@@ -944,9 +944,9 @@ public class LevelController implements ContactListener {
                     bee.setGrounded(true);
                     bee.getSensorFixtures().add(bee == bd1 ? fix2 : fix1); // Could have more than one ground
                 }
-                if (((bee.getSensorName().equals(fd2) && bee != bd1)&&(bd1.getName().contains("honeypatch")) &&
+                if (((bee.getSensorName().equals(fd2) && bee != bd1)&&(fix2.isSensor())&&(bd1.getName().contains("honeypatch")) &&
                         !bee.getSensorFixtures().contains(fix1)) ||
-                    ((bee.getSensorName().equals(fd1) && bee != bd2)&&(bd2.getName().contains("honeypatch")) &&
+                    ((bee.getSensorName().equals(fd1) && bee != bd2)&&(fix1.isSensor())&&(bd2.getName().contains("honeypatch")) &&
                         !bee.getSensorFixtures().contains(fix2))) {
                     System.out.print(bee.getSensorName()+"\n");
                     bee.setGrounded(true);
@@ -957,9 +957,9 @@ public class LevelController implements ContactListener {
                 }
             }
             // Check for honeypatch
-            if (((avatar.getSensorName().equals(fd2) && avatar != bd1) && (bd1.getName().contains("honeypatch")) &&
+            if (((avatar.getSensorName().equals(fd2) && avatar != bd1)&&(fix2.isSensor()) && (bd1.getName().contains("honeypatch")) &&
                         !sensorFixtures.contains(fix1)) ||
-                ((avatar.getSensorName().equals(fd1)&& avatar != bd2) && (bd2.getName().contains("honeypatch")) &&
+                ((avatar.getSensorName().equals(fd1)&& avatar != bd2)&&(fix1.isSensor()) && (bd2.getName().contains("honeypatch")) &&
                         !sensorFixtures.contains(fix2))) {
                 avatar.setGrounded(true);
                 avatar.setInHoney(true);

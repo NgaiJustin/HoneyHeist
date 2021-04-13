@@ -1,10 +1,7 @@
 package edu.cornell.gdiac.honeyHeistCode.models;
 
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.physics.box2d.Fixture;
-import com.badlogic.gdx.physics.box2d.FixtureDef;
-import com.badlogic.gdx.physics.box2d.PolygonShape;
-import com.badlogic.gdx.physics.box2d.World;
+import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.JsonValue;
 
 public class FlyingBeeModel extends AbstractBeeModel{
@@ -18,6 +15,7 @@ public class FlyingBeeModel extends AbstractBeeModel{
     public FlyingBeeModel(JsonValue data, float x, float y, float width, float height) {
         super(data, x, y, width, height);
         setGravityScale(0);
+        setFixedRotation(true);
     }
 
     public boolean activatePhysics(World world) {
