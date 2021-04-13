@@ -962,7 +962,7 @@ public class LevelController implements ContactListener {
                         !sensorFixtures.contains(fix2))) {
                 avatar.setGrounded(true);
                 avatar.setInHoney(true);
-                avatar.setHoneyTime(1f);
+                avatar.setHoneyTime(0.01f);
                 sensorFixtures.add(avatar == bd1 ? fix2 : fix1);
                 avatar.setMaxspeed(level.getHoneyPatches().getSlowSpeed());
             }
