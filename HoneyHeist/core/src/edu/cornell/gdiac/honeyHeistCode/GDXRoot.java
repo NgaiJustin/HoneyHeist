@@ -15,6 +15,7 @@
 
 import com.badlogic.gdx.*;
 import edu.cornell.gdiac.honeyHeistCode.controllers.LevelController;
+import edu.cornell.gdiac.honeyHeistCode.controllers.EditorController;
 import edu.cornell.gdiac.honeyHeistCode.controllers.LoadingMode;
 import edu.cornell.gdiac.util.*;
 import edu.cornell.gdiac.assets.*;
@@ -35,6 +36,8 @@ public class GDXRoot extends Game implements ScreenListener {
 	private GameCanvas canvas; 
 	/** Player mode for the asset loading screen (CONTROLLER CLASS) */
 	private LoadingMode loading;
+	/** Player mode for level selector (CONTROLLER CLASS) */
+	private LevelSelector levelSelector;
 	/** Player mode for the the game proper (CONTROLLER CLASS) */
 	private int current;
 //	/** List of all WorldControllers */
@@ -42,7 +45,9 @@ public class GDXRoot extends Game implements ScreenListener {
 	// new editing
 	/** GameplayController */
 	private GameplayController controller;
-	
+	/** Level Editor Controller + GUI (Screen) */
+	private EditorController editorController;
+
 	/**
 	 * Creates a new game from the configuration settings.
 	 *
@@ -51,9 +56,9 @@ public class GDXRoot extends Game implements ScreenListener {
 	 */
 	public GDXRoot() { }
 
-	/** 
+	/**
 	 * Called when the Application is first created.
-	 * 
+	 *
 	 * This is method immediately loads assets for the loading screen, and prepares
 	 * the asynchronous loader for all other assets.
 	 */
@@ -65,7 +70,9 @@ public class GDXRoot extends Game implements ScreenListener {
 //		controllers = new WorldController[1];
 //		controllers[0] = new LevelController();
 		controller = new GameplayController();
-//		current = 0;
+		// current = 0;
+		// Initialize editor controller and modes
+		editorController = new EditorController();
 		loading.setScreenListener(this);
 
 		setScreen(loading);
@@ -131,18 +138,40 @@ public class GDXRoot extends Game implements ScreenListener {
 //			}
 //			controllers[current].reset();
 //			setScreen(controllers[current]);
-			directory = loading.getAssets();
-			controller.gatherAssets(directory);
-			controller.setScreenListener(this);
-			controller.setCanvas(canvas);
-			controller.reset();
-			setScreen(controller);
-			// new editing end
-			
+
+//			directory = loading.getAssets();
+//			controller.gatherAssets(directory);
+//			controller.setScreenListener(this);
+//			controller.setCanvas(canvas);
+//			controller.reset();
+//			setScreen(controller);
+			levelSelector = new LevelSelector("assets.json", canvas, 1);
+			levelSelector.setScreenListener(this);
+			setScreen(levelSelector);
 			loading.dispose();
 			loading = null;
+		} else if (screen == levelSelector && exitCode == LevelSelector.EXIT_QUIT) {
+			directory = levelSelector.getAssets();
+			controller.gatherAssets(directory);
+			editorController.gatherAssets(directory);
+			controller.setScreenListener(this);
+			editorController.setScreenListener(this);
+			controller.setCanvas(canvas);
+			editorController.setCanvas(canvas);
+			controller.reset();
+			// set the level number
 
-			// new editing start
+			setScreen(controller);
+
+			levelSelector.dispose();
+			levelSelector = null;
+		} else if(screen == levelSelector && exitCode == LevelSelector.EXIT_EDITOR) {
+			directory = levelSelector.getAssets();
+			editorController.gatherAssets(directory);
+			editorController.setScreenListener(this);
+			editorController.setCanvas(canvas);
+			editorController.reset();
+			setScreen(editorController);
 //		} else if (exitCode == WorldController.EXIT_NEXT) {
 		} else if (exitCode == GameplayController.EXIT_NEXT) {
 //			current = (current+1) % controllers.length;
@@ -158,7 +187,10 @@ public class GDXRoot extends Game implements ScreenListener {
 			controller.reset();
 			setScreen(controller);
 //		} else if (exitCode == WorldController.EXIT_QUIT) {
-		// new editing end
+			// new editing end
+		} else if(exitCode == GameplayController.EXIT_EDITOR) {
+			editorController.reset();
+			setScreen(editorController);
 		} else if (exitCode == GameplayController.EXIT_QUIT) {
 			// We quit the main application
 			Gdx.app.exit();

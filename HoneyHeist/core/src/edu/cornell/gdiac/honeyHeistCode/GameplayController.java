@@ -16,27 +16,20 @@
  */
 package edu.cornell.gdiac.honeyHeistCode;
 
-import java.util.Iterator;
-import java.util.logging.Level;
-
 import com.badlogic.gdx.*;
 import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.utils.*;
-import com.badlogic.gdx.assets.*;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.physics.box2d.*;
-import com.badlogic.gdx.graphics.g2d.freetype.*;
 import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.audio.SoundBuffer;
-import edu.cornell.gdiac.honeyHeistCode.controllers.AIController;
+import edu.cornell.gdiac.honeyHeistCode.controllers.aiControllers.AISingleCharacterController;
 import edu.cornell.gdiac.honeyHeistCode.controllers.InputController;
 import edu.cornell.gdiac.honeyHeistCode.obstacle.Obstacle;
 import edu.cornell.gdiac.util.PooledList;
 import edu.cornell.gdiac.util.ScreenListener;
 import edu.cornell.gdiac.honeyHeistCode.controllers.LevelController;
-
-import java.util.Iterator;
 
 /**
  * Base class for a world-specific controller.
@@ -68,6 +61,8 @@ public class GameplayController implements Screen {
 	public static final int EXIT_NEXT = 1;
 	/** Exit code for jumping back to previous level */
 	public static final int EXIT_PREV = 2;
+	/** Exit code for going to the editor */
+	public static final int EXIT_EDITOR = 3;
     /** How many frames after winning/losing do we continue? */
 	public static final int EXIT_COUNT = 100;
 
@@ -119,7 +114,7 @@ public class GameplayController implements Screen {
     /** Level Controller */
     private LevelController levelController;
     /** AI Controller */
-    private AIController aiController;
+    private AISingleCharacterController aiController;
     /** JsonValue constants for AI Controller */
     private JsonValue aiConstants;
     /** JsonValue constants for level Controller */
@@ -411,6 +406,10 @@ public class GameplayController implements Screen {
             levelController.setDebug(!levelController.isDebug());
         }
 
+        if (input.didDebugAI()) {
+        	levelController.setAIDebug(!levelController.isAIDebug());
+		}
+
         // Handle resets
         if (input.didReset()) {
             reset();
@@ -423,7 +422,7 @@ public class GameplayController implements Screen {
             return false;
         } else if (input.didAdvance()) {
             pause();
-            listener.exitScreen(this, EXIT_NEXT);
+            listener.exitScreen(this, EXIT_EDITOR);
             return false;
 //		} else if (input.didRetreat()) {
 //			pause();
@@ -435,9 +434,10 @@ public class GameplayController implements Screen {
 			if (levelController.isFailure()) {
 				reset();
 			} else if (levelController.isComplete()) {
-				pause();
+				/*pause();
 				listener.exitScreen(this, EXIT_NEXT);
-				return false;
+				return false;*/
+				reset();
 			}
 		}
 		return true;

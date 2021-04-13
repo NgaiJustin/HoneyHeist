@@ -84,16 +84,43 @@ public class InputController {
      * Whether the mouse Left button was pressed.
      */
     private boolean mousePressed;
+    private boolean mousePrevious;
+    /**
+     * Whether the mouse Right button was pressed.
+     */
+    private boolean mouseRightPressed;
+    private boolean mouseRightPrevious;
     /**
      * Whether the debug toggle was pressed.
      */
     private boolean debugPressed;
     private boolean debugPrevious;
+
+    /**
+     * Whether the debug for AI was pressed.
+     */
+    private boolean debugAIPressed;
+    private boolean debugAIPrevious;
     /**
      * Whether the exit button was pressed.
      */
     private boolean exitPressed;
     private boolean exitPrevious;
+    /**
+     * Whether the editor mode button was pressed
+     */
+    private boolean modePressed;
+    private boolean modePrevious;
+    /**
+     * Whether the save button (s) was pressed
+     */
+    private boolean savePressed;
+    private boolean savePrevious;
+    /**
+     * Whether the delete button was pressed
+     */
+    private boolean deletePressed;
+    private boolean deletePrevious;
 /*
  **** DEPRECATED BOOLEAN FIELDS
  	/** Whether the button to step back worlds was pressed. * /
@@ -198,14 +225,32 @@ public class InputController {
 
     /**
      * Returns true if the mouse LEFT button was pressed.
+     *
+     * @return true if the mouse LEFT button was pressed.
+     */
+    public boolean didMouseClick() {
+        return mousePressed && !mousePrevious;
+    }
+
+    /**
+     * Returns true if the mouse LEFT button was pressed.
      * <p>
      * This is a sustained button. It will returns true as long as the player
      * holds it down.
      *
      * @return true if the mouse LEFT button was pressed.
      */
-    public boolean didMouse() {
+    public boolean didMouseDrag() {
         return mousePressed;
+    }
+
+    /**
+     * Returns true if the mouse RIGHT button was pressed.
+     *
+     * @return true if the mouse RIGHT button was pressed.
+     */
+    public boolean didMouseRightClick() {
+        return mouseRightPressed && !mouseRightPrevious;
     }
 
     /**
@@ -288,6 +333,15 @@ public class InputController {
 	}
 
     /**
+     * Returns true if the player wants to go toggle the debug mode.
+     *
+     * @return true if the player wants to go toggle the debug mode.
+     */
+    public boolean didDebugAI() {
+        return debugAIPressed && !debugAIPrevious;
+    }
+
+    /**
      * Returns true if the exit button was pressed.
      *
      * @return true if the exit button was pressed.
@@ -295,6 +349,27 @@ public class InputController {
     public boolean didExit() {
         return exitPressed && !exitPrevious;
     }
+
+    /**
+     * Returns true if the mode button was pressed.
+     *
+     * @return true if the mode button was pressed.
+     */
+    public boolean didMode() { return modePressed && !modePrevious; }
+
+    /**
+     * Returns true if the save button was pressed.
+     *
+     * @return true if the save button was pressed.
+     */
+    public boolean didSave() {return savePressed && !savePrevious; }
+
+    /**
+     * Returns true if the delete button was pressed.
+     *
+     * @return true if the delete button was pressed.
+     */
+    public boolean didDelete() {return deletePressed && !deletePrevious; }
 
     /**
      * Creates a new input controller
@@ -335,11 +410,17 @@ public class InputController {
 //		secondPrevious = secondPressed;
 		resetPrevious = resetPressed;
 		debugPrevious  = debugPressed;
+		debugAIPrevious = debugAIPressed;
 		exitPrevious = exitPressed;
 		nextPrevious = nextPressed;
 //		prevPrevious = prevPressed;
 		rotationPrevious = rotationPressed;
 		anti_rotationPrevious = anti_rotationPressed;
+		modePrevious = modePressed;
+		mousePrevious = mousePressed;
+		mouseRightPrevious = mouseRightPressed;
+		savePrevious = savePressed;
+		deletePrevious = deletePressed;
 
         // Check to see if a GamePad is connected
         if (xbox != null && xbox.isConnected()) {
@@ -408,6 +489,12 @@ public class InputController {
         nextPressed = (secondary && nextPressed) || (Gdx.input.isKeyPressed(Input.Keys.N));
         exitPressed = (secondary && exitPressed) || (Gdx.input.isKeyPressed(Input.Keys.ESCAPE));
         debugPressed = (secondary && debugPressed) || (Gdx.input.isKeyPressed(Input.Keys.X));
+      
+        modePressed = (secondary && modePressed) || (Gdx.input.isKeyPressed(Input.Keys.M));
+        savePressed = (secondary && savePressed) || (Gdx.input.isKeyPressed(Input.Keys.S));
+        deletePressed = (secondary && deletePressed) || (Gdx.input.isKeyPressed(Input.Keys.BACKSPACE));
+      
+        debugAIPressed = (secondary && debugAIPressed) || (Gdx.input.isKeyPressed(Input.Keys.Z));
         // Directional controls
         horizontal = (secondary ? horizontal : 0.0f);
         if (Gdx.input.isKeyPressed(Input.Keys.RIGHT)) {
@@ -427,6 +514,7 @@ public class InputController {
 
         // Mouse results
         mousePressed = Gdx.input.isButtonPressed(Input.Buttons.LEFT);
+        mouseRightPressed = Gdx.input.isButtonPressed(Input.Buttons.RIGHT);
         crosshair.set(Gdx.input.getX(), Gdx.input.getY());
         crosshair.scl(1 / scale.x, -1 / scale.y);
         crosshair.y += bounds.height;

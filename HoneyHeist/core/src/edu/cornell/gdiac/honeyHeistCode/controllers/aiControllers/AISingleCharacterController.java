@@ -6,13 +6,14 @@ will have an AI Controller assigned to them.
 
 It is dependent on Level Model in order for the character to get information about the level.
  */
-package edu.cornell.gdiac.honeyHeistCode.controllers;
+package edu.cornell.gdiac.honeyHeistCode.controllers.aiControllers;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector2;
-import edu.cornell.gdiac.honeyHeistCode.models.AbstractBeeModel;
+import edu.cornell.gdiac.honeyHeistCode.GameCanvas;
+import edu.cornell.gdiac.honeyHeistCode.models.CharacterModel;
 import edu.cornell.gdiac.honeyHeistCode.models.LevelModel;
 import edu.cornell.gdiac.honeyHeistCode.models.PlatformModel;
-import edu.cornell.gdiac.honeyHeistCode.obstacle.Obstacle;
 import edu.cornell.gdiac.honeyHeistCode.obstacle.PolygonObstacle;
 import com.badlogic.gdx.utils.JsonValue;
 
@@ -20,20 +21,19 @@ import java.util.Random;
 
 
 /**
- * This is the AI Controller which is responsible for character pathfinding and decision making.
+ * This is the AI Single Character Controller which is responsible for character pathfinding and decision making.
  * The AI Controller will calculate a decision/pathfinding towards a "target" (currently specified as a Vector2)
  * and return a vector which is the direction in which the controlled character should move.
  * The AI Controlled supports getting the direction as a Vector2 through getDirection(). It also supports getting the
  * character it is controlling through getControlledCharacter(). Both will be needed in order to pass on the information to
  * Level Controller.
- * Currently, there is only one behavior that the AI Controller supports which is returning the direction of the target.
- *
- * If you want only horizontal or vertical directions, there are function that support that.
  *
  * If you want the AIController to target the player, you will need to put the position vector of the player into target.
  * Since that vector 2 is a reference, it should update with the movement of the player during runtime.
+ *
+ *
  */
-public class AIController {
+public class AISingleCharacterController {
 	/**
 	 * Enumeration of the type of AI Controller
 	 */
@@ -66,7 +66,7 @@ public class AIController {
 	}
 
 	private CharacterType characterType;
-    private AbstractBeeModel controlledCharacter;
+    private CharacterModel controlledCharacter;
     private LevelModel levelModel;
     private float chaseRadius;
     private float wanderSpeedFactor;
@@ -75,25 +75,32 @@ public class AIController {
     private FSMState state;
     private long ticks;
     private static final int ticksBeforeChangeInRandomDirection = 120;
-	private static final int ticksBeforeChangeInChaseDirection = 15;
+	private static final int ticksBeforeChangeInChaseDirection = 5;
     private Vector2 target;
-    private Vector2 offset;
     private DirectedLineSegment lineToTarget;
     private DirectedLineSegment tempLineSegment;
-    private Vector2 direction;
+    private DirectedLineSegment direction;
     private Vector2 temp;
 
     Random random = new Random();
 
     /**
-	 * Creates an AI Controller for the given enemy model
+	 * Creates an AI Controller for the given enemy model.
+	 *
+	 * This is the class that uses the information stored in the "ai_controller_options" in the json.
+	 * Currently, "ai_controller_options" has 5 parameters.
+	 * "enemy_type": is the type of enemy. It currently supports two types.
+	 * 		Flying enemy (represented by putting in "0") and grounded enemy (represented by putting in "1").
+	 * "chase_distance": The distance that the enemy needs to be to it's target in order to chase the target.
+	 * "target": The target that the enemy AI has. Now it only has one option (the player, which is represented by putting in "0")
+	 * "wander_speed_factor": The factor in which speed is multiplied during the wander phase.
+	 * "chase_speed_factor": The factor in which speed is multiplied during the chase phase.
 	 *
 	 * @param levelModel the level that the enemy is in.
-	 * @param target the target which this AI Controller is trying to chase.
 	 * @param controlledCharacter the enemy that this AI Controller controls.
 	 *
 	 */
-	public AIController(LevelModel levelModel, AbstractBeeModel controlledCharacter, JsonValue data) {
+	public AISingleCharacterController(LevelModel levelModel, CharacterModel controlledCharacter, JsonValue data) {
 		this.levelModel = levelModel;
         this.controlledCharacter = controlledCharacter;
 
@@ -103,7 +110,6 @@ public class AIController {
 			case 0:
 				this.target = levelModel.getPlayer().getPosition();
 		}
-		this.offset = new Vector2(data.get("offset").getFloat("x"), data.get("offset").getFloat("y"));
 		this.wanderSpeedFactor = data.getFloat("wander_speed_factor");
 		this.chaseSpeedFactor = data.getFloat("chase_speed_factor");
 
@@ -111,8 +117,10 @@ public class AIController {
 		ticks = 0;
 		lineToTarget = new DirectedLineSegment(controlledCharacter.getPosition(), target);
 		tempLineSegment = new DirectedLineSegment();
-		direction = new Vector2();
+		direction = new DirectedLineSegment();
 		temp = new Vector2();
+
+		initDirection();
 	}
 
 	/**
@@ -131,41 +139,47 @@ public class AIController {
 	 * @return The direction that the enemy should move.
 	 */
 	public Vector2 getMovementDirection() {
-		return direction;
-	}
-
-	/**
-	 * Returns the horizontal direction which the controlled enemy should move.
-	 *
-	 * @return The direction that the enemy should move.
-	 */
-	public float getMovementHorizontalDirection() {
-		return direction.x;
-	}
-
-	/**
-	 * Returns the horizontal direction which the controlled enemy should move.
-	 *
-	 * @return The direction that the enemy should move.
-	 */
-	public float getMovementHorizontalDirection1orNeg1() {
-		if (direction.x > 0) {
-			return 1;
-		} else if (direction.x == 0) {
-			return 0;
-		} else {
-			return -1;
+		temp.set(direction.getDirection());
+		if (state == FSMState.WANDER) {
+			return temp.scl(wanderSpeedFactor);
+		}
+		else {
+			return temp.scl(chaseSpeedFactor);
 		}
 	}
 
-	/**
-	 * Returns the horizontal direction which the controlled enemy should move.
-	 *
-	 * @return The direction that the enemy should move.
-	 */
-	public float getMovementVerticalDirection() {
-		return direction.y;
-	}
+//	/**
+//	 * Returns the horizontal direction which the controlled enemy should move.
+//	 *
+//	 * @return The direction that the enemy should move.
+//	 */
+//	public float getMovementHorizontalDirection() {
+//		return direction.x;
+//	}
+//
+//	/**
+//	 * Returns the horizontal direction which the controlled enemy should move.
+//	 *
+//	 * @return The direction that the enemy should move.
+//	 */
+//	public float getMovementHorizontalDirection1orNeg1() {
+//		if (direction.x > 0) {
+//			return 1;
+//		} else if (direction.x == 0) {
+//			return 0;
+//		} else {
+//			return -1;
+//		}
+//	}
+
+//	/**
+//	 * Returns the vertical direction which the controlled enemy should move.
+//	 *
+//	 * @return The direction that the enemy should move.
+//	 */
+//	public float getMovementVerticalDirection() {
+//		return direction.y;
+//	}
 
 
 	/**
@@ -173,7 +187,7 @@ public class AIController {
 	 *
 	 * @return the character model which is controlled by the AI Controller.
 	 */
-	public AbstractBeeModel getControlledCharacter() {
+	public CharacterModel getControlledCharacter() {
 		return controlledCharacter;
 	}
 
@@ -193,13 +207,6 @@ public class AIController {
 	}
 
 	/**
-	 * Sets the offset through two floats.
-	 */
-	public void setOffset(float x, float y) {
-		this.offset.set(x, y);
-	}
-	
-	/**
 	 * Updates the vector 2 between the enemy object and the target.
 	 */
 	private void updateLineToTarget() {
@@ -212,7 +219,6 @@ public class AIController {
 	 */
 	private void updateFSMState() {
 		float distanceToPlayer = controlledCharacter.getPosition().dst(levelModel.getPlayer().getPosition());
-//		System.out.println(isLineCollidingWithAPlatform(lineToTarget));
 		switch (this.state) {
 			case WANDER:
 				if (distanceToPlayer < chaseRadius && !isLineCollidingWithAPlatform(lineToTarget)) {
@@ -232,21 +238,45 @@ public class AIController {
 	private void updateDirectionBasedOnState() {
 		switch (this.state) {
 			case WANDER:
-				if (ticks % ticksBeforeChangeInRandomDirection == 0) {
-					if (direction.isZero()) {
-						setDirectionToRandomHorizontal();
-					}
-					changeToOppositeDirection();
-					direction.nor();
-					direction.scl(wanderSpeedFactor);
+				if (characterType == CharacterType.GROUNDED_CHARACTER) {
+					wanderDirectionForGroundedEnemy();
+				} else {
+					wanderDirectionForFlyingEnemy();
 				}
+				direction.setByVector(controlledCharacter.getPosition(),direction.getDirection().nor().scl(1.5f));
 				break;
 
 			case CHASE:
-				if (ticks % ticksBeforeChangeInChaseDirection == 0) {
-					setDirectionToGoTowardsTarget();
-				}
+				setDirectionToGoTowardsTarget();
 				break;
+		}
+	}
+
+	private void initDirection() {
+		if (characterType == CharacterType.GROUNDED_CHARACTER) {
+			setDirectionToRandomHorizontal();
+		}
+		else {
+			setDirectionToRandom12();
+		}
+	}
+
+	private void wanderDirectionForGroundedEnemy() {
+		direction.setByVector(controlledCharacter.getPosition(), direction.getDirection());
+		if (isLineCollidingWithAPlatform(direction)) {
+			changeToOppositeDirection();
+		}
+	}
+
+	private void wanderDirectionForFlyingEnemy() {
+		direction.setByVector(controlledCharacter.getPosition(), direction.getDirection());
+		if (ticks % ticksBeforeChangeInRandomDirection == 0 || isLineCollidingWithAPlatform(direction)) {
+			setDirectionToRandom12();
+			for (int i = 0; i < 10; i++) {
+				if (isLineCollidingWithAPlatform(direction)) {
+					setDirectionToRandom12();
+				}
+			}
 		}
 	}
 
@@ -255,9 +285,10 @@ public class AIController {
 	 */
 	private void setDirectionToRandomDirection() {
 		int angle = random.nextInt(360);
-		direction.set(1,0);
-		direction.setAngleDeg(angle);
-		direction.nor();
+		temp.set(1,0);
+		temp.setAngleDeg(angle);
+		temp.nor();
+		direction.setByVector(controlledCharacter.getPosition(), temp.scl(chaseSpeedFactor));
 	}
 
 	/**
@@ -265,39 +296,53 @@ public class AIController {
 	 */
 	private void setDirectionToRandom4CardinalDirection() {
 		int angle = random.nextInt(4);
-		direction.set(1,0);
-		direction.setAngleDeg(angle * 90);
-		direction.nor();
+		temp.set(1,0);
+		temp.setAngleDeg(angle * 90);
+		temp.nor();
+		direction.setByVector(controlledCharacter.getPosition(), temp);
+	}
+
+	/**
+	 * Sets the direction vector to be a random direction limited to 12 cardinal directions each sepearated by 30 degree increments.
+	 */
+	private void setDirectionToRandom12() {
+		int angle = random.nextInt(12);
+		temp.set(1,0);
+		temp.setAngleDeg(angle * 30);
+		temp.nor();
+		direction.setByVector(controlledCharacter.getPosition(), temp);
 	}
 
 	private void setDirectionToRandomHorizontal() {
 		int fiftyFifty = random.nextInt(2);
 		if (fiftyFifty > 0) {
-			direction.set(1, 0);
+			temp.set(1, 0);
 		} else {
-			direction.set(-1, 0);
+			temp.set(-1, 0);
 		}
+		direction.setByVector(controlledCharacter.getPosition(), temp);
 	}
 
-	/**
-	 * Sets the direction to the opposite direction of it's current direction.
-	 */
 	private void changeToOppositeDirection() {
-		direction.scl(-1);
+		temp.set(direction.getDirection());
+		temp.scl(-1);
+		direction.setByVector(controlledCharacter.getPosition(), temp);
 	}
+
 	/**
 	 * Set the direction vector to go towards the specified target.
 	 */
 	private void setDirectionToGoTowardsTarget() {
-		direction.set(lineToTarget.getDirection());
+		temp.set(lineToTarget.getDirection());
 		if (characterType == CharacterType.GROUNDED_CHARACTER) {
-			if (direction.x >= 0) {
-				direction.set(1,0);
+			if (temp.x >= 0) {
+				temp.set(1,0);
 			} else {
-				direction.set(-1,0);
+				temp.set(-1,0);
 			}
 		}
-		direction.nor();
+		temp.nor();
+		direction.setByVector(controlledCharacter.getPosition(),temp);
 	}
 
 	/**
@@ -306,15 +351,21 @@ public class AIController {
 	 */
     private boolean isLineCollidingWithAPlatform(DirectedLineSegment line) {
 		PlatformModel platforms = levelModel.getPlatforms();
+		PlatformModel poisonPlatforms = levelModel.getSpikedPlatforms();
 		for (PolygonObstacle platform : platforms.getBodies()) {
-			if (doesLineSegmentIntersectsPolygon(line, platform.getVertices())) {
+			if (doesPolygonIntersectLine(line, platform.getTrueVertices())) {
+				return true;
+			}
+		}
+		for (PolygonObstacle platform : poisonPlatforms.getBodies()) {
+			if (doesPolygonIntersectLine(line, platform.getTrueVertices())) {
 				return true;
 			}
 		}
 		return false;
     }
 
-    private boolean doesLineSegmentIntersectsPolygon(DirectedLineSegment line, float[] vertices) {
+    public boolean doesPolygonIntersectLine(DirectedLineSegment line, float[] vertices) {
 		for (int i = 0; i < vertices.length; i += 2) {
 			int x1Index = i;
 			int y1Index = i + 1;
@@ -357,78 +408,28 @@ public class AIController {
 		return true;
 	}
 
-	public class DirectedLineSegment {
-    	float x1;
-    	float y1;
-    	float x2;
-    	float y2;
-
-    	Vector2 direction;
-
-    	public DirectedLineSegment() {
-			this.x1 = 0;
-			this.y1 = 0;
-			this.x2 = 0;
-			this.y2 = 0;
-			direction = new Vector2();
+	public void drawDebug(GameCanvas gameCanvas, Vector2 scale) {
+    	if (state == FSMState.CHASE) {
+			gameCanvas.drawCircle(chaseRadius, Color.RED, controlledCharacter.getPosition().x, controlledCharacter.getPosition().y, scale.x, scale.y);
+		}
+    	else {
+			gameCanvas.drawCircle(chaseRadius, Color.YELLOW, controlledCharacter.getPosition().x, controlledCharacter.getPosition().y, scale.x, scale.y);
 		}
 
-    	public DirectedLineSegment (float x1, float y1, float x2, float y2) {
-    		this();
-			set(x1, y1, x2, y2);
+    	if (isLineCollidingWithAPlatform(lineToTarget)) {
+    		gameCanvas.drawLine(Color.RED, lineToTarget.x1, lineToTarget.y1, lineToTarget.x2, lineToTarget.y2, scale.x, scale.y);
+		}
+		else {
+			gameCanvas.drawLine(Color.YELLOW, lineToTarget.x1, lineToTarget.y1, lineToTarget.x2, lineToTarget.y2, scale.x, scale.y);
 		}
 
-		public DirectedLineSegment (Vector2 startPoint, Vector2 endPoint) {
-			this();
-    		set(startPoint, endPoint);
+		if (isLineCollidingWithAPlatform(direction)) {
+			gameCanvas.drawLine(Color.RED, direction.x1, direction.y1, direction.x2, direction.y2, scale.x, scale.y);
 		}
-
-		public void set(float x1, float y1, float x2, float y2) {
-			this.x1 = x1;
-			this.y1 = y1;
-			this.x2 = x2;
-			this.y2 = y2;
-			direction.set((x2 - x1), (y2 - y1));
-		}
-
-		public void set(Vector2 startPoint, Vector2 endPoint) {
-			set(startPoint.x, startPoint.y, endPoint.x, endPoint.y);
-		}
-
-		public float dst() {
-    		return (float)Math.sqrt(Math.pow((x2 - x1), 2) + Math.pow((y2 - y1), 2));
-		}
-
-		public Vector2 getDirection() {
-			return direction;
-		}
-
-		public boolean intersects(DirectedLineSegment line) {
-			int dir1 = orientation(this.x1, this.y1, this.x2, this.y2, line.x1, line.y1);
-			int dir2 = orientation(this.x1, this.y1, this.x2, this.y2, line.x2, line.y2);
-			int dir3 = orientation(line.x1, line.y1, line.x2, line.y2, this.x1, this.y1);
-			int dir4 = orientation(line.x1, line.y1, line.x2, line.y2, this.x2, this.y2);
-
-			if (dir1 != dir2 && dir3 != dir4) {return true;}
-			return false;
-    	}
-
-		private int orientation(float x1, float y1, float x2, float y2, float x3, float y3) {
-			float val = (y2 - y1) * (x3 - x2) - (x2 - x1) * (y3 - y2);
-			if (val == 0) {return 0;}
-			else if (val < 0) {return -1;}
-			else {return 1;}
-		}
-
-		@Override
-		public String toString() {
-			return "DirectedLineSegment{" +
-					"x1=" + x1 +
-					", y1=" + y1 +
-					", x2=" + x2 +
-					", y2=" + y2 +
-					", direction=" + direction +
-					'}';
+		else {
+			System.out.println(temp.toString());
+			gameCanvas.drawLine(Color.BLUE, direction.x1, direction.y1, direction.x2, direction.y2, scale.x, scale.y);
 		}
 	}
+
 }

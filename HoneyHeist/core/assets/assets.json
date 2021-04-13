@@ -5,11 +5,24 @@
             "wrapU": "repeated",
             "wrapV": "repeated"
         },
+        "shared:poisonWall" : {
+            "file": "shared/poisonWall.png",
+            "wrapU": "repeated",
+            "wrapV": "repeated"
+        },
+        "shared:crosshair": "shared/crosshair.png",
         "shared:goal":   "shared/goaldoor.png",
         "shared:background": "shared/background.png",
+        "shared:whiteSquare": "shared/whiteSquare.png",
+        "shared:tilesBackground": {
+          "file": "shared/tilesBackground.png",
+          "wrapU": "repeated",
+          "wrapV": "repeated"
+        },
         "platform:ant":  "platform/ant.png",
         "platform:sleeperBee":  "platform/sleeperBee.png",
-        "platform:chaserBee":  "platform/chaserBee.png",
+        "platform:larvae":  "platform/larvae.png",
+        "platform:flyingBee": "platform/chaserBee.png",
         "platform:rope":  "platform/ropebridge.png",
         "platform:barrier": "platform/barrier.png",
         "platform:bullet":  "platform/bullet.png",
@@ -21,12 +34,23 @@
                     "cols": 6
                 }
             }
-        }
+        },
+      "editor:antButton":"editor/antButton.png",
+      "editor:beeButton":"editor/beeButton.png",
+      "editor:platformButton":"editor/platformButton.png",
+      "editor:goalButton":"editor/goalButton.png",
+      "editor:selectModeButton":"editor/selectModeButton.png",
+      "editor:saveButton":"editor/saveButton.png",
+      "editor:resetButton":"editor/resetButton.png",
+      "editor:larvaButton":"editor/larvaButton.png",
+      "editor:honeyPatchButton":"editor/honeyPatchButton.png",
+      "editor:spikedPlatformButton":"editor/spikedPlatformButton.png"
     },
     "jsons"  : {
         "platform:constants": "platform/constants.json",
         "platform:constants2": "platform/constants2.json",
-        "platform:prototypeLevel": "platform/prototypeLevel.json"
+        "platform:prototypeLevel": "platform/prototypeLevel.json",
+        "platform:defaultLevel": "platform/defaultLevel.json"
     },
     "sounds" : {
         "platform:jump" : "platform/jump.mp3",
@@ -37,6 +61,10 @@
         "shared:retro": {
             "file": "shared/RetroGame.ttf",
             "size": 64
+        },
+        "shared:marker": {
+            "file": "shared/MarkerFelt.ttf",
+            "size": 40
         }
     }
 }
