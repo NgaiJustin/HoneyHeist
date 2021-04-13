@@ -46,7 +46,8 @@
         "chase_distance": 3,
         "target": 0,
         "wander_speed_factor": 0.5,
-        "chase_speed_factor": 0.5
+        "chase_speed_factor": 0.5,
+        "check_fall_off_platform": 1
       }
     },
   "FlyingBee": {
@@ -71,7 +72,8 @@
       "chase_distance": 3,
       "target": 0,
       "wander_speed_factor": 0.5,
-      "chase_speed_factor": 0.5
+      "chase_speed_factor": 0.5,
+      "check_fall_off_platform": 0
     }
   }
 }

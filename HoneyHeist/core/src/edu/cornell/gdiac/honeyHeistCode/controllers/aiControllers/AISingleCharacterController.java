@@ -71,14 +71,18 @@ public class AISingleCharacterController {
     private float chaseRadius;
     private float wanderSpeedFactor;
     private float chaseSpeedFactor;
+    private boolean checkIfItWillFallOffPlatform;
 
     private FSMState state;
     private long ticks;
     private static final int ticksBeforeChangeInRandomDirection = 120;
 	private static final int ticksBeforeChangeInChaseDirection = 5;
+	private static final float checkLength = 1.5f;
     private Vector2 target;
     private DirectedLineSegment lineToTarget;
     private DirectedLineSegment tempLineSegment;
+    private DirectedLineSegment bottomChecker;
+    private DirectedLineSegment poisonChecker;
     private DirectedLineSegment direction;
     private Vector2 temp;
 
@@ -112,11 +116,14 @@ public class AISingleCharacterController {
 		}
 		this.wanderSpeedFactor = data.getFloat("wander_speed_factor");
 		this.chaseSpeedFactor = data.getFloat("chase_speed_factor");
+		this.checkIfItWillFallOffPlatform = data.getInt("check_fall_off_platform") == 1 ? true : false;
 
 		state = FSMState.WANDER;
 		ticks = 0;
 		lineToTarget = new DirectedLineSegment(controlledCharacter.getPosition(), target);
 		tempLineSegment = new DirectedLineSegment();
+		bottomChecker = new DirectedLineSegment();
+		poisonChecker = new DirectedLineSegment();
 		direction = new DirectedLineSegment();
 		temp = new Vector2();
 
@@ -243,7 +250,7 @@ public class AISingleCharacterController {
 				} else {
 					wanderDirectionForFlyingEnemy();
 				}
-				direction.setByVector(controlledCharacter.getPosition(),direction.getDirection().nor().scl(1.5f));
+				direction.setByVector(controlledCharacter.getPosition(),direction.getDirection().nor().scl(checkLength));
 				break;
 
 			case CHASE:
@@ -263,20 +270,26 @@ public class AISingleCharacterController {
 
 	private void wanderDirectionForGroundedEnemy() {
 		direction.setByVector(controlledCharacter.getPosition(), direction.getDirection());
-		if (isLineCollidingWithAPlatform(direction)) {
+		if (isLineCollidingWithAPlatform(direction) || willCharacterCollideWithAPoisonPlatform(direction)) {
+			changeToOppositeDirection();
+		}
+		else if (checkIfItWillFallOffPlatform && willCharacterFallOffPlatform()) {
 			changeToOppositeDirection();
 		}
 	}
 
 	private void wanderDirectionForFlyingEnemy() {
 		direction.setByVector(controlledCharacter.getPosition(), direction.getDirection());
-		if (ticks % ticksBeforeChangeInRandomDirection == 0 || isLineCollidingWithAPlatform(direction)) {
+		if (ticks % ticksBeforeChangeInRandomDirection == 0) {
 			setDirectionToRandom12();
-			for (int i = 0; i < 10; i++) {
+			for (int i = 0; i < 5; i++) {
 				if (isLineCollidingWithAPlatform(direction)) {
 					setDirectionToRandom12();
 				}
 			}
+		}
+		if (isLineCollidingWithAPlatform(direction)) {
+			getViableDirection12();
 		}
 	}
 
@@ -285,7 +298,7 @@ public class AISingleCharacterController {
 	 */
 	private void setDirectionToRandomDirection() {
 		int angle = random.nextInt(360);
-		temp.set(1,0);
+		temp.set(checkLength,0);
 		temp.setAngleDeg(angle);
 		temp.nor();
 		direction.setByVector(controlledCharacter.getPosition(), temp.scl(chaseSpeedFactor));
@@ -311,6 +324,17 @@ public class AISingleCharacterController {
 		temp.setAngleDeg(angle * 30);
 		temp.nor();
 		direction.setByVector(controlledCharacter.getPosition(), temp);
+	}
+
+	private void getViableDirection12() {
+		temp.set(1,0).scl(checkLength);
+		for (int i = 0; i < 360; i += 30) {
+			temp.setAngleDeg(i * 30);
+			direction.setByVector(controlledCharacter.getPosition(), temp);
+			if (!isLineCollidingWithAPlatform(direction)) {
+				break;
+			}
+		}
 	}
 
 	private void setDirectionToRandomHorizontal() {
@@ -345,24 +369,48 @@ public class AISingleCharacterController {
 		direction.setByVector(controlledCharacter.getPosition(),temp);
 	}
 
-	/**
-	 * Still under construction. Checks if the given path to target is blocked by a platform.
-	 * @return
-	 */
-    private boolean isLineCollidingWithAPlatform(DirectedLineSegment line) {
-		PlatformModel platforms = levelModel.getPlatforms();
-		PlatformModel poisonPlatforms = levelModel.getSpikedPlatforms();
-		for (PolygonObstacle platform : platforms.getBodies()) {
-			if (doesPolygonIntersectLine(line, platform.getTrueVertices())) {
+	private boolean willCharacterCollideWithAPoisonPlatform(DirectedLineSegment line) {
+		temp.set(line.getDirection());
+		float angle = temp.angleDeg();
+		for (int i = -30; i < 30; i+= 5) {
+			temp.setAngleDeg(angle + i);
+			poisonChecker.setByVector(controlledCharacter.getPosition(), temp);
+			if (isLineCollidingWithAPoisonPlatform(poisonChecker)) {
 				return true;
 			}
 		}
+		return false;
+	}
+
+	private boolean willCharacterFallOffPlatform() {
+		temp.set(0,-1);
+		Vector2 position = controlledCharacter.getPosition();
+		bottomChecker.setByVector(position.x + direction.getDirection().x, position.y, temp.x, temp.y);
+		return !isLineCollidingWithAPlatform(bottomChecker);
+	}
+
+	private boolean isLineCollidingWithAPoisonPlatform(DirectedLineSegment line) {
+		PlatformModel poisonPlatforms = levelModel.getSpikedPlatforms();
 		for (PolygonObstacle platform : poisonPlatforms.getBodies()) {
 			if (doesPolygonIntersectLine(line, platform.getTrueVertices())) {
 				return true;
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * Checks if the given path to target is blocked by a platform.
+	 * @return
+	 */
+    private boolean isLineCollidingWithAPlatform(DirectedLineSegment line) {
+		PlatformModel platforms = levelModel.getPlatforms();
+		for (PolygonObstacle platform : platforms.getBodies()) {
+			if (doesPolygonIntersectLine(line, platform.getTrueVertices())) {
+				return true;
+			}
+		}
+		return willCharacterCollideWithAPoisonPlatform(line);
     }
 
     public boolean doesPolygonIntersectLine(DirectedLineSegment line, float[] vertices) {
@@ -427,9 +475,16 @@ public class AISingleCharacterController {
 			gameCanvas.drawLine(Color.RED, direction.x1, direction.y1, direction.x2, direction.y2, scale.x, scale.y);
 		}
 		else {
-			System.out.println(temp.toString());
 			gameCanvas.drawLine(Color.BLUE, direction.x1, direction.y1, direction.x2, direction.y2, scale.x, scale.y);
 		}
+
+		if(willCharacterFallOffPlatform()){
+			gameCanvas.drawLine(Color.RED, bottomChecker.x1, bottomChecker.y1, bottomChecker.x2, bottomChecker.y2, scale.x, scale.y);
+		}
+		else {
+			gameCanvas.drawLine(Color.GREEN, bottomChecker.x1, bottomChecker.y1, bottomChecker.x2, bottomChecker.y2, scale.x, scale.y);
+		}
+
 	}
 
 }
