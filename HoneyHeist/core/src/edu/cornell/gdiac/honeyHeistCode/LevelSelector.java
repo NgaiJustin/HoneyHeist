@@ -40,8 +40,8 @@ public class LevelSelector implements Screen, InputProcessor, ControllerListener
     private static final float COUNTER_OFFSET   = 5.0f;
     /** JsonValue data for all level data */
     private JsonValue allLevelData;
-    /** JsonValue data for the selected data */
-    private JsonValue selectedLevelData;
+    /** The String that tells the file path of selected level data */
+    private String selectedLevelData;
     /** level buttons, should have the size specified by allLevelData */
     private Texture[] buttons;
     /** Exit code for going to the playing level */
@@ -121,6 +121,16 @@ public class LevelSelector implements Screen, InputProcessor, ControllerListener
     }
 
     /**
+     * Returns the selected level data.
+     *
+     * @return the selected level data.
+     */
+    public String getLevelData() {
+        return selectedLevelData;
+    }
+
+
+    /**
      * Returns the budget for the asset loader.
      *
      * The budget is the number of milliseconds to spend loading assets each animation
@@ -195,9 +205,9 @@ public class LevelSelector implements Screen, InputProcessor, ControllerListener
         internal.finishLoading();
 
         // get the level data
-        JsonValue levelData = internal.getEntry("levelData", JsonValue.class);
-        totalLevelNum = levelData.get("totalNum").asInt();
-        allLevelData = levelData.get("levels");
+        allLevelData = internal.getEntry("levelData", JsonValue.class);
+        totalLevelNum = allLevelData.size;
+        System.out.println(totalLevelNum);
         buttons = new Texture[totalLevelNum];
         // initailize the buttons to null
         Arrays.fill(buttons, null);
@@ -306,7 +316,7 @@ public class LevelSelector implements Screen, InputProcessor, ControllerListener
                     centerX*pos_offset, centerY/2f, 0, BUTTON_SCALE*scale,
                         BUTTON_SCALE*scale);
                 // draw the letter
-                canvas.drawText("1", displayFont, centerX*pos_offset-COUNTER_OFFSET,
+                canvas.drawText(Integer.toString(i+1), displayFont, centerX*pos_offset-COUNTER_OFFSET,
                         centerY/2f+COUNTER_OFFSET);
             }
         }
@@ -436,7 +446,8 @@ public class LevelSelector implements Screen, InputProcessor, ControllerListener
         // Play button is a circle.
         float radius, dist;
         for (int i=0; i<buttons.length; i++) {
-            if (buttons[i] != null) {
+            // "the button can only be pressed if the level is unlocked"
+            if (buttons[i] != null && allLevelData.get(i).get("unlock").asBoolean()) {
                 radius = BUTTON_SCALE*scale*buttons[i].getWidth()/2.0f;
                 float offset = (i+1)/(float)totalLevelNum;
                 dist = (screenX-centerX*offset)*(screenX-centerX*offset)+(screenY-centerY/2f)*(screenY-centerY/2f);
@@ -492,11 +503,12 @@ public class LevelSelector implements Screen, InputProcessor, ControllerListener
 //        if (pressState == 1 || pressState == 2 || pressState == 3) {
             // set the selected level number according to the pressState
             levelNumber = pressState;
-            selectedLevelData = allLevelData.get(levelNumber-1);
-            System.out.println(selectedLevelData.get("test").asInt());
+            selectedLevelData = allLevelData.get(levelNumber-1).get("file").asString();
+            System.out.println(selectedLevelData);
             pressState = 0;
             return false;
         } else if (pressState == -2) {
+            // press the level editor
             pressState = 0;
             return false;
         }

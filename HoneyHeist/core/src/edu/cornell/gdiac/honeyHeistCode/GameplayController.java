@@ -315,14 +315,14 @@ public class GameplayController implements Screen {
 	 *
 	 * @param directory	Reference to global asset manager.
 	 */
-	public void gatherAssets(AssetDirectory directory) {
+	public void gatherAssets(AssetDirectory directory, String levelData) {
 		// Allocate the tiles
 //		earthTile = new TextureRegion(directory.getEntry( "shared:earth", Texture.class ));
 //		goalTile  = new TextureRegion(directory.getEntry( "shared:goal", Texture.class ));
 		// background
 		background = new TextureRegion(directory.getEntry( "shared:background",  Texture.class ));
 		displayFont = directory.getEntry( "shared:retro" ,BitmapFont.class);
-		levelController.gatherAssets(directory);
+		levelController.gatherAssets(directory, levelData);
 	}
 
 	/**

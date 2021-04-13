@@ -397,7 +397,7 @@ public class LevelController implements ContactListener {
      *
      * @param directory Reference to global asset manager.
      */
-    public void gatherAssets(AssetDirectory directory) {
+    public void gatherAssets(AssetDirectory directory, String dataFilePath) {
         avatarTexture = new TextureRegion(directory.getEntry("platform:ant", Texture.class));
         chaserBeeTexture = new TextureRegion(directory.getEntry("platform:larvae", Texture.class));
         flyingBeeTexture = new TextureRegion(directory.getEntry("platform:flyingBee", Texture.class));
@@ -410,9 +410,9 @@ public class LevelController implements ContactListener {
         plopSound = directory.getEntry("platform:plop", SoundBuffer.class);
 
         constants = directory.getEntry("platform:constants2", JsonValue.class);
-        levelData = directory.getEntry("platform:prototypeLevel", JsonValue.class);
+        levelData = directory.getEntry(dataFilePath, JsonValue.class);
+//        levelData = directory.getEntry("platform:prototypeLevel", JsonValue.class);
 //        super.gatherAssets(directory);
-//        constants = directory.getEntry("platform:constants", JsonValue.class);
 
         // Allocate the world tiles
         earthTile = new TextureRegion(directory.getEntry( "shared:earth", Texture.class ));
