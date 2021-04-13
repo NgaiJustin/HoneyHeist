@@ -196,8 +196,10 @@ public class LevelSelector implements Screen, InputProcessor, ControllerListener
 
         // get the level data
         JsonValue levelData = internal.getEntry("levelData", JsonValue.class);
-        totalLevelNum = levelData.get("totalNum").asInt();
-        allLevelData = levelData.get("levels");
+        totalLevelNum = levelData.size;
+        System.out.println(totalLevelNum);
+//        totalLevelNum = levelData.get("totalNum").asInt();
+        allLevelData = levelData;
         buttons = new Texture[totalLevelNum];
         // initailize the buttons to null
         Arrays.fill(buttons, null);
@@ -306,7 +308,7 @@ public class LevelSelector implements Screen, InputProcessor, ControllerListener
                     centerX*pos_offset, centerY/2f, 0, BUTTON_SCALE*scale,
                         BUTTON_SCALE*scale);
                 // draw the letter
-                canvas.drawText("1", displayFont, centerX*pos_offset-COUNTER_OFFSET,
+                canvas.drawText(Integer.toString(i+1), displayFont, centerX*pos_offset-COUNTER_OFFSET,
                         centerY/2f+COUNTER_OFFSET);
             }
         }
@@ -493,7 +495,6 @@ public class LevelSelector implements Screen, InputProcessor, ControllerListener
             // set the selected level number according to the pressState
             levelNumber = pressState;
             selectedLevelData = allLevelData.get(levelNumber-1);
-            System.out.println(selectedLevelData.get("test").asInt());
             pressState = 0;
             return false;
         } else if (pressState == -2) {
