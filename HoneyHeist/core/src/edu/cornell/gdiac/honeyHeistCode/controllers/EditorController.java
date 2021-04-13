@@ -1157,9 +1157,9 @@ public class EditorController extends WorldController implements InputProcessor 
             case 2: platforms = level.getHoneyPatches().getArrayBodies(); break;
             default: platforms = new Array<>();
         }
-        float[][] platformArray = new float[platforms.size][platforms.get(0).getTrueVertices().length];
+        float[][] platformArray = new float[platforms.size][platforms.get(0).getTruePoints().length];
         for (int i=0; i<platformArray.length; i++){
-            platformArray[i] = platforms.get(i).getTrueVertices();
+            platformArray[i] = platforms.get(i).getTruePoints();
         }
         return platformArray;
     }
