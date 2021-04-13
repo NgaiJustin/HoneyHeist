@@ -13,7 +13,7 @@ public class CharacterModel extends CapsuleObstacle {
     /**
      * The initializing data (to avoid magic numbers)
      */
-    private final JsonValue data;
+    protected final JsonValue data;
     /**
      * The factor to multiply by the input
      */
@@ -60,6 +60,8 @@ public class CharacterModel extends CapsuleObstacle {
      * Identifier to allow us to track the sensor in ContactListener
      */
     protected String sensorName;
+
+    protected float honeyTime;
 
     /**
      * Cache for internal force calculations
@@ -133,6 +135,10 @@ public class CharacterModel extends CapsuleObstacle {
     public void setMaxspeed(float speed){ maxspeed = speed; }
 
     public void setDefaultMaxspeed(){ maxspeed = defaultMaxspeed; }
+
+    public void setHoneyTime(float time) { honeyTime = time; }
+
+    public float getHoneyTime() { return honeyTime; }
 
     /**
      * Returns how much force to apply to get the ant moving
@@ -252,6 +258,9 @@ public class CharacterModel extends CapsuleObstacle {
 
     public void update(float dt) {
         if (!isRotating) {
+            /*if(honeyTime>0){
+                honeyTime -= dt;
+            }*/
             if(stickTime>0){
                 stickTime -= dt;
             }
