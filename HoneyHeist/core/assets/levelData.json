@@ -3,12 +3,12 @@
         "name": "Tutorial",
         "unlock": true,
         "complete": false,
-        "file": "levels/tutorial.json"
+        "file": "platform:prototypeLevel"
     },
     "one": {
         "name": "NOT THE BEES!!!",
         "unlock": false,
         "complete": false,
-        "file": "levels/not_the_bees.json"
+        "file": "platform/prototypeLevel"
     }
 }
