@@ -950,7 +950,7 @@ public class LevelController implements ContactListener {
                         !bee.getSensorFixtures().contains(fix2))) {
                     bee.setGrounded(true);
                     bee.setInHoney(true);
-                    bee.setHoneyTime(1f);
+                    bee.setHoneyTime(0.01f);
                     bee.getSensorFixtures().add(bee == bd1 ? fix2 : fix1); // Could have more than one ground
                     bee.setMaxspeed(level.getHoneyPatches().getSlowSpeed());
                 }
