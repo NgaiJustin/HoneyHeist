@@ -291,6 +291,9 @@ public class AISingleCharacterController {
 		if (isLineCollidingWithAPlatform(direction)) {
 			getViableDirection12();
 		}
+		if (isLineCollidingWithAPoisonPlatform(direction)) {
+			changeToOppositeDirection();
+		}
 	}
 
 	/**
