@@ -514,16 +514,20 @@ public class LevelController implements ContactListener {
         JsonValue defaults = constants.get("defaults");
         //Create background
         PolygonObstacle levelBackground;
-        levelBackground = new PolygonObstacle(levelData.get("background").asFloatArray(), 0, 0);
-        levelBackground.setBodyType(BodyDef.BodyType.StaticBody);
-        levelBackground.setDensity(defaults.getFloat( "density", 0.0f ));
-        levelBackground.setFriction(defaults.getFloat( "friction", 0.0f ));
-        levelBackground.setRestitution(defaults.getFloat( "restitution", 0.0f ));
-        levelBackground.setName("background");
-        levelBackground.setDrawScale(scale);
-        levelBackground.setTexture(tilesBackground);
-        levelBackground.setSensor(true);
-        addObject(levelBackground);
+        if (levelData.get("background").asString() != null) {
+            levelBackground = new PolygonObstacle(levelData.get("background").asFloatArray(), 0, 0);
+            levelBackground.setBodyType(BodyDef.BodyType.StaticBody);
+            levelBackground.setDensity(defaults.getFloat("density", 0.0f));
+            levelBackground.setFriction(defaults.getFloat("friction", 0.0f));
+            levelBackground.setRestitution(defaults.getFloat("restitution", 0.0f));
+            levelBackground.setName("background");
+            levelBackground.setDrawScale(scale);
+            levelBackground.setTexture(tilesBackground);
+            levelBackground.setSensor(true);
+            addObject(levelBackground);
+        } else {
+            levelBackground = null;
+        }
 
         // Add level goal
         float dwidth = goalTile.getRegionWidth() / scale.x;
