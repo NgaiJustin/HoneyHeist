@@ -16,7 +16,6 @@ public abstract class AbstractBeeModel extends CharacterModel {
 
     public AbstractBeeModel(JsonValue data, float x, float y, float width, float height) {
         super(data, x, y, width, height);
-        setName("bee");
         sensorName = "BeeGroundSensor"+x+y;
         sensorFixtures = new ObjectSet<Fixture>();
     }

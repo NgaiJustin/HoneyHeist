@@ -17,6 +17,7 @@ public class FlyingBeeModel extends AbstractBeeModel{
      */
     public FlyingBeeModel(JsonValue data, float x, float y, float width, float height) {
         super(data, x, y, width, height);
+        setName("FlyingBee");
         damping = 0;
         vMovementScale = 5.0f;
         setGravityScale(0);
@@ -77,6 +78,9 @@ public class FlyingBeeModel extends AbstractBeeModel{
         // Velocity too high, clamp it
         if (Math.abs(getVX()) >= getMaxSpeed()) {
             setVX(Math.signum(getVX()) * getMaxSpeed());
+        }
+        if (getVY() <= -getMaxSpeed()) {
+            setVY(Math.signum(getVY() * getMaxSpeed()));
         }
         if((Math.copySign(1.0f,getVX())!=Math.copySign(1.0f,getMovement()))||!(Math.abs(getVX()) >= getMaxSpeed())){
             forceCache.set(getMovement(), getVMovement());

@@ -313,7 +313,6 @@ public class CharacterModel extends CapsuleObstacle {
             forceCache.set(-getDamping() * getVX(), 0);
             body.applyForce(forceCache, getPosition(), true);
         }
-
         // Velocity too high, clamp it
         if (Math.abs(getVX()) >= getMaxSpeed()) {
             setVX(Math.signum(getVX()) * getMaxSpeed());
