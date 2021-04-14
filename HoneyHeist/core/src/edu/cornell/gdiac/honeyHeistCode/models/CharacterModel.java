@@ -273,7 +273,7 @@ public class CharacterModel extends CapsuleObstacle {
             }
             if(!isGrounded||(isInHoney&&!sticking)){
                 float angle = getAngle();
-                int rotSpeed = ((isInHoney) ? 100 : 500);
+                int rotSpeed = ((isInHoney) ? 100 : 800);
                 if(angle<0) {
                     setAngularVelocity(rotSpeed*dt);
                 }

@@ -27,7 +27,7 @@
       }
     },
     "GroundedBee": {
-      "shrink": [0.95, 0.7],
+      "shrink": [0.95, 0.5],
       "force": 20.0,
       "damping": 10.0,
       "density": 1.0,
