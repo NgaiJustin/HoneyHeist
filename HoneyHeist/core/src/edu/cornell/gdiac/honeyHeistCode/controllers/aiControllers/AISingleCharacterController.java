@@ -291,7 +291,6 @@ public class AISingleCharacterController {
 		if (isLineCollidingWithAPlatform(direction)) {
 			getViableDirection12();
 		}
-		direction.setByVector(controlledCharacter.getPosition(), temp.set(0, 1));
 	}
 
 	/**
