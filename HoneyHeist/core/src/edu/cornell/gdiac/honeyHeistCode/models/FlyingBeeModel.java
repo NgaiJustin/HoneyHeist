@@ -18,7 +18,7 @@ public class FlyingBeeModel extends AbstractBeeModel{
     public FlyingBeeModel(JsonValue data, float x, float y, float width, float height) {
         super(data, x, y, width, height);
         setName("FlyingBee");
-        vMovementScale = 5.0f;
+        vMovementScale = 1.0f;
         setGravityScale(0);
         setFixedRotation(true);
     }
