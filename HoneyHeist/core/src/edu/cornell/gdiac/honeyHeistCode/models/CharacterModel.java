@@ -21,7 +21,7 @@ public class CharacterModel extends CapsuleObstacle {
     /**
      * The amount to slow the character down
      */
-    private final float damping;
+    protected float damping;
     /**
      * The maximum character speed
      */
