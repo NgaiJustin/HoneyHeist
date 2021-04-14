@@ -258,9 +258,9 @@ public class CharacterModel extends CapsuleObstacle {
 
     public void update(float dt) {
         if (!isRotating) {
-            if(honeyTime>0){
+            /*if(honeyTime>0){
                 honeyTime -= dt;
-            }
+            }*/
             if(stickTime>0){
                 stickTime -= dt;
             }
@@ -273,12 +273,12 @@ public class CharacterModel extends CapsuleObstacle {
             }
             if(!isGrounded||(isInHoney&&!sticking)){
                 float angle = getAngle();
-                int rotSpeed = ((isInHoney) ? 5 : 20);
+                int rotSpeed = ((isInHoney) ? 100 : 500);
                 if(angle<0) {
-                    setAngle(Math.min(angle+dt*rotSpeed,0));
+                    setAngularVelocity(rotSpeed*dt);
                 }
                 else if(angle>0) {
-                    setAngle(Math.max(angle-dt*rotSpeed,0));
+                    setAngularVelocity(-rotSpeed*dt);
                 }
                 //setAngle(0);
             }
@@ -322,7 +322,7 @@ public class CharacterModel extends CapsuleObstacle {
             body.applyForce(forceCache, getPosition(), true);
         }
 
-        if (isGrounded&&(Math.abs(getVY()) >= getMaxSpeed())) {
+        if ((isGrounded||isInHoney)&&(Math.abs(getVY()) >= getMaxSpeed())) {
             setVY(Math.signum(getVY()) * getMaxSpeed());
         }
 
