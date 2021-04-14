@@ -189,6 +189,29 @@ public class CharacterModel extends CapsuleObstacle {
         return faceRight;
     }
 
+    public void startRotation(boolean isClockwise, Vector2 point){
+        if (isRotating) return;
+        if(!isInHoney) {
+            setBodyType(BodyDef.BodyType.StaticBody);
+        }
+        stageCenter = point;
+        isRotating = true;
+        sticking = true;
+        this.isClockwise = isClockwise;
+        addRotation(rotationAngle);
+    }
+    public void startRotation(float rotationAmount, boolean isClockwise, Vector2 point){
+        if (isRotating) return;
+        if(!isInHoney) {
+            setBodyType(BodyDef.BodyType.StaticBody);
+        }
+        stageCenter = point;
+        isRotating = true;
+        sticking = true;
+        this.isClockwise = isClockwise;
+        addRotation(rotationAmount);
+    }
+
     public CharacterModel(JsonValue data, float x, float y, float width, float height){
         super(x, y,
                 width * data.get("shrink").getFloat(0),
