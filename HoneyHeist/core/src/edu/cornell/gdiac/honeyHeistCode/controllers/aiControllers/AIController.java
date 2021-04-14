@@ -37,7 +37,6 @@ public class AIController {
             CharacterModel bee = aICharacterController.getControlledCharacter();
             bee.setMovement(aICharacterController.getMovementDirection().x * bee.getForce());
             if (bee.getClass() == FlyingBeeModel.class) {
-                System.out.println(aICharacterController.getMovementDirection().y);
                 ((FlyingBeeModel) bee).setVMovement(aICharacterController.getMovementDirection().y * bee.getForce());
             }
         }
