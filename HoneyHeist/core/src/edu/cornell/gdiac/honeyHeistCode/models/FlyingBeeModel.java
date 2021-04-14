@@ -6,6 +6,7 @@ import com.badlogic.gdx.utils.JsonValue;
 
 public class FlyingBeeModel extends AbstractBeeModel{
     private float vMovement;
+    private float vMovementScale;
 
     /**
      * Creates a bee avatar with the given physics data
@@ -16,6 +17,8 @@ public class FlyingBeeModel extends AbstractBeeModel{
      */
     public FlyingBeeModel(JsonValue data, float x, float y, float width, float height) {
         super(data, x, y, width, height);
+        damping = 0;
+        vMovementScale = 5.0f;
         setGravityScale(0);
         setFixedRotation(true);
     }
@@ -49,7 +52,7 @@ public class FlyingBeeModel extends AbstractBeeModel{
     }
 
     public void setVMovement (float value) {
-        vMovement = value;
+        vMovement = value * vMovementScale;
         if (value > 1.0f) {
             System.out.println("vertical movement might be too fast");
         }
