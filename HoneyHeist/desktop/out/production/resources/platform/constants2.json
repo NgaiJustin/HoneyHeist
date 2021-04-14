@@ -42,15 +42,38 @@
       },
 
       "ai_controller_options": {
-        "enemy_type": 0,
+        "enemy_type": 1,
         "chase_distance": 3,
         "target": 0,
-        "offset": {
-          "x" : 0,
-          "y" : 0
-        },
         "wander_speed_factor": 0.5,
-        "chase_speed_factor": 1
+        "chase_speed_factor": 0.5,
+        "check_fall_off_platform": 1
       }
+    },
+  "FlyingBee": {
+    "shrink": [
+      0.95,
+      0.7
+    ],
+    "force": 20.0,
+    "damping": 10.0,
+    "density": 1.0,
+    "friction": 0.0,
+    "maxspeed": 3.0,
+    "jump_force": 5.5,
+    "jump_cool": 30,
+    "shot_cool": 40,
+    "sensor": {
+      "shrink": 0.1,
+      "height": 0.05
+    },
+    "ai_controller_options": {
+      "enemy_type": 0,
+      "chase_distance": 3,
+      "target": 0,
+      "wander_speed_factor": 0.5,
+      "chase_speed_factor": 0.5,
+      "check_fall_off_platform": 0
     }
+  }
 }

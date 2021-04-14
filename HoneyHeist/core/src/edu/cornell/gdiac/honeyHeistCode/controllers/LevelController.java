@@ -514,7 +514,7 @@ public class LevelController implements ContactListener {
         JsonValue defaults = constants.get("defaults");
         //Create background
         PolygonObstacle levelBackground;
-        if (levelData.get("background").asString() != null) {
+        if (!levelData.get("background").isNull()) {
             levelBackground = new PolygonObstacle(levelData.get("background").asFloatArray(), 0, 0);
             levelBackground.setBodyType(BodyDef.BodyType.StaticBody);
             levelBackground.setDensity(defaults.getFloat("density", 0.0f));
