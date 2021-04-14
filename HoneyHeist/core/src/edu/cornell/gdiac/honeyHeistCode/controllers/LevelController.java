@@ -933,7 +933,7 @@ public class LevelController implements ContactListener {
 
             if (((bd1.getName().contains("spiked")) && bd2isCharacterModel) ||
             bd2.getName().contains("spiked") && bd1isCharacterModel){
-                if (avatar == bd1 || avatar == bd2){
+                if ((avatar == bd1 || avatar == bd2)&&!isComplete()){
                     setFailure(true);
                 }
 
