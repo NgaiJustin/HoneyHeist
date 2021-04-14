@@ -1073,6 +1073,7 @@ public class EditorController extends WorldController implements InputProcessor 
         public float[][] platformPos;
         public float[][] spikedPlatformPos;
         public float[][] honeyPatchPos;
+        public float[] background;
 
         public Level(){
 
@@ -1085,6 +1086,7 @@ public class EditorController extends WorldController implements InputProcessor 
         public void setPlatform(float[][] platformPos) { this.platformPos = platformPos; }
         public void setSpikedPlatform(float[][] spikedPlatformPos) {this.spikedPlatformPos = spikedPlatformPos; }
         public void setHoneyPatch(float[][] honeyPatchPos) { this.honeyPatchPos = honeyPatchPos; }
+        public void setBackground(float[] backgroundPos) { this.background = backgroundPos; }
 
     }
 
@@ -1124,10 +1126,14 @@ public class EditorController extends WorldController implements InputProcessor 
             for (int i=0; i<beeArray.length; i++){
                 Vector2 beePos = flyingBees.get(i).getPosition();
                 beeArray[i][0] = beePos.x;
-                beeArray[i][0] = beePos.y;
+                beeArray[i][1] = beePos.y;
             }
             jsonLevel.setLarva(larvaArray);
             jsonLevel.setBee(beeArray);
+        }
+
+        if (level.getLevelBackground()!=null){
+            jsonLevel.setBackground(level.getLevelBackground().getTrueVertices());
         }
 
         if (level.getPlatforms()!=null){
