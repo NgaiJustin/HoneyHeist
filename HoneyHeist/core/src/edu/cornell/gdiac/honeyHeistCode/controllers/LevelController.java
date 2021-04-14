@@ -295,15 +295,24 @@ public class LevelController implements ContactListener {
      * Texture filmstrip for player walking animation
      */
     private FilmStrip walkingPlayer;
+
     /**
      * Texture asset for chaser bee avatar
      */
     private TextureRegion chaserBeeTexture;
+    /**
+     * Texture filmstrip for player larvae animation
+     */
+    private FilmStrip walkingLarvae;
 
     /**
      * Texture asset for chaser bee avatar
      */
     private TextureRegion flyingBeeTexture;
+    /**
+     * Texture filmstrip for player bee animation
+     */
+    private FilmStrip flyingBeestrip;
 
     /**
      * Texture asset for testEnemy avatar
@@ -403,7 +412,9 @@ public class LevelController implements ContactListener {
         flyingBeeTexture = new TextureRegion(directory.getEntry("platform:flyingBee", Texture.class));
         sleeperBeeTexture = new TextureRegion(directory.getEntry("platform:sleeperBee", Texture.class));
 
-        walkingPlayer = directory.getEntry( "platform:walk.pacing", FilmStrip.class );
+        walkingPlayer = directory.getEntry( "platform:playerWalk.pacing", FilmStrip.class );
+        walkingLarvae = directory.getEntry( "platform:larvaeWalk.pacing", FilmStrip.class );
+        flyingBeestrip = directory.getEntry( "platform:beeFly.pacing", FilmStrip.class );
 
         jumpSound = directory.getEntry("platform:jump", SoundBuffer.class);
         fireSound = directory.getEntry("platform:pew", SoundBuffer.class);
@@ -631,6 +642,7 @@ public class LevelController implements ContactListener {
             ChaserBeeModel chaserBee = new ChaserBeeModel(constants.get("GroundedBee"), pos[0], pos[1], dwidth, dheight);
             chaserBee.setDrawScale(scale);
             chaserBee.setTexture(chaserBeeTexture);
+            chaserBee.setAnimationStrip(ChaserBeeModel.LarvaeAnimations.WALK, walkingLarvae);
             bees.add(chaserBee);
             addObject(chaserBee);
             aIController.createAIForSingleCharacter(chaserBee, constants.get("GroundedBee").get("ai_controller_options"));
@@ -642,6 +654,7 @@ public class LevelController implements ContactListener {
             FlyingBeeModel flyingBee = new FlyingBeeModel(constants.get("FlyingBee"), pos[0], pos[1], dwidth, dheight);
             flyingBee.setDrawScale(scale);
             flyingBee.setTexture(flyingBeeTexture);
+            flyingBee.setAnimationStrip(FlyingBeeModel.BeeAnimations.FLY, flyingBeestrip);
             bees.add(flyingBee);
             addObject(flyingBee);
             aIController.createAIForSingleCharacter(flyingBee, constants.get("FlyingBee").get("ai_controller_options"));

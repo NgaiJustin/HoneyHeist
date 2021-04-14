@@ -334,6 +334,8 @@ public class CharacterModel extends CapsuleObstacle {
             setVY(Math.min(-0.145f,getVY()));
         }*/
     }
+
+
     /**
      * Draws the outline of the physics body.
      *
