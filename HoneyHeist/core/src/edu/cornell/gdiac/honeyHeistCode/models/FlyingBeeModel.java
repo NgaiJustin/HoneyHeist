@@ -209,7 +209,7 @@ public class FlyingBeeModel extends AbstractBeeModel{
      * @param canvas Drawing context
      */
     public void draw(GameCanvas canvas) {
-        float effect = this.faceRight ? 1.0f : -1.0f;
+        float effect = this.faceRight ? -1.0f : 1.0f;
         // Walking Animation
         if (flyingAnim != null) {
             float offsety = flyingAnim.getRegionHeight()-origin.y;
