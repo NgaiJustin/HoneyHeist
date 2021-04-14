@@ -21,7 +21,7 @@ public class CharacterModel extends CapsuleObstacle {
     /**
      * The amount to slow the character down
      */
-    private final float damping;
+    protected float damping;
     /**
      * The maximum character speed
      */
@@ -313,7 +313,6 @@ public class CharacterModel extends CapsuleObstacle {
             forceCache.set(-getDamping() * getVX(), 0);
             body.applyForce(forceCache, getPosition(), true);
         }
-
         // Velocity too high, clamp it
         if (Math.abs(getVX()) >= getMaxSpeed()) {
             setVX(Math.signum(getVX()) * getMaxSpeed());
