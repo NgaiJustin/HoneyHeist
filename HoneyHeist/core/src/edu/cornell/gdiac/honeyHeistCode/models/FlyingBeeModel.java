@@ -93,8 +93,11 @@ public class FlyingBeeModel extends AbstractBeeModel{
             setVY(Math.signum(getVY()) * getMaxSpeed());
         }
         if((Math.copySign(1.0f,getVX())!=Math.copySign(1.0f,getMovement()))||!(Math.abs(getVX()) >= getMaxSpeed())){
-            forceCache.set(getMovement(), getVMovement());
-            System.out.println(getMovement() + ", " + getVMovement());
+            forceCache.set(getMovement(), 0);
+            body.applyForce(forceCache, getPosition(), true);
+        }
+        if((Math.copySign(1.0f,getVY())!=Math.copySign(1.0f,getMovement()))||!(Math.abs(getVY()) >= getMaxSpeed())){
+            forceCache.set(0, getVMovement());
             body.applyForce(forceCache, getPosition(), true);
         }
 
