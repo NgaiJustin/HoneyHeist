@@ -397,7 +397,7 @@ public class LevelController implements ContactListener {
      *
      * @param directory Reference to global asset manager.
      */
-    public void gatherAssets(AssetDirectory directory) {
+    public void gatherAssets(AssetDirectory directory, String dataFilePath) {
         avatarTexture = new TextureRegion(directory.getEntry("platform:ant", Texture.class));
         chaserBeeTexture = new TextureRegion(directory.getEntry("platform:larvae", Texture.class));
         flyingBeeTexture = new TextureRegion(directory.getEntry("platform:flyingBee", Texture.class));
@@ -410,9 +410,9 @@ public class LevelController implements ContactListener {
         plopSound = directory.getEntry("platform:plop", SoundBuffer.class);
 
         constants = directory.getEntry("platform:constants2", JsonValue.class);
-        levelData = directory.getEntry("platform:prototypeLevel", JsonValue.class);
+        levelData = directory.getEntry(dataFilePath, JsonValue.class);
+//        levelData = directory.getEntry("platform:prototypeLevel", JsonValue.class);
 //        super.gatherAssets(directory);
-//        constants = directory.getEntry("platform:constants", JsonValue.class);
 
         // Allocate the world tiles
         earthTile = new TextureRegion(directory.getEntry( "shared:earth", Texture.class ));
@@ -810,7 +810,9 @@ public class LevelController implements ContactListener {
         PlayerModel avatar  = level.getPlayer();
         PlatformModel platforms = level.getPlatforms();
         avatar.applyForce();
-        if(avatar.isGrounded() && platforms.isRotating() && !avatar.isRotating()){
+
+        if((platforms.isRotating() && !avatar.isRotating()) //&& avatar.isGrounded()){
+                &&((avatar.isGrounded() && !avatar.isInHoney())||(avatar.isInHoney() && avatar.getHoneyTime()==0))){
             avatar.startRotation(platforms.getRemainingAngle(), platforms.isClockwise(), level.getOrigin());
         }
 
@@ -827,7 +829,9 @@ public class LevelController implements ContactListener {
             if(!bee.isGrounded()){
                 bee.getSensorFixtures().clear();
             }
-            if(bee.isGrounded() && platforms.isRotating() && !bee.isRotating()){
+            if((platforms.isRotating() && !bee.isRotating()) //&& bee.isGrounded()){
+                    &&((bee.isGrounded() && !bee.isInHoney())||(bee.isInHoney() && bee.getHoneyTime()==0))){
+                System.out.print(bee.getHoneyTime());
                 bee.startRotation(platforms.getRemainingAngle(), platforms.isClockwise(), level.getOrigin());
             }
         }
@@ -934,30 +938,33 @@ public class LevelController implements ContactListener {
             }
             // ITERATE OVER ALL CHASER BEES
             for(AbstractBeeModel bee : bees) {
-                if (((bee.getSensorName().equals(fd2) && bee != bd1)&&(bd1.getName().contains("platform")) &&
+                if ((((bee.getSensorName().equals(fd2) && bee != bd1)&&(bd1.getName().contains("platform")) &&
                         !bee.getSensorFixtures().contains(fix1)) ||
                     ((bee.getSensorName().equals(fd1) && bee != bd2)&&(bd2.getName().contains("platform")) &&
-                        !bee.getSensorFixtures().contains(fix2))) {
+                        !bee.getSensorFixtures().contains(fix2)))&&bee.getClass()==ChaserBeeModel.class) {
                     bee.setGrounded(true);
                     bee.getSensorFixtures().add(bee == bd1 ? fix2 : fix1); // Could have more than one ground
                 }
-                if (((bee.getSensorName().equals(fd2) && bee != bd1)&&(bd1.getName().contains("honeypatch")) &&
+                if (((bee.getSensorName().equals(fd2) && bee != bd1)&&(fix2.isSensor())&&(bd1.getName().contains("honeypatch")) &&
                         !bee.getSensorFixtures().contains(fix1)) ||
-                    ((bee.getSensorName().equals(fd1) && bee != bd2)&&(bd2.getName().contains("honeypatch")) &&
+                    ((bee.getSensorName().equals(fd1) && bee != bd2)&&(fix1.isSensor())&&(bd2.getName().contains("honeypatch")) &&
                         !bee.getSensorFixtures().contains(fix2))) {
+                    System.out.print(bee.getSensorName()+"\n");
                     bee.setGrounded(true);
                     bee.setInHoney(true);
+                    bee.setHoneyTime(0.5f);
                     bee.getSensorFixtures().add(bee == bd1 ? fix2 : fix1); // Could have more than one ground
                     bee.setMaxspeed(level.getHoneyPatches().getSlowSpeed());
                 }
             }
             // Check for honeypatch
-            if (((avatar.getSensorName().equals(fd2) && avatar != bd1) && (bd1.getName().contains("honeypatch")) &&
+            if (((avatar.getSensorName().equals(fd2) && avatar != bd1)&&(fix2.isSensor()) && (bd1.getName().contains("honeypatch")) &&
                         !sensorFixtures.contains(fix1)) ||
-                ((avatar.getSensorName().equals(fd1)&& avatar != bd2) && (bd2.getName().contains("honeypatch")) &&
+                ((avatar.getSensorName().equals(fd1)&& avatar != bd2)&&(fix1.isSensor()) && (bd2.getName().contains("honeypatch")) &&
                         !sensorFixtures.contains(fix2))) {
                 avatar.setGrounded(true);
                 avatar.setInHoney(true);
+                avatar.setHoneyTime(0.5f);
                 sensorFixtures.add(avatar == bd1 ? fix2 : fix1);
                 avatar.setMaxspeed(level.getHoneyPatches().getSlowSpeed());
             }

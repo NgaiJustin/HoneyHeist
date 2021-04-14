@@ -53,6 +53,7 @@ public class PolygonObstacle extends SimpleObstacle {
 	private Vector2 sizeCache;
 	/** Cache of the polygon vertices (for resizing) */
 	private float[] vertices;
+	private float[] points;
 
 	/**
 	 * Returns the dimensions of this box
@@ -105,6 +106,8 @@ public class PolygonObstacle extends SimpleObstacle {
 	 */
 	public float[] getVertices() { return vertices.clone();}
 
+	public float[] getPoints() { return points.clone();}
+
 	/** Returns the true vertices after the object has been rotated.
 	 *
 	 * @return the true vertices
@@ -142,6 +145,22 @@ public class PolygonObstacle extends SimpleObstacle {
 		}
 
 		return vertices;
+	}
+
+	public float[] getTruePoints(){
+		float[] points = getPoints();
+		float angle = getAngle();
+		Vector2 pos = getPosition();
+		for (int i=0; i<points.length; i+=2){
+			float length = (float)Math.sqrt(Math.pow(points[i],2)+Math.pow(points[i+1],2));
+			float theta = (float)Math.atan((points[i+1] /points[i]));
+			points[i] = length*(float)Math.cos(theta+angle);
+			points[i+1] =  length*(float)Math.sin(theta+angle);;
+			points[i] += pos.x;
+			points[i+1] +=  pos.y;;
+		}
+
+		return points;
 	}
 
 	/** Returns the center of the polygon in world coordinates.
@@ -287,6 +306,7 @@ public class PolygonObstacle extends SimpleObstacle {
 	 */
 	private void initShapes(float[] points) {
 		// Triangulate
+		this.points = points;
 		ShortArray array = TRIANGULATOR.computeTriangles(points);
 		trimColinear(points,array);
 

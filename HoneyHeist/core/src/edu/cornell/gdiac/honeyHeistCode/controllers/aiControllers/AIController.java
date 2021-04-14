@@ -4,6 +4,7 @@ package edu.cornell.gdiac.honeyHeistCode.controllers.aiControllers;
 import java.util.HashMap;
 import edu.cornell.gdiac.honeyHeistCode.GameCanvas;
 import com.badlogic.gdx.math.Vector2;
+import edu.cornell.gdiac.honeyHeistCode.models.FlyingBeeModel;
 import edu.cornell.gdiac.honeyHeistCode.models.LevelModel;
 import edu.cornell.gdiac.honeyHeistCode.models.CharacterModel;
 import com.badlogic.gdx.utils.JsonValue;
@@ -35,6 +36,10 @@ public class AIController {
             aICharacterController.updateAIController();
             CharacterModel bee = aICharacterController.getControlledCharacter();
             bee.setMovement(aICharacterController.getMovementDirection().x * bee.getForce());
+            if (bee.getClass() == FlyingBeeModel.class) {
+                System.out.println(aICharacterController.getMovementDirection().y);
+                ((FlyingBeeModel) bee).setVMovement(aICharacterController.getMovementDirection().y * bee.getForce());
+            }
         }
     }
 
