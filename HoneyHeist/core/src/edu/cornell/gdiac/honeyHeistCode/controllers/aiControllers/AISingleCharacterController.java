@@ -86,6 +86,7 @@ public class AISingleCharacterController {
     private DirectedLineSegment poisonChecker;
     private DirectedLineSegment direction;
     private Vector2 positionAtLastWander;
+    private Vector2 currentDirection;
     private Vector2 temp;
 
     Random random = new Random();
@@ -129,6 +130,7 @@ public class AISingleCharacterController {
 		poisonChecker = new DirectedLineSegment();
 		direction = new DirectedLineSegment();
 		temp = new Vector2();
+		currentDirection = new Vector2();
 		positionAtLastWander = new Vector2();
 		positionAtLastWander.set(controlledCharacter.getPosition());
 
@@ -151,13 +153,13 @@ public class AISingleCharacterController {
 	 * @return The direction that the enemy should move.
 	 */
 	public Vector2 getMovementDirection() {
-		temp.set(direction.getDirection());
-		temp.nor();
+		currentDirection.set(direction.getDirection());
+		currentDirection.nor();
 		if (state == FSMState.WANDER) {
-			return temp.scl(wanderSpeedFactor);
+			return currentDirection.scl(wanderSpeedFactor);
 		}
 		else {
-			return temp.scl(chaseSpeedFactor);
+			return currentDirection.scl(chaseSpeedFactor);
 		}
 	}
 
