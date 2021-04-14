@@ -55,7 +55,7 @@ public class FlyingBeeModel extends AbstractBeeModel{
     public void setVMovement (float value) {
         vMovement = value * vMovementScale;
         if (value > 1.0f) {
-            System.out.println("vertical movement might be too fast");
+//            System.out.println("vertical movement might be too fast");
         }
     }
 
