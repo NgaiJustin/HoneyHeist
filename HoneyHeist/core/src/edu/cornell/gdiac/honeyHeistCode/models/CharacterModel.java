@@ -199,10 +199,10 @@ public class CharacterModel extends CapsuleObstacle {
         if (isRotating) return;
         if(!isInHoney) {
             setBodyType(BodyDef.BodyType.StaticBody);
+            sticking = true;
         }
         stageCenter = point;
         isRotating = true;
-        sticking = true;
         this.isClockwise = isClockwise;
         addRotation(rotationAngle);
     }
@@ -210,10 +210,10 @@ public class CharacterModel extends CapsuleObstacle {
         if (isRotating) return;
         if(!isInHoney) {
             setBodyType(BodyDef.BodyType.StaticBody);
+            sticking = true;
         }
         stageCenter = point;
         isRotating = true;
-        sticking = true;
         this.isClockwise = isClockwise;
         addRotation(rotationAmount);
     }
@@ -296,7 +296,7 @@ public class CharacterModel extends CapsuleObstacle {
             }
             if(!isGrounded||(isInHoney&&!sticking)){
                 float angle = getAngle();
-                int rotSpeed = ((isInHoney) ? 100 : 800);
+                int rotSpeed = ((isInHoney) ? 200 : 800);
                 if(angle<0) {
                     setAngularVelocity(rotSpeed*dt);
                 }
@@ -312,13 +312,32 @@ public class CharacterModel extends CapsuleObstacle {
         if (rotationAmount > remainingAngle){
             rotationAmount = remainingAngle;
             isRotating = false;
-            stickTime = maxStickTime;
+            if(isGrounded) {
+                stickTime = maxStickTime;
+            }
         }
         remainingAngle -= rotationAmount;
         if (!isClockwise) {
             rotationAmount *= -1;
         }
         rotateAboutPoint(rotationAmount, stageCenter);
+    }
+
+    public void rotateAboutPoint(float amount, Vector2 point) {
+        Body body = getBody();
+        assert(body != null);
+        Transform bT = body.getTransform();
+        Vector2 p = bT.getPosition().sub(point);
+        float c = (float) Math.cos(amount);
+        float s = (float) Math.sin(amount);
+        float x = p.x * c - p.y * s;
+        float y = p.x * s + p.y * c;
+        Vector2 pos = new Vector2(x, y).add(point);
+        float angle = 0;
+        if(isGrounded) {
+            angle = bT.getRotation() + amount;
+        }
+        body.setTransform(pos, angle);
     }
 
     /**
