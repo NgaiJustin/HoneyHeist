@@ -18,8 +18,7 @@ public class FlyingBeeModel extends AbstractBeeModel{
     public FlyingBeeModel(JsonValue data, float x, float y, float width, float height) {
         super(data, x, y, width, height);
         setName("FlyingBee");
-        damping = 0;
-        vMovementScale = 5.0f;
+        vMovementScale = 1.0f;
         setGravityScale(0);
         setFixedRotation(true);
     }
@@ -68,10 +67,21 @@ public class FlyingBeeModel extends AbstractBeeModel{
         if (!isActive()) {
             return;
         }
-
         // Don't want to be moving. Damp out player motion
-        if (getMovement() == 0f) {
+        if ((getMovement() == 0f) && (getVMovement() == 0f)) {
+            forceCache.set(-getDamping() * getVX(), -getDamping() * getVY());
+            System.out.println("slowing down x: " + getVX());
+            System.out.println("slowing down y: " + getVY());
+            body.applyForce(forceCache, getPosition(), true);
+        }
+        else if (getVMovement() == 0f && getVY() != 0f) {
+            forceCache.set(0, -getDamping() * getVY());
+            System.out.println("slowing down y: " + getVY());
+            body.applyForce(forceCache, getPosition(), true);
+        }
+        else if (getMovement() == 0f){
             forceCache.set(-getDamping() * getVX(), 0);
+            System.out.println("slowing down x: " + getVX());
             body.applyForce(forceCache, getPosition(), true);
         }
 
@@ -79,21 +89,22 @@ public class FlyingBeeModel extends AbstractBeeModel{
         if (Math.abs(getVX()) >= getMaxSpeed()) {
             setVX(Math.signum(getVX()) * getMaxSpeed());
         }
-        if (getVY() <= -getMaxSpeed()) {
-            setVY(Math.signum(getVY() * getMaxSpeed()));
+        if (Math.abs(getVY()) >= getMaxSpeed()) {
+            setVY(Math.signum(getVY()) * getMaxSpeed());
         }
         if((Math.copySign(1.0f,getVX())!=Math.copySign(1.0f,getMovement()))||!(Math.abs(getVX()) >= getMaxSpeed())){
             forceCache.set(getMovement(), getVMovement());
+            System.out.println(getMovement() + ", " + getVMovement());
             body.applyForce(forceCache, getPosition(), true);
         }
 
-        if (isGrounded&&(Math.abs(getVY()) >= getMaxSpeed())) {
-            setVY(Math.signum(getVY()) * getMaxSpeed());
-        }
-
-        if(!isGrounded){
-            setVY(Math.min(0f,getVY()));
-        }
+//        if (isGrounded&&(Math.abs(getVY()) >= getMaxSpeed())) {
+//            setVY(Math.signum(getVY()) * getMaxSpeed());
+//        }
+//
+//        if(!isGrounded){
+//            setVY(Math.min(0f,getVY()));
+//        }
 
         /*if(isGrounded){
             setVY(Math.min(-0.145f,getVY()));
