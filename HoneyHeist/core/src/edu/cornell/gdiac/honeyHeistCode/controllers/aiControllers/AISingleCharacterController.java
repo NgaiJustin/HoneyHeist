@@ -270,10 +270,10 @@ public class AISingleCharacterController {
 
 	private void wanderDirectionForGroundedEnemy() {
 		direction.setByVector(controlledCharacter.getPosition(), direction.getDirection());
-		if (isLineCollidingWithAPlatform(direction) || willCharacterCollideWithAPoisonPlatform(direction)) {
+		if (isLineCollidingWithAPlatform(direction)) {
 			changeToOppositeDirection();
 		}
-		else if (checkIfItWillFallOffPlatform && willCharacterFallOffPlatform()) {
+		if (checkIfItWillFallOffPlatform && willCharacterFallOffPlatform()) {
 			changeToOppositeDirection();
 		}
 	}
@@ -375,7 +375,7 @@ public class AISingleCharacterController {
 	private boolean willCharacterCollideWithAPoisonPlatform(DirectedLineSegment line) {
 		temp.set(line.getDirection());
 		float angle = temp.angleDeg();
-		for (int i = -30; i < 30; i+= 5) {
+		for (int i = -10; i < 10; i+= 5) {
 			temp.setAngleDeg(angle + i);
 			poisonChecker.setByVector(controlledCharacter.getPosition(), temp);
 			if (isLineCollidingWithAPoisonPlatform(poisonChecker)) {
