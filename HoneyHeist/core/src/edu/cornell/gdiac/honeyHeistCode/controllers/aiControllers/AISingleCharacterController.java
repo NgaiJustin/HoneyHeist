@@ -152,6 +152,7 @@ public class AISingleCharacterController {
 	 */
 	public Vector2 getMovementDirection() {
 		temp.set(direction.getDirection());
+		temp.nor();
 		if (state == FSMState.WANDER) {
 			return temp.scl(wanderSpeedFactor);
 		}
