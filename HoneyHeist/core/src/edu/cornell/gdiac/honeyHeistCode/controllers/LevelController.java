@@ -322,6 +322,11 @@ public class LevelController implements ContactListener {
     /**
      * The jump sound.  We only want to play once.
      */
+    private SoundBuffer bgm;
+    private long bgmId = -1;
+    /**
+     * The jump sound.  We only want to play once.
+     */
     private SoundBuffer jumpSound;
     private long jumpId = -1;
     /**
@@ -419,6 +424,7 @@ public class LevelController implements ContactListener {
         jumpSound = directory.getEntry("platform:jump", SoundBuffer.class);
         fireSound = directory.getEntry("platform:pew", SoundBuffer.class);
         plopSound = directory.getEntry("platform:plop", SoundBuffer.class);
+        bgm = directory.getEntry("platform:bgm", SoundBuffer.class);
 
         constants = directory.getEntry("platform:constants2", JsonValue.class);
         levelData = directory.getEntry(dataFilePath, JsonValue.class);
@@ -476,6 +482,7 @@ public class LevelController implements ContactListener {
         setComplete(false);
         setFailure(false);
         populateLevel();
+        playSound(bgm, 1);
     }
 
     /**

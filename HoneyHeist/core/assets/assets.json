@@ -73,7 +73,8 @@
   "sounds": {
     "platform:jump": "platform/jump.mp3",
     "platform:pew": "platform/pew.mp3",
-    "platform:plop": "platform/plop.mp3"
+    "platform:plop": "platform/plop.mp3",
+    "platform:bgm": "platform/bgm.mp3"
   },
   "fonts": {
     "shared:retro": {
