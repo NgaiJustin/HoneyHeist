@@ -144,12 +144,32 @@ public class GDXRoot extends Game implements ScreenListener {
 			setScreen(controller);
 			// new editing end
 
-			loading.dispose();
-			loading = null;
-
-			// new editing start
+			levelSelector.dispose();
+			levelSelector = null;
+		} else if(screen == levelSelector && exitCode == LevelSelector.EXIT_EDITOR) {
+			directory = levelSelector.getAssets();
+			editorController.gatherAssets(directory);
+			controller.gatherAssets(directory,"platform:defaultLevel");
+			editorController.setScreenListener(this);
+			controller.setScreenListener(this);
+			editorController.setCanvas(canvas);
+			controller.setCanvas(canvas);
+			editorController.reset();
+			setScreen(editorController);
 //		} else if (exitCode == WorldController.EXIT_NEXT) {
-		} else if (exitCode == GameplayController.EXIT_NEXT) {
+		} else if (screen == editorController && exitCode == WorldController.EXIT_NEXT) {
+//			current = (current+1) % controllers.length;
+//			controllers[current].reset();
+//			setScreen(controllers[current]);
+			AssetDirectory temp = new AssetDirectory("editorassets.json");
+			temp.loadAssets();
+			temp.finishLoading();
+			directory = temp;
+			controller.gatherLevelData(directory,editorController.getLoadPath());
+			controller.reset();
+			setScreen(controller);
+//		} else if (exitCode == WorldController.EXIT_PREV) {
+		} else if (exitCode == WorldController.EXIT_NEXT) {
 //			current = (current+1) % controllers.length;
 //			controllers[current].reset();
 //			setScreen(controllers[current]);
@@ -164,6 +184,11 @@ public class GDXRoot extends Game implements ScreenListener {
 //		} else if (exitCode == WorldController.EXIT_QUIT) {
 			// new editing end
 		} else if(exitCode == GameplayController.EXIT_EDITOR) {
+			AssetDirectory temp = new AssetDirectory("editorassets.json");
+			temp.loadAssets();
+			temp.finishLoading();
+			directory = temp;
+			editorController.gatherLevelData(directory);
 			editorController.reset();
 			setScreen(editorController);
 		} else if (exitCode == GameplayController.EXIT_QUIT) {

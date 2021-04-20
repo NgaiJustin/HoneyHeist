@@ -21,6 +21,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.JsonValue;
+import com.badlogic.gdx.utils.JsonWriter;
 import com.badlogic.gdx.utils.ObjectSet;
 import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.audio.SoundBuffer;
@@ -370,6 +371,7 @@ public class LevelController implements ContactListener {
         jumpSound = directory.getEntry("platform:jump", SoundBuffer.class);
         fireSound = directory.getEntry("platform:pew", SoundBuffer.class);
         plopSound = directory.getEntry("platform:plop", SoundBuffer.class);
+        //bgm = directory.getEntry("platform:bgm", SoundBuffer.class);
 
         constants = directory.getEntry("platform:constants2", JsonValue.class);
         levelData = directory.getEntry("platform:prototypeLevel", JsonValue.class);
@@ -381,6 +383,10 @@ public class LevelController implements ContactListener {
         goalTile  = new TextureRegion(directory.getEntry( "shared:goal", Texture.class ));
         background = new TextureRegion(directory.getEntry( "shared:background",  Texture.class ));
         displayFont = directory.getEntry( "shared:retro" ,BitmapFont.class);
+    }
+
+    public void gatherLevelData(AssetDirectory directory, String dataFilePath){
+        levelData = directory.getEntry(dataFilePath, JsonValue.class);
     }
 
     /**
@@ -422,6 +428,7 @@ public class LevelController implements ContactListener {
         setComplete(false);
         setFailure(false);
         populateLevel();
+        //playSound(bgm, 1);
     }
 
     /**

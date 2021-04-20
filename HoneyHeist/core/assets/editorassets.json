@@ -1,0 +1,6 @@
+{
+  "jsons": {
+    "savedLevel": "savedLevel.json",
+    "platform:defaultLevel": "platform/defaultLevel.json"
+  }
+}
