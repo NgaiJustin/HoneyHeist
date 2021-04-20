@@ -13,7 +13,9 @@ package edu.cornell.gdiac.honeyHeistCode.models;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
+
 import edu.cornell.gdiac.honeyHeistCode.obstacle.BoxObstacle;
+import edu.cornell.gdiac.honeyHeistCode.obstacle.PolygonObstacle;
 
 /**
  * A class holding all game objects contained within a level,
@@ -39,6 +41,20 @@ public class LevelModel {
      * Reference to the platform model
      */
     private PlatformModel platforms;
+
+    /**
+     * Reference to the spiked platforms
+     */
+    private SpikedPlatformModel spikedPlatforms;
+
+    /**
+     * Reference to the honeypatches
+     */
+    private HoneypatchModel honeyPatches;
+    /**
+     * Reference to the levelBackground
+     */
+    private PolygonObstacle levelBackground;
     /**
      * Reference to the origin of the world
      */
@@ -54,11 +70,15 @@ public class LevelModel {
      * The game has default gravity and other settings
      */
     public LevelModel(PlayerModel playerModel, Array<AbstractBeeModel> bees, BoxObstacle goalDoor,
-                      PlatformModel platforms, Rectangle bounds) {
+                      PlatformModel platforms, SpikedPlatformModel spikedPlatforms,
+                      HoneypatchModel honeyPatches, PolygonObstacle levelBackground, Rectangle bounds) {
         this.playerModel = playerModel;
         this.bees = bees;
         this.goalDoor = goalDoor;
         this.platforms = platforms;
+        this.spikedPlatforms = spikedPlatforms;
+        this.honeyPatches = honeyPatches;
+        this.levelBackground = levelBackground;
         this.origin = new Vector2(bounds.width/2,bounds.height/2);
         this.bounds = bounds;
     }
@@ -71,6 +91,10 @@ public class LevelModel {
     }
 
     public void setPlatforms(PlatformModel platforms) { this.platforms = platforms; }
+
+    public SpikedPlatformModel getSpikedPlatforms() {return spikedPlatforms;}
+
+    public void setSpikedPlatforms(SpikedPlatformModel spikedPlatforms) { this.spikedPlatforms = spikedPlatforms; }
 
     public PlayerModel getPlayer() {
         return playerModel;
@@ -86,9 +110,17 @@ public class LevelModel {
 
     public void setGoalDoor(BoxObstacle goalDoor) { this.goalDoor = goalDoor; }
 
+    public HoneypatchModel getHoneyPatches() {return honeyPatches;}
+
+    public void setHoneyPatches(HoneypatchModel honeyPatches) {this.honeyPatches = honeyPatches;}
+
     public Vector2 getOrigin() {return origin;}
 
     public void setOrigin(Vector2 origin) { this.origin = origin; }
 
     public Rectangle getBounds() {return bounds;}
+
+    public void setLevelBackground(PolygonObstacle bg) {this.levelBackground = bg; }
+
+    public PolygonObstacle getLevelBackground() { return levelBackground; }
 }

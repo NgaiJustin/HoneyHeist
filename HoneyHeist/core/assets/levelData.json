@@ -1,0 +1,14 @@
+{
+    "tutorial": {
+        "name": "Tutorial",
+        "unlock": true,
+        "complete": false,
+        "file": "platform:prototypeLevel"
+    },
+    "one": {
+        "name": "NOT THE BEES!!!",
+        "unlock": false,
+        "complete": false,
+        "file": "platform/prototypeLevel"
+    }
+}

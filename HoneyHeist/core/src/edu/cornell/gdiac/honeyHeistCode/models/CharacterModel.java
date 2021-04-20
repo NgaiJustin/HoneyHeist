@@ -13,7 +13,7 @@ public class CharacterModel extends CapsuleObstacle {
     /**
      * The initializing data (to avoid magic numbers)
      */
-    private final JsonValue data;
+    protected final JsonValue data;
     /**
      * The factor to multiply by the input
      */
@@ -21,11 +21,16 @@ public class CharacterModel extends CapsuleObstacle {
     /**
      * The amount to slow the character down
      */
-    private final float damping;
+    protected float damping;
     /**
      * The maximum character speed
      */
-    private final float maxspeed;
+    private float maxspeed;
+
+    /**
+     * The default maximum character speed
+     */
+    private final float defaultMaxspeed;
 
     /**
      * The current horizontal movement of the character
@@ -40,6 +45,10 @@ public class CharacterModel extends CapsuleObstacle {
      */
     protected boolean isGrounded;
     /**
+     * Whether the character is in honey
+     */
+    protected boolean isInHoney;
+    /**
      * Sensor fixtures for isGrounded detection
      */
     protected ObjectSet<Fixture> sensorFixtures;
@@ -52,10 +61,12 @@ public class CharacterModel extends CapsuleObstacle {
      */
     protected String sensorName;
 
+    protected float honeyTime;
+
     /**
      * Cache for internal force calculations
      */
-    private final Vector2 forceCache = new Vector2();
+    protected final Vector2 forceCache = new Vector2();
 
 
     /**
@@ -97,6 +108,15 @@ public class CharacterModel extends CapsuleObstacle {
     }
 
     /**
+     * Returns true if the bee is in honey.
+     *
+     * @return true if the bee is in honey.
+     */
+    public boolean isInHoney() {
+        return isInHoney;
+    }
+
+    /**
      * Sets whether the bee is on the ground.
      *
      * @param value whether the ant is on the ground.
@@ -104,6 +124,21 @@ public class CharacterModel extends CapsuleObstacle {
     public void setGrounded(boolean value) {
         isGrounded = value;
     }
+
+    /**
+     * Sets whether the bee is in honey.
+     *
+     * @param value whether the ant is in honey.
+     */
+    public void setInHoney(boolean value) { isInHoney = value; }
+
+    public void setMaxspeed(float speed){ maxspeed = speed; }
+
+    public void setDefaultMaxspeed(){ maxspeed = defaultMaxspeed; }
+
+    public void setHoneyTime(float time) { honeyTime = time; }
+
+    public float getHoneyTime() { return honeyTime; }
 
     /**
      * Returns how much force to apply to get the ant moving
@@ -160,6 +195,29 @@ public class CharacterModel extends CapsuleObstacle {
         return faceRight;
     }
 
+    public void startRotation(boolean isClockwise, Vector2 point){
+        if (isRotating) return;
+        if(!isInHoney) {
+            setBodyType(BodyDef.BodyType.StaticBody);
+            sticking = true;
+        }
+        stageCenter = point;
+        isRotating = true;
+        this.isClockwise = isClockwise;
+        addRotation(rotationAngle);
+    }
+    public void startRotation(float rotationAmount, boolean isClockwise, Vector2 point){
+        if (isRotating) return;
+        if(!isInHoney) {
+            setBodyType(BodyDef.BodyType.StaticBody);
+            sticking = true;
+        }
+        stageCenter = point;
+        isRotating = true;
+        this.isClockwise = isClockwise;
+        addRotation(rotationAmount);
+    }
+
     public CharacterModel(JsonValue data, float x, float y, float width, float height){
         super(x, y,
                 width * data.get("shrink").getFloat(0),
@@ -169,8 +227,10 @@ public class CharacterModel extends CapsuleObstacle {
         setFixedRotation(false);
 
         maxspeed = data.getFloat("maxspeed", 0);
+        defaultMaxspeed = maxspeed;
         damping = data.getFloat("damping", 0);
         force = data.getFloat("force", 0);
+        setGravityScale(data.getFloat("gravityScale", 1));
         this.data = data;
 
         // Gameplay attributes
@@ -209,7 +269,7 @@ public class CharacterModel extends CapsuleObstacle {
         sensorShape = new PolygonShape();
         JsonValue sensorjv = data.get("sensor");
         sensorShape.setAsBox(sensorjv.getFloat("shrink", 0) * getWidth()/1.6f ,
-                sensorjv.getFloat("height", 0)*3f, sensorCenter, 0.0f);
+                sensorjv.getFloat("height", 0)*1.5f, sensorCenter, 0.0f);
         sensorDef.shape = sensorShape;
 
         // Ground sensor to represent our feet
@@ -221,6 +281,9 @@ public class CharacterModel extends CapsuleObstacle {
 
     public void update(float dt) {
         if (!isRotating) {
+            /*if(honeyTime>0){
+                honeyTime -= dt;
+            }*/
             if(stickTime>0){
                 stickTime -= dt;
             }
@@ -231,8 +294,19 @@ public class CharacterModel extends CapsuleObstacle {
                     isGrounded = false;
                 }
             }
-            if(!isGrounded){
-                this.setAngle(0);
+            if(!isGrounded||(isInHoney&&!sticking)){
+                float angle = getAngle();
+                float rotSpeed = ((isInHoney) ? 4f : 13f);
+                if(angle<-0.05) {
+                    setAngularVelocity(Math.min(rotSpeed,-angle/dt));
+                }
+                else if(angle>0.05) {
+                    setAngularVelocity(Math.max(-rotSpeed,-angle/dt));
+                }
+                else{
+                    setAngularVelocity(0f);
+                }
+                //setAngle(0);
             }
             return;
         }
@@ -241,13 +315,32 @@ public class CharacterModel extends CapsuleObstacle {
         if (rotationAmount > remainingAngle){
             rotationAmount = remainingAngle;
             isRotating = false;
-            stickTime = maxStickTime;
+            if(isGrounded) {
+                stickTime = maxStickTime;
+            }
         }
         remainingAngle -= rotationAmount;
         if (!isClockwise) {
             rotationAmount *= -1;
         }
         rotateAboutPoint(rotationAmount, stageCenter);
+    }
+
+    public void rotateAboutPoint(float amount, Vector2 point) {
+        Body body = getBody();
+        assert(body != null);
+        Transform bT = body.getTransform();
+        Vector2 p = bT.getPosition().sub(point);
+        float c = (float) Math.cos(amount);
+        float s = (float) Math.sin(amount);
+        float x = p.x * c - p.y * s;
+        float y = p.x * s + p.y * c;
+        Vector2 pos = new Vector2(x, y).add(point);
+        float angle = 0;
+        if(isGrounded) {
+            angle = bT.getRotation() + amount;
+        }
+        body.setTransform(pos, angle);
     }
 
     /**
@@ -265,7 +358,6 @@ public class CharacterModel extends CapsuleObstacle {
             forceCache.set(-getDamping() * getVX(), 0);
             body.applyForce(forceCache, getPosition(), true);
         }
-
         // Velocity too high, clamp it
         if (Math.abs(getVX()) >= getMaxSpeed()) {
             setVX(Math.signum(getVX()) * getMaxSpeed());
@@ -275,7 +367,7 @@ public class CharacterModel extends CapsuleObstacle {
             body.applyForce(forceCache, getPosition(), true);
         }
 
-        if (isGrounded&&(Math.abs(getVY()) >= getMaxSpeed())) {
+        if ((isGrounded||isInHoney)&&(Math.abs(getVY()) >= getMaxSpeed())) {
             setVY(Math.signum(getVY()) * getMaxSpeed());
         }
 
@@ -287,6 +379,8 @@ public class CharacterModel extends CapsuleObstacle {
             setVY(Math.min(-0.145f,getVY()));
         }*/
     }
+
+
     /**
      * Draws the outline of the physics body.
      *

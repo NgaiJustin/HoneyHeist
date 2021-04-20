@@ -19,7 +19,6 @@ public abstract class AbstractBeeModel extends CharacterModel {
         setName("bee");
         sensorName = "BeeGroundSensor"+x+y;
         sensorFixtures = new ObjectSet<Fixture>();
-        setFixedRotation(true);
     }
 
     /**
@@ -29,6 +28,6 @@ public abstract class AbstractBeeModel extends CharacterModel {
      */
     public void draw(GameCanvas canvas) {
         float effect = faceRight ? 1.0f : -1.0f;
-        canvas.draw(texture, Color.WHITE, origin.x-6.0f, origin.y, getX() * drawScale.x, getY() * drawScale.y, getAngle(), effect, 1.0f);
+        canvas.draw(texture, Color.WHITE, origin.x, origin.y, getX() * drawScale.x, getY() * drawScale.y, getAngle(), effect, 1.0f);
     }
 }
