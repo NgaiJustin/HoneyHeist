@@ -107,7 +107,7 @@ public class EditorController extends WorldController implements InputProcessor 
 
     private PolygonObstacle honeypatchPreview;
 
-    private String loadPath = "savedLevel";
+    private String loadPath;
 
     private AssetDirectory directory;
 
@@ -204,6 +204,7 @@ public class EditorController extends WorldController implements InputProcessor 
         setDebug(false);
         setComplete(false);
         setFailure(false);
+        loadPath = "platform:defaultLevel";
     }
 
     /**
@@ -233,7 +234,7 @@ public class EditorController extends WorldController implements InputProcessor 
         plopSound = directory.getEntry("platform:plop", SoundBuffer.class);
 
         constants = directory.getEntry("platform:constants2", JsonValue.class);
-        levelData = directory.getEntry("platform:defaultLevel", JsonValue.class);
+        levelData = directory.getEntry(loadPath, JsonValue.class);
         modeFont = directory.getEntry("shared:marker",BitmapFont.class);
 
         beeButton = directory.getEntry("editor:beeButton", Texture.class);
@@ -504,6 +505,7 @@ public class EditorController extends WorldController implements InputProcessor 
         } else if (input.didAdvance()) {
             pause();
             convertToJson();
+            loadPath = "savedLevel";
             listener.exitScreen(this, EXIT_NEXT);
             return false;
 //		} else if (input.didRetreat()) {
@@ -598,6 +600,7 @@ public class EditorController extends WorldController implements InputProcessor 
                 else if (Math.abs(sbY() - clickY) < saveButton.getHeight()*BUTTON_SCALE/2){
                     this.sbPressed = true;
                     convertToJson();
+                    this.loadPath = "savedLevel";
                 }
                 // SELECT MODE BUTTON CLICKED
                 else if (Math.abs(smbY() - clickY) < selectModeButton.getHeight()*BUTTON_SCALE/2){

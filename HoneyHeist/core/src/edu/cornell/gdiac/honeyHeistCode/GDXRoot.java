@@ -206,11 +206,13 @@ public class GDXRoot extends Game implements ScreenListener {
 //		} else if (exitCode == WorldController.EXIT_QUIT) {
 			// new editing end
 		} else if(exitCode == GameplayController.EXIT_EDITOR) {
-			AssetDirectory temp = new AssetDirectory("editorassets.json");
-			temp.loadAssets();
-			temp.finishLoading();
-			directory = temp;
-			editorController.gatherLevelData(directory);
+			if(editorController.getLoadPath()!="platform:defaultLevel") {
+				AssetDirectory temp = new AssetDirectory("editorassets.json");
+				temp.loadAssets();
+				temp.finishLoading();
+				directory = temp;
+				editorController.gatherLevelData(directory);
+			}
 			editorController.reset();
 			setScreen(editorController);
 		} else if (exitCode == GameplayController.EXIT_QUIT) {
