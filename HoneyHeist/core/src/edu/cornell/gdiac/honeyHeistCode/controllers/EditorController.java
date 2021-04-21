@@ -1197,7 +1197,7 @@ public class EditorController extends WorldController implements InputProcessor 
         }
 
         if (level.getLevelBackground()!=null){
-            jsonLevel.setBackground(level.getLevelBackground().getTrueVertices());
+            jsonLevel.setBackground(level.getLevelBackground().getTruePoints());
         }
 
         if (level.getPlatforms()!=null){
