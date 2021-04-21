@@ -242,49 +242,31 @@ public class PlatformModel extends Obstacle {
 	/**
 	 * Returns a PlatformOrientation classification based on the rectangular
 	 * bound of a platform and the center of the world.
-	 * @param maxx	max X value of the platform
-	 * @param minx	min X value of the platform
-	 * @param maxy	max Y value of the platform
-	 * @param miny	min Y value of the platform
+	 *
 	 * @param worldCenter	(x,y) coordinate of the center of the world
 	 * @return	Classification of the platform
 	 */
-	private PlatformOrientation getOrientation(float maxx,  float minx,
-											   float maxy, float miny,
+	private PlatformOrientation getOrientation(Vector2 topRight,  Vector2 topLeft,
+											   Vector2 botLeft, Vector2 botRight,
 											   Vector2 worldCenter) {
 		// Defensive copies
 		worldCenter = worldCenter.cpy();
 
 		// Case for horizontal platforms
-		if (maxx > worldCenter.x && worldCenter.x > minx){
-			// Top horizontal platform
-			if (miny > worldCenter.y && maxy > worldCenter.y){
+		if (Math.abs(botLeft.x - topLeft.x) < 0.001f &&
+				Math.abs(botRight.x - topRight.x) < 0.001f){
+
+			// Top horizontal platform: facing down
+			if (topLeft.y > botLeft.y && topRight.y > botRight.y){
 				return PlatformOrientation.THREE;
 			}
-			// Bot horizontal platform
-			else if (miny < worldCenter.y && maxy < worldCenter.y){
+			// Bot horizontal platform: facing up
+			else if (topLeft.y < botLeft.y && topRight.y < botRight.y){
 				return PlatformOrientation.ZERO;
 			}
 			else {
 				throw new IllegalArgumentException("Not a valid platform: ");
 			}
-		}
-
-		// Case for right platforms
-		if (minx > worldCenter.x && maxx > worldCenter.x){
-
-			// Case for upper right platform
-			if (maxy > worldCenter.y && miny > worldCenter.y){
-				return PlatformOrientation.TWO;
-			}
-			// Case for bottom right platform
-			else if (maxy < worldCenter.y && miny < worldCenter.y){
-				return PlatformOrientation.ONE;
-			}
-			else {
-				throw new IllegalArgumentException("Not a valid platform");
-			}
-
 		}
 		return null;
 	}
@@ -298,8 +280,35 @@ public class PlatformModel extends Obstacle {
 		// Delegate to components
 		for (PolygonObstacle obj : bodies) {
 			// obj.draw(canvas);
-
 			if (worldCenter != null) {
+				float[] corners = obj.getTruePoints();
+				assert corners.length == 8;
+				Vector2 topLeft = new Vector2(corners[0], corners[1]);
+				Vector2 botLeft = new Vector2(corners[2], corners[3]);
+				Vector2 botRight = new Vector2(corners[4], corners[5]);
+				Vector2 topRight = new Vector2(corners[6], corners[7]);
+				float trueWidth = Math.max(botLeft.dst(botRight), botLeft.dst(topLeft));
+				float trueHeight = obj.PLATFORM_HEIGHT;
+
+				Vector2 scaledPlatCenter = new Vector2(
+						obj.getCenter().x * drawScale.x,
+						obj.getCenter().y * drawScale.y);
+
+				Vector2 scaledWorldCenter = new Vector2(
+						worldCenter.x * drawScale.x,
+						worldCenter.y * drawScale.y
+				);
+
+				float minx = Math.min(Math.min(Math.min(corners[0], corners[2]), corners[4]), corners[6]);
+				float maxx = Math.max(Math.max(Math.max(corners[0], corners[2]), corners[4]), corners[6]);
+				float miny = Math.min(Math.min(Math.min(corners[1], corners[3]), corners[5]), corners[7]);
+				float maxy = Math.max(Math.max(Math.max(corners[1], corners[3]), corners[5]), corners[7]);
+
+				Vector2 botLeftToRight = new Vector2(botRight.cpy().sub(botLeft.cpy()));
+				Vector2 worldCenterToPlatCenter = scaledPlatCenter.sub(scaledWorldCenter);
+				// float angle = worldCenterToPlatCenter.angleDeg() - 90;
+				float angle = botLeftToRight.angleDeg();
+
 //				canvas.draw(texture, Color.WHITE,
 //						texture.getRegionWidth() /2f,
 //						texture.getRegionHeight() /2f,
@@ -315,18 +324,22 @@ public class PlatformModel extends Obstacle {
 //						obj.getWidth()*drawScale.x,
 //						obj.getHeight()*drawScale.y,
 //						1f, 1f, 0);
+				// canvas.draw(texture, Color.BLACK, scaledWorldCenter.x, scaledWorldCenter.y, 4, 4);
 				canvas.drawNinePatch(ninePatch,
-						obj.minX * drawScale.x,
-						obj.minY * drawScale.y,
-						ninePatch.getMiddleWidth()/2,
-						ninePatch.getMiddleHeight()/2,
-						obj.getWidth()*drawScale.x,
-						obj.getHeight()*drawScale.y,
-						 30);
-				System.out.println(obj.getTrueVertices().length);
+						botLeft.x * drawScale.x,
+						botLeft.y * drawScale.y,
+						0,
+						0,
+						trueWidth * drawScale.x,
+						trueHeight * drawScale.y,
+						angle );
 			}
 		}
+
 	}
+
+
+
 
 	/**
 	 * Draws the outline of the physics body.

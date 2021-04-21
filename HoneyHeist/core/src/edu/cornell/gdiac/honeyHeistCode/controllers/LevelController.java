@@ -569,7 +569,7 @@ public class LevelController implements ContactListener {
         //Create background
         PolygonObstacle levelBackground;
         // Find center of the game
-        Vector2 worldCenter;
+        Vector2 worldCenter = bounds.getCenter(new Vector2());
         if (!levelData.get("background").isNull()) {
             levelBackground = new PolygonObstacle(levelData.get("background").asFloatArray(), 0, 0);
             levelBackground.setBodyType(BodyDef.BodyType.StaticBody);
@@ -581,10 +581,8 @@ public class LevelController implements ContactListener {
             levelBackground.setTexture(tilesBackground);
             levelBackground.setSensor(true);
             addObject(levelBackground);
-            worldCenter = levelBackground.getCenter().cpy();
         } else {
             levelBackground = null;
-            worldCenter = bounds.getCenter(new Vector2());
         }
 
         // Add level goal
@@ -678,8 +676,6 @@ public class LevelController implements ContactListener {
 
         Array<AbstractBeeModel> bees = new Array<AbstractBeeModel>();
         level = new LevelModel(avatar,bees,goalDoor,platforms, spikedPlatforms, honeyPatches, levelBackground, new Rectangle(bounds));
-
-
 
         aIController = new AIController(level, whiteSquare);
 
