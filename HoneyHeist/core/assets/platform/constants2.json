@@ -44,6 +44,7 @@
       "ai_controller_options": {
         "enemy_type": 1,
         "chase_distance": 3,
+        "wander_radius": 3.5,
         "target": 0,
         "wander_speed_factor": 0.5,
         "chase_speed_factor": 0.5,
@@ -70,6 +71,7 @@
     "ai_controller_options": {
       "enemy_type": 0,
       "chase_distance": 3,
+      "wander_radius": 3.5,
       "target": 0,
       "wander_speed_factor": 0.5,
       "chase_speed_factor": 0.5,

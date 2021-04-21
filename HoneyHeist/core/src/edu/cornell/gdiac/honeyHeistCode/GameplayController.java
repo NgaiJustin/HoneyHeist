@@ -45,7 +45,7 @@ import edu.cornell.gdiac.honeyHeistCode.controllers.LevelController;
  * This is the purpose of our AssetState variable; it ensures that multiple instances
  * place nicely with the static assets.
  */
-public class GameplayController implements Screen {
+public class GameplayController implements Screen, InputProcessor {
 	/** The texture for walls and platforms */
 	protected TextureRegion earthTile;
 	/** The texture for the exit condition */
@@ -119,6 +119,28 @@ public class GameplayController implements Screen {
     private JsonValue aiConstants;
     /** JsonValue constants for level Controller */
     private JsonValue levelConstants;
+	/** Pause button texture */
+    private Texture pauseButton;
+	/** If the pause button is pressed */
+	private boolean pausePressed;
+	/** If it's in the pause state */
+	private boolean isPaused;
+	/** Constants for the position of pause button */
+	private final float pauseXPOS = 150;
+	private final float pauseYPOS = 500;
+	private final float pauseScale = 0.5f;
+	/** Standard window size (for scaling) */
+	private static int STANDARD_WIDTH  = 800;
+	/** Standard window height (for scaling) */
+	private static int STANDARD_HEIGHT = 700;
+	/** Scaling factor for when the student changes the resolution. */
+	private float scaleFactor;
+	/** The height of the canvas window (necessary since sprite origin != screen origin) */
+	private int heightY;
+	/** The y-coordinate of the center of the progress bar */
+	private int centerY;
+	/** The x-coordinate of the center of the progress bar */
+	private int centerX;
 
     /**
      * Returns levelController
@@ -238,6 +260,8 @@ public class GameplayController implements Screen {
         Vector2 scale = levelController.getScale();
         this.scale.x = scale.x;
         this.scale.y = scale.y;
+		// Compute the dimensions from the canvas
+		resize(canvas.getWidth(),canvas.getHeight());
     }
     // --------------------------------------- root controller -- end
 
@@ -281,6 +305,7 @@ public class GameplayController implements Screen {
 		failed = false;
 		debug  = false;
 		active = false;
+		isPaused = false;
 		countdown = -1;
 		// initialize the level controller
 		levelController = new LevelController();
@@ -322,6 +347,7 @@ public class GameplayController implements Screen {
 		// background
 		background = new TextureRegion(directory.getEntry( "shared:background",  Texture.class ));
 		displayFont = directory.getEntry( "shared:retro" ,BitmapFont.class);
+		pauseButton = directory.getEntry("shared:pauseButton", Texture.class);
 		levelController.gatherAssets(directory, levelData);
 	}
 
@@ -372,6 +398,8 @@ public class GameplayController implements Screen {
      */
     public void reset() {
         // TODO
+		pausePressed = false;
+		isPaused = false;
         levelController.reset();
     }
 
@@ -387,6 +415,8 @@ public class GameplayController implements Screen {
      * @return whether to process the update loop
      */
     public boolean preUpdate(float dt) {
+		// If in the pause state, do not update
+		if (isPaused) { return false; }
         boolean temp = preUpdateHelper(dt);
         boolean result = levelController.preUpdate(temp);
 //        setFailure(levelController.isFailure());
@@ -507,6 +537,15 @@ public class GameplayController implements Screen {
 	 * @param dt	Number of seconds since last animation frame
 	 */
 	public void draw(float dt) {
+		canvas.clear();
+		canvas.begin();
+		canvas.draw(background, 0, 0);
+		if (pauseButton != null) {
+			Color tint = (pausePressed ? Color.GRAY: Color.WHITE);
+			canvas.draw(pauseButton, tint, pauseButton.getWidth()/2f, pauseButton.getHeight()/2f,
+					pauseXPOS, pauseYPOS, 0, pauseScale*scaleFactor,
+					pauseScale*scaleFactor);
+		}
 		levelController.draw(dt);
 //		canvas.clear();
 //
@@ -590,6 +629,13 @@ public class GameplayController implements Screen {
 	 */
 	public void resize(int width, int height) {
 		// IGNORE FOR NOW
+		// Compute the drawing scale
+		float sx = ((float)width)/STANDARD_WIDTH;
+		float sy = ((float)height)/STANDARD_HEIGHT;
+		scaleFactor = (sx < sy ? sx : sy);
+		heightY = height;
+		centerY = height/2;
+		centerX = width/2;
 	}
 
 	/**
@@ -652,6 +698,120 @@ public class GameplayController implements Screen {
 	 */
 	public void setScreenListener(ScreenListener listener) {
 		this.listener = listener;
+		Gdx.input.setInputProcessor( this );
 	}
 
+	/**
+	 * Called when the mouse button was pressed.
+	 *
+	 * @param screenX The x coordinate, origin is in the upper left corner
+	 * @param screenY The y coordinate, origin is in the upper left corner
+	 * @param pointer the pointer for the event.
+	 * @param button  the button
+	 * @return whether the input was processed
+	 */
+	@Override
+	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+		if (pauseButton==null) return true;
+
+		// Flip to match graphics coordinates
+		screenY = heightY-screenY;
+
+		float radius, dist;
+		radius = pauseScale*scaleFactor*pauseButton.getWidth()/2.0f;
+		dist = (screenX-pauseXPOS)*(screenX-pauseXPOS)+(screenY-pauseYPOS)* (screenY-pauseYPOS);
+		if (dist < radius*radius) {
+			pausePressed = true;
+		}
+		return false;
+	}
+
+	/**
+	 * Called when the mouse button was released.
+	 *
+	 * @param screenX
+	 * @param screenY
+	 * @param pointer the pointer for the event.
+	 * @param button  the button
+	 * @return whether the input was processed
+	 */
+	@Override
+	public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+		if (pausePressed) {
+			pausePressed = false;
+			isPaused = !isPaused;
+			return false;
+		}
+		return true;
+	}
+
+	/**
+	 * Called when a key was pressed (UNSUPPORTED)
+	 *
+	 * @param keycode one of the constants in {@link Input.Keys}
+	 * @return whether the input was processed
+	 */
+	@Override
+	public boolean keyDown(int keycode) {
+		return true;
+	}
+
+	/**
+	 * Called when a key was released (UNSUPPORTED)
+	 *
+	 * @param keycode one of the constants in {@link Input.Keys}
+	 * @return whether the input was processed
+	 */
+	@Override
+	public boolean keyUp(int keycode) {
+		return true;
+	}
+
+	/**
+	 * Called when a key was typed (UNSUPPORTED)
+	 *
+	 * @param character The character
+	 * @return whether the input was processed
+	 */
+	@Override
+	public boolean keyTyped(char character) {
+		return true;
+	}
+
+	/**
+	 * Called when a finger or the mouse was dragged. (UNSUPPORTED)
+	 *
+	 * @param screenX
+	 * @param screenY
+	 * @param pointer the pointer for the event.
+	 * @return whether the input was processed
+	 */
+	@Override
+	public boolean touchDragged(int screenX, int screenY, int pointer) {
+		return true;
+	}
+
+	/**
+	 * Called when the mouse was moved without any buttons being pressed. Will not be called on iOS. (UNSUPPORTED)
+	 *
+	 * @param screenX
+	 * @param screenY
+	 * @return whether the input was processed
+	 */
+	@Override
+	public boolean mouseMoved(int screenX, int screenY) {
+		return true;
+	}
+
+	/**
+	 * Called when the mouse wheel was scrolled. Will not be called on iOS. (UNSUPPORTED)
+	 *
+	 * @param amountX the horizontal scroll amount, negative or positive depending on the direction the wheel was scrolled.
+	 * @param amountY the vertical scroll amount, negative or positive depending on the direction the wheel was scrolled.
+	 * @return whether the input was processed.
+	 */
+	@Override
+	public boolean scrolled(float amountX, float amountY) {
+		return true;
+	}
 }

@@ -14,6 +14,8 @@ public class PlayerModel extends CharacterModel {
     private FilmStrip walkingAnim;
     /** The animation phase for the walking animation */
     private boolean walkCycle = true;
+    private final int FRAMES_PER_ANIM = 5;
+    private int animFrames = 0;
 
     /**
      * Enumeration to identify the ant animations
@@ -35,7 +37,6 @@ public class PlayerModel extends CharacterModel {
         super(data, x, y, width, height);
         setName("ant");
         sensorName = "AntGroundSensor";
-
     }
 
     /**
@@ -77,23 +78,26 @@ public class PlayerModel extends CharacterModel {
                 assert false : "Invalid burner enumeration";
         }
 
-        if (on) {
-            // Turn on the flames and go back and forth
-            if (node.getFrame() == 0 || node.getFrame() == 1) {
-                cycle = true;
-            } else if (node.getFrame() == node.getSize()-1) {
-                cycle = false;
-            }
+        if (animFrames % FRAMES_PER_ANIM == 0) {
+            if (on) {
+                // Turn on the flames and go back and forth
+                if (node.getFrame() == 0 || node.getFrame() == 1) {
+                    cycle = true;
+                } else if (node.getFrame() == node.getSize() - 1) {
+                    cycle = false;
+                }
 
-            // Increment
-            if (cycle) {
-                node.setFrame(node.getFrame()+1);
+                // Increment
+                if (cycle) {
+                    node.setFrame(node.getFrame() + 1);
+                } else {
+                    node.setFrame(0);
+                }
             } else {
-                node.setFrame(node.getFrame()-1);
+                node.setFrame(0);
             }
-        } else {
-            node.setFrame(0);
         }
+        animFrames++;
 
         switch (anim) {
             case WALK:

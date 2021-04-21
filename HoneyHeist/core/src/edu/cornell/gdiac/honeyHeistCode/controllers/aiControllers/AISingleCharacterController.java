@@ -69,6 +69,7 @@ public class AISingleCharacterController {
     private CharacterModel controlledCharacter;
     private LevelModel levelModel;
     private float chaseRadius;
+    private float wanderRadius;
     private float wanderSpeedFactor;
     private float chaseSpeedFactor;
     private boolean checkIfItWillFallOffPlatform;
@@ -84,6 +85,8 @@ public class AISingleCharacterController {
     private DirectedLineSegment bottomChecker;
     private DirectedLineSegment poisonChecker;
     private DirectedLineSegment direction;
+    private Vector2 positionAtLastWander;
+    private Vector2 currentDirection;
     private Vector2 temp;
 
     Random random = new Random();
@@ -117,6 +120,7 @@ public class AISingleCharacterController {
 		this.wanderSpeedFactor = data.getFloat("wander_speed_factor");
 		this.chaseSpeedFactor = data.getFloat("chase_speed_factor");
 		this.checkIfItWillFallOffPlatform = data.getInt("check_fall_off_platform") == 1 ? true : false;
+		this.wanderRadius = data.getFloat("wander_radius");
 
 		state = FSMState.WANDER;
 		ticks = 0;
@@ -126,6 +130,9 @@ public class AISingleCharacterController {
 		poisonChecker = new DirectedLineSegment();
 		direction = new DirectedLineSegment();
 		temp = new Vector2();
+		currentDirection = new Vector2();
+		positionAtLastWander = new Vector2();
+		positionAtLastWander.set(controlledCharacter.getPosition());
 
 		initDirection();
 	}
@@ -146,12 +153,13 @@ public class AISingleCharacterController {
 	 * @return The direction that the enemy should move.
 	 */
 	public Vector2 getMovementDirection() {
-		temp.set(direction.getDirection());
+		currentDirection.set(direction.getDirection());
+		currentDirection.nor();
 		if (state == FSMState.WANDER) {
-			return temp.scl(wanderSpeedFactor);
+			return currentDirection.scl(wanderSpeedFactor);
 		}
 		else {
-			return temp.scl(chaseSpeedFactor);
+			return currentDirection.scl(chaseSpeedFactor);
 		}
 	}
 
@@ -229,12 +237,20 @@ public class AISingleCharacterController {
 		switch (this.state) {
 			case WANDER:
 				if (distanceToPlayer < chaseRadius && !isLineCollidingWithAPlatform(lineToTarget)) {
-					this.state = FSMState.CHASE;
+					if (characterType == CharacterType.FLYING_CHARACTER) {
+						this.state = FSMState.CHASE;
+					}
+					else {
+						if (Math.abs(lineToTarget.getDirection().y) < .75f) {
+							this.state = FSMState.CHASE;
+						}
+					}
 				}
 				break;
 			case CHASE:
 				if (distanceToPlayer > chaseRadius || isLineCollidingWithAPlatform(lineToTarget)) {
 					this.state = FSMState.WANDER;
+					positionAtLastWander.set(controlledCharacter.getPosition());
 				}
 		}
 	}
@@ -278,6 +294,10 @@ public class AISingleCharacterController {
 		}
 	}
 
+	private boolean isExitingWanderRadius() {
+		return controlledCharacter.getPosition().dst(positionAtLastWander) >= wanderRadius;
+	}
+
 	private void wanderDirectionForFlyingEnemy() {
 		direction.setByVector(controlledCharacter.getPosition(), direction.getDirection());
 		if (ticks % ticksBeforeChangeInRandomDirection == 0) {
@@ -288,11 +308,14 @@ public class AISingleCharacterController {
 				}
 			}
 		}
-		if (isLineCollidingWithAPlatform(direction)) {
-			getViableDirection12();
-		}
 		if (isLineCollidingWithAPoisonPlatform(direction)) {
 			changeToOppositeDirection();
+		}
+		else if (isLineCollidingWithAPlatform(direction)) {
+			getViableDirection12();
+		}
+		else if (isExitingWanderRadius()) {
+			direction.set(controlledCharacter.getPosition(), positionAtLastWander);
 		}
 	}
 
@@ -487,6 +510,8 @@ public class AISingleCharacterController {
 		else {
 			gameCanvas.drawLine(Color.GREEN, bottomChecker.x1, bottomChecker.y1, bottomChecker.x2, bottomChecker.y2, scale.x, scale.y);
 		}
+
+		gameCanvas.drawCircle(wanderRadius, Color.CYAN, positionAtLastWander.x, positionAtLastWander.y, scale.x, scale.y);
 
 	}
 

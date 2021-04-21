@@ -195,6 +195,29 @@ public class CharacterModel extends CapsuleObstacle {
         return faceRight;
     }
 
+    public void startRotation(boolean isClockwise, Vector2 point){
+        if (isRotating) return;
+        if(!isInHoney) {
+            setBodyType(BodyDef.BodyType.StaticBody);
+            sticking = true;
+        }
+        stageCenter = point;
+        isRotating = true;
+        this.isClockwise = isClockwise;
+        addRotation(rotationAngle);
+    }
+    public void startRotation(float rotationAmount, boolean isClockwise, Vector2 point){
+        if (isRotating) return;
+        if(!isInHoney) {
+            setBodyType(BodyDef.BodyType.StaticBody);
+            sticking = true;
+        }
+        stageCenter = point;
+        isRotating = true;
+        this.isClockwise = isClockwise;
+        addRotation(rotationAmount);
+    }
+
     public CharacterModel(JsonValue data, float x, float y, float width, float height){
         super(x, y,
                 width * data.get("shrink").getFloat(0),
@@ -258,9 +281,9 @@ public class CharacterModel extends CapsuleObstacle {
 
     public void update(float dt) {
         if (!isRotating) {
-            if(honeyTime>0){
+            /*if(honeyTime>0){
                 honeyTime -= dt;
-            }
+            }*/
             if(stickTime>0){
                 stickTime -= dt;
             }
@@ -273,12 +296,15 @@ public class CharacterModel extends CapsuleObstacle {
             }
             if(!isGrounded||(isInHoney&&!sticking)){
                 float angle = getAngle();
-                int rotSpeed = ((isInHoney) ? 5 : 20);
-                if(angle<0) {
-                    setAngle(Math.min(angle+dt*rotSpeed,0));
+                float rotSpeed = ((isInHoney) ? 4f : 13f);
+                if(angle<-0.05) {
+                    setAngularVelocity(Math.min(rotSpeed,-angle/dt));
                 }
-                else if(angle>0) {
-                    setAngle(Math.max(angle-dt*rotSpeed,0));
+                else if(angle>0.05) {
+                    setAngularVelocity(Math.max(-rotSpeed,-angle/dt));
+                }
+                else{
+                    setAngularVelocity(0f);
                 }
                 //setAngle(0);
             }
@@ -289,13 +315,32 @@ public class CharacterModel extends CapsuleObstacle {
         if (rotationAmount > remainingAngle){
             rotationAmount = remainingAngle;
             isRotating = false;
-            stickTime = maxStickTime;
+            if(isGrounded) {
+                stickTime = maxStickTime;
+            }
         }
         remainingAngle -= rotationAmount;
         if (!isClockwise) {
             rotationAmount *= -1;
         }
         rotateAboutPoint(rotationAmount, stageCenter);
+    }
+
+    public void rotateAboutPoint(float amount, Vector2 point) {
+        Body body = getBody();
+        assert(body != null);
+        Transform bT = body.getTransform();
+        Vector2 p = bT.getPosition().sub(point);
+        float c = (float) Math.cos(amount);
+        float s = (float) Math.sin(amount);
+        float x = p.x * c - p.y * s;
+        float y = p.x * s + p.y * c;
+        Vector2 pos = new Vector2(x, y).add(point);
+        float angle = 0;
+        if(isGrounded) {
+            angle = bT.getRotation() + amount;
+        }
+        body.setTransform(pos, angle);
     }
 
     /**
@@ -322,7 +367,7 @@ public class CharacterModel extends CapsuleObstacle {
             body.applyForce(forceCache, getPosition(), true);
         }
 
-        if (isGrounded&&(Math.abs(getVY()) >= getMaxSpeed())) {
+        if ((isGrounded||isInHoney)&&(Math.abs(getVY()) >= getMaxSpeed())) {
             setVY(Math.signum(getVY()) * getMaxSpeed());
         }
 
@@ -334,6 +379,8 @@ public class CharacterModel extends CapsuleObstacle {
             setVY(Math.min(-0.145f,getVY()));
         }*/
     }
+
+
     /**
      * Draws the outline of the physics body.
      *

@@ -37,7 +37,7 @@ public class LevelSelector implements Screen, InputProcessor, ControllerListener
     /** The font for numbers of level displayed */
     private BitmapFont displayFont;
     /** Offset for the number message on the screen */
-    private static final float COUNTER_OFFSET   = 5.0f;
+    private static final float COUNTER_OFFSET   = 10.0f;
     /** JsonValue data for all level data */
     private JsonValue allLevelData;
     /** The String that tells the file path of selected level data */
@@ -48,6 +48,8 @@ public class LevelSelector implements Screen, InputProcessor, ControllerListener
     public static final int EXIT_QUIT = 0;
     /** Exit code for going to the editor */
     public static final int EXIT_EDITOR = 1;
+    private static final float Y_OFFSET = 50.0f;
+    private static final float TITLE_OFFSET = 100.0f;
 
 //    // statusBar is a "texture atlas." Break it up into parts.
 //    /** Left cap to the status background (grey region) */
@@ -74,7 +76,10 @@ public class LevelSelector implements Screen, InputProcessor, ControllerListener
 //    /** Ration of the bar height to the screen */
     private static float BAR_HEIGHT_RATIO = 0.25f;
     /** Height of the progress bar */
-    private static float BUTTON_SCALE  = 0.25f;
+    private static float BUTTON_SCALE  = 2.5f;
+
+    private static float LEVELSELECT_SCALE  = 0.5f;
+    private static float TITLE_SCALE  = 2.5f;
 
     /** Reference to GameCanvas created by the root */
     private GameCanvas canvas;
@@ -295,14 +300,15 @@ public class LevelSelector implements Screen, InputProcessor, ControllerListener
         canvas.begin();
         canvas.draw(background, 0, 0);
         canvas.draw(title, Color.WHITE, title.getWidth()/2f, title.getHeight()/2f,
-                centerX, centerY*1.5f, 0, 2, 2);
+                centerX, canvas.getHeight()-TITLE_OFFSET, 0, TITLE_SCALE*scale,
+                TITLE_SCALE*scale);
         Color tint;
         // new
         if (levelEditor != null) {
             tint = (pressState == -2 ? Color.GRAY: Color.WHITE);
             canvas.draw(levelEditor, tint, levelEditor.getWidth()/2f, levelEditor.getHeight()/2f,
-                    centerX/3f, centerY*1.5f, 0, BUTTON_SCALE*scale,
-                    BUTTON_SCALE*scale);
+                    centerX/3f, canvas.getHeight()-TITLE_OFFSET, 0, LEVELSELECT_SCALE*scale,
+                    LEVELSELECT_SCALE*scale);
         }
         for (int i=0; i<buttons.length; i++) {
             if (buttons[i] != null) {
@@ -313,11 +319,11 @@ public class LevelSelector implements Screen, InputProcessor, ControllerListener
                 // pos_offset helps to decide the position of the button
                 float pos_offset = (i+1)/(float)totalLevelNum;
                 canvas.draw(button, tint, button.getWidth()/2f, button.getHeight()/2f,
-                    centerX*pos_offset, centerY/2f, 0, BUTTON_SCALE*scale,
+                    centerX*pos_offset, centerY+Y_OFFSET, 0, BUTTON_SCALE*scale,
                         BUTTON_SCALE*scale);
                 // draw the letter
                 canvas.drawText(Integer.toString(i+1), displayFont, centerX*pos_offset-COUNTER_OFFSET,
-                        centerY/2f+COUNTER_OFFSET);
+                        centerY+Y_OFFSET+COUNTER_OFFSET);
             }
         }
 //        if (levelOne != null) {
@@ -450,15 +456,17 @@ public class LevelSelector implements Screen, InputProcessor, ControllerListener
             if (buttons[i] != null && allLevelData.get(i).get("unlock").asBoolean()) {
                 radius = BUTTON_SCALE*scale*buttons[i].getWidth()/2.0f;
                 float offset = (i+1)/(float)totalLevelNum;
-                dist = (screenX-centerX*offset)*(screenX-centerX*offset)+(screenY-centerY/2f)*(screenY-centerY/2f);
+                dist = (screenX-centerX*offset)*(screenX-centerX*offset)+(screenY-centerY-Y_OFFSET)*
+                        (screenY-centerY-Y_OFFSET);
                 if (dist < radius*radius) {
                     pressState = i+1;
                 }
             }
         }
         if (levelEditor != null) {
-            radius = BUTTON_SCALE*scale*levelEditor.getWidth()/2.0f;
-            dist = (screenX-centerX/3f)*(screenX-centerX/3f)+(screenY-centerY*1.5f)*(screenY-centerY*1.5f);
+            radius = LEVELSELECT_SCALE*scale*levelEditor.getWidth()/2.0f;
+            dist = (screenX-centerX/3f)*(screenX-centerX/3f)+(screenY-(canvas.getHeight()-TITLE_OFFSET))*
+                    (screenY-(canvas.getHeight()-TITLE_OFFSET));
             if (dist < radius*radius) {
                 pressState = -2;
                 pressLevelEditor = true;
