@@ -86,7 +86,6 @@ public class ChaserBeeModel extends AbstractBeeModel{
                 } else {
                     node.setFrame(0);
                 }
-                System.out.println("Animation frame: " + node.getFrame());
             } else {
                 node.setFrame(0);
             }
@@ -125,7 +124,13 @@ public class ChaserBeeModel extends AbstractBeeModel{
         // Walking Animation
         if (walkingAnim != null) {
             float offsety = walkingAnim.getRegionHeight()-origin.y;
-            canvas.draw(walkingAnim, Color.WHITE,origin.x,offsety,getX()*drawScale.x,getY()*drawScale.x,getAngle(),effect,1);
+            canvas.draw(walkingAnim, Color.WHITE,
+                    origin.x,
+                    offsety,
+                    getX()*drawScale.x,
+                    getY()*drawScale.x,
+                    getAngle(),
+                    effect,1);
         }
         // Stationary larvae
         else {

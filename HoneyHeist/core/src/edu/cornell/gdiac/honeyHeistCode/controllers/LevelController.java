@@ -13,6 +13,7 @@ package edu.cornell.gdiac.honeyHeistCode.controllers;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.NinePatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
@@ -312,7 +313,33 @@ public class LevelController implements ContactListener {
     /**
      * Texture filmstrip for player bee animation
      */
-    private FilmStrip flyingBeestrip;
+    private FilmStrip flyingBeeStrip;
+    /**
+     * Texture filmstrip for player bee animation
+     */
+    private FilmStrip spikeLeft;
+    /**
+     * Texture filmstrip for player bee animation
+     */
+    private FilmStrip spikeCenter;
+    /**
+     * Texture filmstrip for player bee animation
+     */
+    private FilmStrip spikeRight;
+    /**
+     * Texture asset for testEnemy avatar
+     */
+    private TextureRegion left;
+    /**
+     * Texture asset for testEnemy avatar
+     */
+    private TextureRegion center;
+    /**
+     * Texture asset for testEnemy avatar
+     */
+    private TextureRegion right;
+
+    private NinePatch ninePatch;
 
     /**
      * Texture asset for testEnemy avatar
@@ -323,7 +350,7 @@ public class LevelController implements ContactListener {
      * The jump sound.  We only want to play once.
      */
     private SoundBuffer bgm;
-    private long bgmId = -1;
+    private long bgmId = 10;
     /**
      * The jump sound.  We only want to play once.
      */
@@ -419,7 +446,16 @@ public class LevelController implements ContactListener {
 
         walkingPlayer = directory.getEntry( "platform:playerWalk.pacing", FilmStrip.class );
         walkingLarvae = directory.getEntry( "platform:larvaeWalk.pacing", FilmStrip.class );
-        flyingBeestrip = directory.getEntry( "platform:beeFly.pacing", FilmStrip.class );
+        flyingBeeStrip = directory.getEntry( "platform:beeFly.pacing", FilmStrip.class );
+
+        spikeLeft = directory.getEntry( "platform:spikeLeft.pacing", FilmStrip.class );
+        spikeCenter = directory.getEntry( "platform:spikeCenter.pacing", FilmStrip.class );
+        spikeRight = directory.getEntry( "platform:spikeRight.pacing", FilmStrip.class );
+
+        left = new TextureRegion(directory.getEntry( "platform:left", Texture.class ));
+        center = new TextureRegion (directory.getEntry( "platform:center", Texture.class ));
+        right = new TextureRegion (directory.getEntry( "platform:right", Texture.class ));
+        ninePatch = new NinePatch(center);
 
         jumpSound = directory.getEntry("platform:jump", SoundBuffer.class);
         fireSound = directory.getEntry("platform:pew", SoundBuffer.class);
@@ -482,7 +518,7 @@ public class LevelController implements ContactListener {
         setComplete(false);
         setFailure(false);
         populateLevel();
-        playSound(bgm, 1);
+
     }
 
     /**
@@ -532,6 +568,8 @@ public class LevelController implements ContactListener {
         JsonValue defaults = constants.get("defaults");
         //Create background
         PolygonObstacle levelBackground;
+        // Find center of the game
+        Vector2 worldCenter;
         if (!levelData.get("background").isNull()) {
             levelBackground = new PolygonObstacle(levelData.get("background").asFloatArray(), 0, 0);
             levelBackground.setBodyType(BodyDef.BodyType.StaticBody);
@@ -543,8 +581,10 @@ public class LevelController implements ContactListener {
             levelBackground.setTexture(tilesBackground);
             levelBackground.setSensor(true);
             addObject(levelBackground);
+            worldCenter = levelBackground.getCenter().cpy();
         } else {
             levelBackground = null;
+            worldCenter = bounds.getCenter(new Vector2());
         }
 
         // Add level goal
@@ -599,16 +639,19 @@ public class LevelController implements ContactListener {
         */
 
         // Create platforms
-        PlatformModel platforms = new PlatformModel(levelData.get("platformPos"));
+        PlatformModel platforms = new PlatformModel(levelData.get("platformPos"), worldCenter);
         platforms.setDrawScale(scale);
-        platforms.setTexture(earthTile);
+        platforms.setTexture(center);
+        platforms.setNinePatch(null, center, null,
+                center, center, center,
+                null, center, null);
         addObject(platforms);
 
         // Create spiked platforms
         SpikedPlatformModel spikedPlatforms = new SpikedPlatformModel(levelData.get("spikedPlatformPos"));
         spikedPlatforms.setDrawScale(scale);
         spikedPlatforms.setTexture(poisonTile); //TODO: Change spikedPlatform texture
-
+        spikedPlatforms.setAnimationStrip(PlatformModel.PlatformAnimations.SHUFFLE, spikeCenter);
         addObject(spikedPlatforms);
 
         // Create honeypatches
@@ -661,7 +704,7 @@ public class LevelController implements ContactListener {
             FlyingBeeModel flyingBee = new FlyingBeeModel(constants.get("FlyingBee"), pos[0], pos[1], dwidth, dheight);
             flyingBee.setDrawScale(scale);
             flyingBee.setTexture(flyingBeeTexture);
-            flyingBee.setAnimationStrip(FlyingBeeModel.BeeAnimations.FLY, flyingBeestrip);
+            flyingBee.setAnimationStrip(FlyingBeeModel.BeeAnimations.FLY, flyingBeeStrip);
             bees.add(flyingBee);
             addObject(flyingBee);
             aIController.createAIForSingleCharacter(flyingBee, constants.get("FlyingBee").get("ai_controller_options"));
@@ -693,6 +736,7 @@ public class LevelController implements ContactListener {
          */
 
         volume = constants.getFloat("volume", 1.0f);
+
     }
 
 
@@ -834,6 +878,8 @@ public class LevelController implements ContactListener {
         PlayerModel avatar  = level.getPlayer();
         PlatformModel platforms = level.getPlatforms();
         avatar.applyForce();
+
+        platforms.animatePlatform(PlatformModel.PlatformAnimations.SHUFFLE, true);
 
         if((platforms.isRotating() && !avatar.isRotating()) && (avatar.isGrounded() || avatar.isInHoney())){
                 //&&((avatar.isGrounded() && !avatar.isInHoney())||(avatar.isInHoney() && avatar.getHoneyTime()==0))){
@@ -1243,6 +1289,9 @@ public class LevelController implements ContactListener {
         }
         if (fireSound.isPlaying(fireId)) {
             fireSound.stop(fireId);
+        }
+        if (bgm.isPlaying(bgmId)){
+            bgm.stop(bgmId);
         }
     }
 

@@ -54,6 +54,10 @@ public class PolygonObstacle extends SimpleObstacle {
 	/** Cache of the polygon vertices (for resizing) */
 	private float[] vertices;
 	private float[] points;
+	public float maxX;
+	public float minX;
+	public float maxY;
+	public float minY;
 
 	/**
 	 * Returns the dimensions of this box
@@ -293,6 +297,12 @@ public class PolygonObstacle extends SimpleObstacle {
 		}
 		dimension = new Vector2((maxx-minx), (maxy-miny));
 		sizeCache = new Vector2(dimension);
+
+		// Store values of the rectangular bounds
+		this.maxX = maxx;
+		this.maxY = maxy;
+		this.minX = minx;
+		this.minY = miny;
 	}
 
 	/**

@@ -26,6 +26,9 @@
     "platform:rope": "platform/ropebridge.png",
     "platform:barrier": "platform/barrier.png",
     "platform:bullet": "platform/bullet.png",
+    "platform:left": "platform/left.png",
+    "platform:center": "platform/center.png",
+    "platform:right": "platform/right.png",
     "platform:playerWalk": {
       "file": "platform/beeWalkstrip.png",
       "sprites": {
@@ -50,6 +53,33 @@
         "pacing": {
           "rows": 1,
           "cols": 4
+        }
+      }
+    },
+    "platform:spikeLeft": {
+      "file": "platform/leftSpikeStrip.png",
+      "sprites": {
+        "pacing": {
+          "rows": 1,
+          "cols": 2
+        }
+      }
+    },
+    "platform:spikeCenter": {
+      "file": "platform/centerSpikeStrip.png",
+      "sprites": {
+        "pacing": {
+          "rows": 1,
+          "cols": 2
+        }
+      }
+    },
+    "platform:spikeRight": {
+      "file": "platform/rightSpikeStrip.png",
+      "sprites": {
+        "pacing": {
+          "rows": 1,
+          "cols": 2
         }
       }
     },

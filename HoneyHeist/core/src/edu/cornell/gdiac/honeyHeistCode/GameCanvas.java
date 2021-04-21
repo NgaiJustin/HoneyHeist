@@ -1180,6 +1180,46 @@ public class GameCanvas {
 		debugRender.setColor(color);
 		debugRender.ellipse(x0-w, y0-h, 2*w, 2*h, 12);
 	}
+
+	/**
+	 * Draws the NinePatch with the given dimensions
+	 * @param ninePatch	Specified NinePatchs
+	 * @param x			x coordinate in the world
+	 * @param y			y coordinate in the world
+	 * @param originX	ox
+	 * @param originY	oy
+	 * @param width		width
+	 * @param height	height
+	 * @param rotation	rotation (degrees)
+	 */
+	public void drawNinePatch(NinePatch ninePatch,
+							  float x, float y, float originX, float originY,
+							  float width, float height, float rotation){
+
+		this.drawNinePatch(ninePatch, x, y, originX, originY, width,height,
+				1f, 1f, rotation);
+	}
+
+	/**
+	 * Draws the NinePatch with the given dimensions
+	 * @param ninePatch	Specified NinePatchs
+	 * @param x			x coordinate in the world
+	 * @param y			y coordinate in the world
+	 * @param originX	ox
+	 * @param originY	oy
+	 * @param width		width
+	 * @param height	height
+	 * @param scaleX	sx
+	 * @param scaleY	sy
+	 * @param rotation	rotation (degrees)
+	 */
+	public void drawNinePatch(NinePatch ninePatch,
+							  float x, float y, float originX, float originY,
+							  float width, float height, float scaleX, float scaleY,
+							  float rotation){
+		ninePatch.draw(spriteBatch, x, y, originX, originY, width,height, scaleX, scaleY, rotation);
+	}
+
 	/**
 	 * Compute the affine transform (and store it in local) for this image.
 	 * 
