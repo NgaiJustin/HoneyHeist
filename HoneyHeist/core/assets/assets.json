@@ -27,6 +27,9 @@
     "platform:rope": "platform/ropebridge.png",
     "platform:barrier": "platform/barrier.png",
     "platform:bullet": "platform/bullet.png",
+    "platform:left": "platform/left.png",
+    "platform:center": "platform/center.png",
+    "platform:right": "platform/right.png",
     "platform:playerWalk": {
       "file": "platform/beeWalkstrip.png",
       "sprites": {
@@ -54,6 +57,33 @@
         }
       }
     },
+    "platform:spikeLeft": {
+      "file": "platform/leftSpikeStrip.png",
+      "sprites": {
+        "pacing": {
+          "rows": 1,
+          "cols": 2
+        }
+      }
+    },
+    "platform:spikeCenter": {
+      "file": "platform/centerSpikeStrip.png",
+      "sprites": {
+        "pacing": {
+          "rows": 1,
+          "cols": 2
+        }
+      }
+    },
+    "platform:spikeRight": {
+      "file": "platform/rightSpikeStrip.png",
+      "sprites": {
+        "pacing": {
+          "rows": 1,
+          "cols": 2
+        }
+      }
+    },
     "editor:antButton": "editor/antButton.png",
     "editor:beeButton": "editor/beeButton.png",
     "editor:platformButton": "editor/platformButton.png",
@@ -74,8 +104,7 @@
   "sounds": {
     "platform:jump": "platform/jump.mp3",
     "platform:pew": "platform/pew.mp3",
-    "platform:plop": "platform/plop.mp3",
-    "platform:bgm": "platform/bgm.mp3"
+    "platform:plop": "platform/plop.mp3"
   },
   "fonts": {
     "shared:retro": {
