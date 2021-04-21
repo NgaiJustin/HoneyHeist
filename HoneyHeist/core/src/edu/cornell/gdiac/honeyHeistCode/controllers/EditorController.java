@@ -474,7 +474,7 @@ public class EditorController extends WorldController implements InputProcessor 
             levelBackground.setDrawScale(scale);
             levelBackground.setTexture(tilesBackground);
             levelBackground.setSensor(true);
-            addObject(levelBackground);
+            //addObject(levelBackground);
             level.setLevelBackground(levelBackground);
         } else {
             levelBackground = null;
