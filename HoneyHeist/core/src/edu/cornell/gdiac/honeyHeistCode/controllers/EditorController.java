@@ -466,6 +466,7 @@ public class EditorController extends WorldController implements InputProcessor 
 
     public void populateLevelFromJson(JsonValue json){
         // Background
+        level = new LevelModel();
         PolygonObstacle levelBackground;
         if (!json.get("background").isNull()) {
             levelBackground = new PolygonObstacle(json.get("background").asFloatArray(), 0, 0);
@@ -503,6 +504,7 @@ public class EditorController extends WorldController implements InputProcessor 
         honeyPatches.setTexture(earthTile);
         level.setHoneyPatches(honeyPatches);
 
+        level.setBees(new Array<AbstractBeeModel>());
         //Grounded bees
         JsonValue groundedBees = json.get("groundedBeePos");
         for (int i=0; i<groundedBees.size; i++){
