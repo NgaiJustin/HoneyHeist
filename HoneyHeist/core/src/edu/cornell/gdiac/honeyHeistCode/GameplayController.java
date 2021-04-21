@@ -712,13 +712,11 @@ public class GameplayController implements Screen, InputProcessor {
 	 */
 	@Override
 	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-		System.out.println("touchDown???????????????????");
-		System.out.println("touchDown???????????????????");
-		System.out.println("touchDown???????????????????");
 		if (pauseButton==null) return true;
-		System.out.println("isPaused: " + isPaused);
+
 		// Flip to match graphics coordinates
 		screenY = heightY-screenY;
+
 		float radius, dist;
 		radius = pauseScale*scaleFactor*pauseButton.getWidth()/2.0f;
 		dist = (screenX-pauseXPOS)*(screenX-pauseXPOS)+(screenY-pauseYPOS)* (screenY-pauseYPOS);
