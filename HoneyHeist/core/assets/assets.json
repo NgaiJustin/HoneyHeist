@@ -14,6 +14,7 @@
     "shared:goal": "shared/goaldoor.png",
     "shared:background": "shared/background.png",
     "shared:whiteSquare": "shared/whiteSquare.png",
+    "shared:pauseButton": "shared/OLDplay.png",
     "shared:tilesBackground": {
       "file": "shared/tilesBackground.png",
       "wrapU": "repeated",
