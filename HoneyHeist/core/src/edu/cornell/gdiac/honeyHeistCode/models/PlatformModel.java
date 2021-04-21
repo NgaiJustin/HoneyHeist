@@ -75,8 +75,9 @@ public class PlatformModel extends Obstacle {
 	 *
 	 * @param data  	The physics constants and polygon information for the platforms in this model
 	 */
-	public PlatformModel(JsonValue data, String name) {
+	public PlatformModel(JsonValue data, String name, Vector2 worldCenter) {
 		super(0,0);
+		this.worldCenter = worldCenter;
 		bodies = new Array<PolygonObstacle>();
 
         this.data = data;
@@ -305,26 +306,9 @@ public class PlatformModel extends Obstacle {
 				float maxy = Math.max(Math.max(Math.max(corners[1], corners[3]), corners[5]), corners[7]);
 
 				Vector2 botLeftToRight = new Vector2(botRight.cpy().sub(botLeft.cpy()));
-				Vector2 worldCenterToPlatCenter = scaledPlatCenter.sub(scaledWorldCenter);
-				// float angle = worldCenterToPlatCenter.angleDeg() - 90;
 				float angle = botLeftToRight.angleDeg();
 
-//				canvas.draw(texture, Color.WHITE,
-//						texture.getRegionWidth() /2f,
-//						texture.getRegionHeight() /2f,
-//						obj.getCenter().x * drawScale.x,
-//						obj.getCenter().y * drawScale.y,
-//						getAngle(), 1f, 1f);
-
-//				canvas.drawNinePatch(ninePatch,
-//						obj.getCenter().x * drawScale.x,
-//						obj.getCenter().y * drawScale.y,
-//						ninePatch.getMiddleWidth()/2,
-//						ninePatch.getMiddleHeight()/2,
-//						obj.getWidth()*drawScale.x,
-//						obj.getHeight()*drawScale.y,
-//						1f, 1f, 0);
-				// canvas.draw(texture, Color.BLACK, scaledWorldCenter.x, scaledWorldCenter.y, 4, 4);
+				assert ninePatch != null;
 				canvas.drawNinePatch(ninePatch,
 						botLeft.x * drawScale.x,
 						botLeft.y * drawScale.y,

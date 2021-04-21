@@ -651,14 +651,17 @@ public class LevelController implements ContactListener {
         addObject(platforms);
 
         // Create spiked platforms
-        SpikedPlatformModel spikedPlatforms = new SpikedPlatformModel(levelData.get("spikedPlatformPos"));
+        SpikedPlatformModel spikedPlatforms = new SpikedPlatformModel(levelData.get("spikedPlatformPos"), worldCenter);
         spikedPlatforms.setDrawScale(scale);
         spikedPlatforms.setTexture(poisonTile); //TODO: Change spikedPlatform texture
+        spikedPlatforms.setNinePatch(null, poisonTile, null,
+                poisonTile, poisonTile, poisonTile,
+                null, poisonTile, null);
         spikedPlatforms.setAnimationStrip(PlatformModel.PlatformAnimations.SHUFFLE, spikeCenter);
         addObject(spikedPlatforms);
 
         // Create honeypatches
-        HoneypatchModel honeyPatches = new HoneypatchModel(levelData.get("honeypatchPos"),0.4f);
+        HoneypatchModel honeyPatches = new HoneypatchModel(levelData.get("honeypatchPos"),0.4f, worldCenter);
         honeyPatches.setDrawScale(scale);
         honeyPatches.setTexture(earthTile); //TODO: Change honeyPatch texture
         //dont add yet so that it can overlap

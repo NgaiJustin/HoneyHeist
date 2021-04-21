@@ -284,6 +284,8 @@ public class EditorController extends WorldController implements InputProcessor 
         JsonValue defaults = constants.get("defaults");
         //Create background
         PolygonObstacle levelBackground;
+        // Find center of the game
+        Vector2 worldCenter = bounds.getCenter(new Vector2());
         if (!levelData.get("background").isNull()) {
             levelBackground = new PolygonObstacle(levelData.get("background").asFloatArray(), 0, 0);
             levelBackground.setBodyType(BodyDef.BodyType.StaticBody);
@@ -351,7 +353,7 @@ public class EditorController extends WorldController implements InputProcessor 
         */
 
         // Create platforms
-        PlatformModel platforms = new PlatformModel(levelData.get("platformPos"));
+        PlatformModel platforms = new PlatformModel(levelData.get("platformPos"), worldCenter);
         platforms.setDrawScale(scale);
         platforms.setTexture(earthTile);
         for(PolygonObstacle platform : platforms.getBodies()){
@@ -359,7 +361,7 @@ public class EditorController extends WorldController implements InputProcessor 
         }
 
         // Create spiked platforms
-        SpikedPlatformModel spikedPlatforms = new SpikedPlatformModel(levelData.get("spikedPlatformPos"));
+        SpikedPlatformModel spikedPlatforms = new SpikedPlatformModel(levelData.get("spikedPlatformPos"), worldCenter);
         spikedPlatforms.setDrawScale(scale);
         spikedPlatforms.setTexture(poisonTile); //TODO: Change spikedPlatform texture
         for(PolygonObstacle spiked : spikedPlatforms.getBodies()){
@@ -368,7 +370,7 @@ public class EditorController extends WorldController implements InputProcessor 
 
 
         // Create honeypatches
-        HoneypatchModel honeyPatches = new HoneypatchModel(levelData.get("honeypatchPos"),0.4f);
+        HoneypatchModel honeyPatches = new HoneypatchModel(levelData.get("honeypatchPos"),0.4f, worldCenter);
         honeyPatches.setDrawScale(scale);
         honeyPatches.setTexture(earthTile); //TODO: Change honeyPatch texture
         //dont add yet so that it can overlap
@@ -468,6 +470,8 @@ public class EditorController extends WorldController implements InputProcessor 
         // Background
         level = new LevelModel();
         PolygonObstacle levelBackground;
+        // Find center of the game
+        Vector2 worldCenter = bounds.getCenter(new Vector2());
         if (!json.get("background").isNull()) {
             levelBackground = new PolygonObstacle(json.get("background").asFloatArray(), 0, 0);
             levelBackground.setBodyType(BodyDef.BodyType.StaticBody);
@@ -485,21 +489,21 @@ public class EditorController extends WorldController implements InputProcessor 
         newGoalDoor(json.get("goalPos").asFloatArray()[0], json.get("goalPos").asFloatArray()[1]);
 
         //Platforms
-        PlatformModel platforms = new PlatformModel(json.get("platformPos"));
+        PlatformModel platforms = new PlatformModel(json.get("platformPos"), worldCenter);
         platforms.setDrawScale(scale);
         platforms.setTexture(earthTile);
         addObject(platforms);
         level.setPlatforms(platforms);
 
         //Spiked platforms
-        SpikedPlatformModel spikedPlatforms = new SpikedPlatformModel(json.get("spikedPlatformPos"));
+        SpikedPlatformModel spikedPlatforms = new SpikedPlatformModel(json.get("spikedPlatformPos"), worldCenter);
         spikedPlatforms.setDrawScale(scale);
         spikedPlatforms.setTexture(poisonTile);
         addObject(spikedPlatforms);
         level.setSpikedPlatforms(spikedPlatforms);
 
         //HoneyPatches
-        HoneypatchModel honeyPatches = new HoneypatchModel(json.get("honeyPatchPos"), 0.5f);
+        HoneypatchModel honeyPatches = new HoneypatchModel(json.get("honeyPatchPos"), 0.5f, worldCenter);
         honeyPatches.setDrawScale(scale);
         honeyPatches.setTexture(earthTile);
         level.setHoneyPatches(honeyPatches);
