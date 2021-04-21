@@ -1091,10 +1091,6 @@ public class LevelController implements ContactListener {
      * @param dt	Number of seconds since last animation frame
      */
     public void draw(float dt) {
-        canvas.clear();
-
-        canvas.begin();
-        canvas.draw(background, 0, 0);
         if (aIDebug) {
             aIController.drawDebugTileMap(canvas, scale);
         }
