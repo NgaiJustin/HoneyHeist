@@ -60,6 +60,20 @@
     "platform:spikeBLeft": "platform/downLeftSpike.png",
     "platform:spikeBMid": "platform/downMidSpike.png",
     "platform:spikeBRight": "platform/downRightSpike.png",
+
+    "platform:ULeft" : "platform/upLeft.png",
+    "platform:UMid"  : "platform/upMid.png",
+    "platform:URight": "platform/upRight.png",
+    "platform:MLeft" : "platform/midLeft.png",
+    "platform:MMid"  : "platform/midMid.png",
+    "platform:MRight": "platform/midRight.png",
+    "platform:BLeft" : "platform/downLeft.png",
+    "platform:BMid"  : "platform/downMid.png",
+    "platform:BRight": "platform/downRight.png",
+
+    "platform:platNinePatch" : "platform/platformtiles.png",
+    "platform:spikeNinePatch"  : "platform/spikedtiles.png",
+
     "editor:antButton": "editor/antButton.png",
     "editor:beeButton": "editor/beeButton.png",
     "editor:platformButton": "editor/platformButton.png",
