@@ -21,15 +21,9 @@
       "wrapV": "repeated"
     },
     "platform:ant": "platform/ant.png",
-    "platform:sleeperBee": "platform/sleeperBee.png",
     "platform:larvae": "platform/larvae.png",
     "platform:flyingBee": "platform/chaserBee.png",
-    "platform:rope": "platform/ropebridge.png",
-    "platform:barrier": "platform/barrier.png",
-    "platform:bullet": "platform/bullet.png",
-    "platform:left": "platform/left.png",
-    "platform:center": "platform/center.png",
-    "platform:right": "platform/right.png",
+
     "platform:playerWalk": {
       "file": "platform/beeWalkstrip.png",
       "sprites": {
@@ -53,37 +47,19 @@
       "sprites": {
         "pacing": {
           "rows": 1,
-          "cols": 4
+          "cols": 5
         }
       }
     },
-    "platform:spikeLeft": {
-      "file": "platform/leftSpikeStrip.png",
-      "sprites": {
-        "pacing": {
-          "rows": 1,
-          "cols": 2
-        }
-      }
-    },
-    "platform:spikeCenter": {
-      "file": "platform/centerSpikeStrip.png",
-      "sprites": {
-        "pacing": {
-          "rows": 1,
-          "cols": 2
-        }
-      }
-    },
-    "platform:spikeRight": {
-      "file": "platform/rightSpikeStrip.png",
-      "sprites": {
-        "pacing": {
-          "rows": 1,
-          "cols": 2
-        }
-      }
-    },
+    "platform:spikeULeft": "platform/upLeftSpike.png",
+    "platform:spikeUMid": "platform/upMidSpike.png",
+    "platform:spikeURight": "platform/upRightSpike.png",
+    "platform:spikeMLeft": "platform/midLeftSpike.png",
+    "platform:spikeMMid": "platform/midMidSpike.png",
+    "platform:spikeMRight": "platform/midRightSpike.png",
+    "platform:spikeBLeft": "platform/downLeftSpike.png",
+    "platform:spikeBMid": "platform/downMidSpike.png",
+    "platform:spikeBRight": "platform/downRightSpike.png",
     "editor:antButton": "editor/antButton.png",
     "editor:beeButton": "editor/beeButton.png",
     "editor:platformButton": "editor/platformButton.png",

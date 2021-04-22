@@ -340,7 +340,17 @@ public class LevelController implements ContactListener {
      */
     private TextureRegion right;
 
-    private NinePatch ninePatch;
+    private TextureRegion SpikeULeft;
+    private TextureRegion SpikeUMid;
+    private TextureRegion SpikeURight;
+    private TextureRegion SpikeMLeft;
+    private TextureRegion SpikeMMid;
+    private TextureRegion SpikeMRight;
+    private TextureRegion SpikeBLeft;
+    private TextureRegion SpikeBMid;
+    private TextureRegion SpikeBRight;
+
+    private NinePatch spikeNinePatch;
 
     /**
      * Texture asset for testEnemy avatar
@@ -443,20 +453,25 @@ public class LevelController implements ContactListener {
         avatarTexture = new TextureRegion(directory.getEntry("platform:ant", Texture.class));
         chaserBeeTexture = new TextureRegion(directory.getEntry("platform:larvae", Texture.class));
         flyingBeeTexture = new TextureRegion(directory.getEntry("platform:flyingBee", Texture.class));
-        sleeperBeeTexture = new TextureRegion(directory.getEntry("platform:sleeperBee", Texture.class));
 
         walkingPlayer = directory.getEntry( "platform:playerWalk.pacing", FilmStrip.class );
         walkingLarvae = directory.getEntry( "platform:larvaeWalk.pacing", FilmStrip.class );
         flyingBeeStrip = directory.getEntry( "platform:beeFly.pacing", FilmStrip.class );
 
-        spikeLeft = directory.getEntry( "platform:spikeLeft.pacing", FilmStrip.class );
-        spikeCenter = directory.getEntry( "platform:spikeCenter.pacing", FilmStrip.class );
-        spikeRight = directory.getEntry( "platform:spikeRight.pacing", FilmStrip.class );
+        SpikeULeft = new TextureRegion(directory.getEntry("platform:spikeULeft", Texture.class));
+        SpikeUMid = new TextureRegion(directory.getEntry("platform:spikeUMid", Texture.class));
+        SpikeURight = new TextureRegion(directory.getEntry("platform:spikeURight", Texture.class));
+        SpikeMLeft = new TextureRegion(directory.getEntry("platform:spikeMLeft", Texture.class));
+        SpikeMMid = new TextureRegion(directory.getEntry("platform:spikeMMid", Texture.class));
+        SpikeMRight = new TextureRegion(directory.getEntry("platform:spikeMRight", Texture.class));
+        SpikeBLeft = new TextureRegion(directory.getEntry("platform:spikeBLeft", Texture.class));
+        SpikeBMid = new TextureRegion(directory.getEntry("platform:spikeBMid", Texture.class));
+        SpikeBRight = new TextureRegion(directory.getEntry("platform:spikeBRight", Texture.class));
 
-        left = new TextureRegion(directory.getEntry( "platform:left", Texture.class ));
-        center = new TextureRegion (directory.getEntry( "platform:center", Texture.class ));
-        right = new TextureRegion (directory.getEntry( "platform:right", Texture.class ));
-        ninePatch = new NinePatch(center);
+
+//        left = new TextureRegion(directory.getEntry( "platform:left", Texture.class ));
+//        center = new TextureRegion (directory.getEntry( "platform:center", Texture.class ));
+//        right = new TextureRegion (directory.getEntry( "platform:right", Texture.class ));
 
         jumpSound = directory.getEntry("platform:jump", SoundBuffer.class);
         fireSound = directory.getEntry("platform:pew", SoundBuffer.class);
@@ -644,10 +659,10 @@ public class LevelController implements ContactListener {
         // Create platforms
         PlatformModel platforms = new PlatformModel(levelData.get("platformPos"), worldCenter);
         platforms.setDrawScale(scale);
-        platforms.setTexture(center);
-        platforms.setNinePatch(null, center, null,
-                center, center, center,
-                null, center, null);
+        platforms.setTexture(earthTile);
+        platforms.setNinePatch(null, earthTile, null,
+                earthTile, earthTile, earthTile,
+                null, earthTile, null);
         addObject(platforms);
 
         // Create spiked platforms

@@ -218,7 +218,6 @@ public class EditorController extends WorldController implements InputProcessor 
         avatarTexture = new TextureRegion(directory.getEntry("platform:ant", Texture.class));
         chaserBeeTexture = new TextureRegion(directory.getEntry("platform:larvae", Texture.class));
         flyingBeeTexture = new TextureRegion(directory.getEntry("platform:flyingBee", Texture.class));
-        sleeperBeeTexture = new TextureRegion(directory.getEntry("platform:sleeperBee", Texture.class));
         tilesBackground = new TextureRegion(directory.getEntry("shared:tilesBackground", Texture.class));
         poisonTile = new TextureRegion(directory.getEntry( "shared:poisonWall", Texture.class));
 
