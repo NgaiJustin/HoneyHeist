@@ -1147,6 +1147,11 @@ public class EditorController extends WorldController implements InputProcessor 
         double angle = Math.atan(vec.y/vec.x);
         angle += Math.PI/2;
         Vector2 offset = new Vector2((float)Math.cos(angle)*platWidth/2,(float)Math.sin(angle)*platWidth/2);
+        if(b.x<a.x) {
+            Vector2 temp = a;
+            a = b;
+            b = temp;
+        }
         float[] result = {
                 a.x+offset.x,a.y+offset.y,
                 a.x-offset.x,a.y-offset.y,
@@ -1160,6 +1165,11 @@ public class EditorController extends WorldController implements InputProcessor 
         double angle = Math.atan(vec.y/vec.x);
         angle += Math.PI/2;
         Vector2 offset = new Vector2((float)Math.cos(angle)*width/2,(float)Math.sin(angle)*width/2);
+        if(b.x<a.x) {
+            Vector2 temp = a;
+            a = b;
+            b = temp;
+        }
         float[] result = {
                 a.x+offset.x,a.y+offset.y,
                 a.x-offset.x,a.y-offset.y,
