@@ -20,14 +20,11 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.JsonValue;
-import com.badlogic.gdx.utils.JsonWriter;
 import com.badlogic.gdx.utils.ObjectSet;
 import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.audio.SoundBuffer;
 import edu.cornell.gdiac.honeyHeistCode.GameCanvas;
-
 import edu.cornell.gdiac.honeyHeistCode.controllers.aiControllers.AIController;
-
 import edu.cornell.gdiac.honeyHeistCode.models.*;
 import edu.cornell.gdiac.honeyHeistCode.obstacle.BoxObstacle;
 import edu.cornell.gdiac.honeyHeistCode.obstacle.Obstacle;
@@ -289,110 +286,77 @@ public class LevelController implements ContactListener {
         this.scale.y = canvas.getHeight()/bounds.getHeight();
     }
 
-    /**
-     * Texture asset for player avatar
-     */
+    /** Player texture and filmstrip */
     private TextureRegion avatarTexture;
-    /**
-     * Texture filmstrip for player walking animation
-     */
     private FilmStrip walkingPlayer;
 
-    /**
-     * Texture asset for chaser bee avatar
-     */
+    /** Larvae texture and filmstrip */
     private TextureRegion chaserBeeTexture;
-    /**
-     * Texture filmstrip for player larvae animation
-     */
     private FilmStrip walkingLarvae;
 
-    /**
-     * Texture asset for chaser bee avatar
-     */
+    /** Bee texture and filmstrip */
     private TextureRegion flyingBeeTexture;
-    /**
-     * Texture filmstrip for player bee animation
-     */
     private FilmStrip flyingBeeStrip;
-    /**
-     * Texture filmstrip for player bee animation
-     */
-    private FilmStrip spikeLeft;
-    /**
-     * Texture filmstrip for player bee animation
-     */
-    private FilmStrip spikeCenter;
-    /**
-     * Texture filmstrip for player bee animation
-     */
-    private FilmStrip spikeRight;
-    /**
-     * Texture asset for testEnemy avatar
-     */
-    private TextureRegion left;
-    /**
-     * Texture asset for testEnemy avatar
-     */
-    private TextureRegion center;
-    /**
-     * Texture asset for testEnemy avatar
-     */
-    private TextureRegion right;
 
-    private NinePatch ninePatch;
+    /** Platform texture */
+    private TextureRegion ULeft;
+    private TextureRegion UMid;
+    private TextureRegion URight;
+    private TextureRegion MLeft;
+    private TextureRegion MMid;
+    private TextureRegion MRight;
+    private TextureRegion BLeft;
+    private TextureRegion BMid;
+    private TextureRegion BRight;
 
-    /**
-     * Texture asset for testEnemy avatar
-     */
-    private TextureRegion sleeperBeeTexture;
+    /** Spike textures */
+    private TextureRegion SpikeULeft;
+    private TextureRegion SpikeUMid;
+    private TextureRegion SpikeURight;
+    private TextureRegion SpikeMLeft;
+    private TextureRegion SpikeMMid;
+    private TextureRegion SpikeMRight;
+    private TextureRegion SpikeBLeft;
+    private TextureRegion SpikeBMid;
+    private TextureRegion SpikeBRight;
 
-    /**
-     * The jump sound.  We only want to play once.
-     */
+    /** NinePatches TO BE REPLACED WITH TENPATCH WHEN COMPLETED */
+    private NinePatch platNinePatch;
+    private NinePatch spikeNinePatch;
+
+    /** The jump sound.  We only want to play once. */
     private SoundBuffer bgm;
     private long bgmId = 10;
-    /**
-     * The jump sound.  We only want to play once.
-     */
+
+    /** The jump sound.  We only want to play once */
     private SoundBuffer jumpSound;
     private long jumpId = -1;
-    /**
-     * The weapon fire sound.  We only want to play once.
-     */
+
+    /** The weapon fire sound.  We only want to play once. */
     private SoundBuffer fireSound;
     private long fireId = -1;
-    /**
-     * The weapon pop sound.  We only want to play once.
-     */
+
+    /** The weapon pop sound.  We only want to play once. */
     private SoundBuffer plopSound;
     private long plopId = -1;
-    /**
-     * The default sound volume
-     */
+
+    /** The default sound volume */
     private float volume;
-    /**
-     * Constant data across levels
-     */
+
+    /** Constant data across levels */
     private JsonValue constants;
-    /**
-     * Data for the level
-     */
+
+    /** Data for the level */
     private JsonValue levelData;
-    /**
-     * Reference to the level model
-     */
+
+    /** Reference to the level model */
     private LevelModel level;
 
 
-    /**
-     * Reference to the AI Controller
-     */
+    /** Reference to the AI Controller */
     private AIController aIController;
 
-    /**
-     * Mark set to handle more sophisticated collision callbacks
-     */
+    /** Mark set to handle more sophisticated collision callbacks */
     protected ObjectSet<Fixture> sensorFixtures;
 
 //    OrthographicCamera camera;
@@ -440,23 +404,39 @@ public class LevelController implements ContactListener {
      * @param directory Reference to global asset manager.
      */
     public void gatherAssets(AssetDirectory directory, String dataFilePath) {
-        avatarTexture = new TextureRegion(directory.getEntry("platform:ant", Texture.class));
+        avatarTexture    = new TextureRegion(directory.getEntry("platform:ant", Texture.class));
         chaserBeeTexture = new TextureRegion(directory.getEntry("platform:larvae", Texture.class));
         flyingBeeTexture = new TextureRegion(directory.getEntry("platform:flyingBee", Texture.class));
-        sleeperBeeTexture = new TextureRegion(directory.getEntry("platform:sleeperBee", Texture.class));
 
-        walkingPlayer = directory.getEntry( "platform:playerWalk.pacing", FilmStrip.class );
-        walkingLarvae = directory.getEntry( "platform:larvaeWalk.pacing", FilmStrip.class );
+        walkingPlayer  = directory.getEntry( "platform:playerWalk.pacing", FilmStrip.class );
+        walkingLarvae  = directory.getEntry( "platform:larvaeWalk.pacing", FilmStrip.class );
         flyingBeeStrip = directory.getEntry( "platform:beeFly.pacing", FilmStrip.class );
 
-        spikeLeft = directory.getEntry( "platform:spikeLeft.pacing", FilmStrip.class );
-        spikeCenter = directory.getEntry( "platform:spikeCenter.pacing", FilmStrip.class );
-        spikeRight = directory.getEntry( "platform:spikeRight.pacing", FilmStrip.class );
 
-        left = new TextureRegion(directory.getEntry( "platform:left", Texture.class ));
-        center = new TextureRegion (directory.getEntry( "platform:center", Texture.class ));
-        right = new TextureRegion (directory.getEntry( "platform:right", Texture.class ));
-        ninePatch = new NinePatch(center);
+
+        SpikeULeft  = new TextureRegion(directory.getEntry("platform:spikeULeft", Texture.class));
+        SpikeUMid   = new TextureRegion(directory.getEntry("platform:spikeUMid", Texture.class));
+        SpikeURight = new TextureRegion(directory.getEntry("platform:spikeURight", Texture.class));
+        SpikeMLeft  = new TextureRegion(directory.getEntry("platform:spikeMLeft", Texture.class));
+        SpikeMMid   = new TextureRegion(directory.getEntry("platform:spikeMMid", Texture.class));
+        SpikeMRight = new TextureRegion(directory.getEntry("platform:spikeMRight", Texture.class));
+        SpikeBLeft  = new TextureRegion(directory.getEntry("platform:spikeBLeft", Texture.class));
+        SpikeBMid   = new TextureRegion(directory.getEntry("platform:spikeBMid", Texture.class));
+        SpikeBRight = new TextureRegion(directory.getEntry("platform:spikeBRight", Texture.class));
+
+        ULeft  = new TextureRegion(directory.getEntry("platform:ULeft", Texture.class));
+        UMid   = new TextureRegion(directory.getEntry("platform:UMid", Texture.class));
+        URight = new TextureRegion(directory.getEntry("platform:URight", Texture.class));
+        MLeft  = new TextureRegion(directory.getEntry("platform:MLeft", Texture.class));
+        MMid   = new TextureRegion(directory.getEntry("platform:MMid", Texture.class));
+        MRight = new TextureRegion(directory.getEntry("platform:MRight", Texture.class));
+        BLeft  = new TextureRegion(directory.getEntry("platform:BLeft", Texture.class));
+        BMid   = new TextureRegion(directory.getEntry("platform:BMid", Texture.class));
+        BRight = new TextureRegion(directory.getEntry("platform:BRight", Texture.class));
+
+        platNinePatch  = new NinePatch(directory.getEntry("platform:platNinePatch", Texture.class),  16, 16 ,16 ,16 );
+        spikeNinePatch = new NinePatch(directory.getEntry("platform:spikeNinePatch", Texture.class),  16, 16 ,16 ,16 );
+
 
         jumpSound = directory.getEntry("platform:jump", SoundBuffer.class);
         fireSound = directory.getEntry("platform:pew", SoundBuffer.class);
@@ -644,20 +624,26 @@ public class LevelController implements ContactListener {
         // Create platforms
         PlatformModel platforms = new PlatformModel(levelData.get("platformPos"), worldCenter);
         platforms.setDrawScale(scale);
-        platforms.setTexture(center);
-        platforms.setNinePatch(null, center, null,
-                center, center, center,
-                null, center, null);
+        platforms.setTexture(earthTile);
+        platforms.setNinePatch(platNinePatch);
+        platforms.setTenPatch(
+                ULeft, UMid, URight,
+                MLeft, MMid, MRight,
+                BLeft, BMid, BRight
+        );
         addObject(platforms);
 
         // Create spiked platforms
         SpikedPlatformModel spikedPlatforms = new SpikedPlatformModel(levelData.get("spikedPlatformPos"), worldCenter);
         spikedPlatforms.setDrawScale(scale);
-        spikedPlatforms.setTexture(poisonTile); //TODO: Change spikedPlatform texture
-        spikedPlatforms.setNinePatch(null, poisonTile, null,
-                poisonTile, poisonTile, poisonTile,
-                null, poisonTile, null);
-        spikedPlatforms.setAnimationStrip(PlatformModel.PlatformAnimations.SHUFFLE, spikeCenter);
+        // spikedPlatforms.setTexture(poisonTile);
+        spikedPlatforms.setNinePatch(spikeNinePatch);
+        spikedPlatforms.setTenPatch(
+                SpikeULeft, SpikeUMid, SpikeURight,
+                SpikeMLeft, SpikeMMid, SpikeMRight,
+                SpikeBLeft, SpikeBMid, SpikeBRight
+        );
+        // spikedPlatforms.setAnimationStrip(PlatformModel.PlatformAnimations.SHUFFLE, spikeCenter);
         addObject(spikedPlatforms);
 
         // Create honeypatches

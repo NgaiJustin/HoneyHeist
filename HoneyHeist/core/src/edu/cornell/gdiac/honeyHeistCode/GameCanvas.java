@@ -1183,26 +1183,6 @@ public class GameCanvas {
 
 	/**
 	 * Draws the NinePatch with the given dimensions
-	 * @param ninePatch	Specified NinePatchs
-	 * @param x			x coordinate in the world
-	 * @param y			y coordinate in the world
-	 * @param originX	ox
-	 * @param originY	oy
-	 * @param width		width
-	 * @param height	height
-	 * @param rotation	rotation (degrees)
-	 */
-	public void drawNinePatch(NinePatch ninePatch,
-							  float x, float y, float originX, float originY,
-							  float width, float height, float rotation){
-
-		this.drawNinePatch(ninePatch, x, y, originX, originY, width,height,
-				1f, 1f, rotation);
-	}
-
-	/**
-	 * Draws the NinePatch with the given dimensions
-	 * @param ninePatch	Specified NinePatchs
 	 * @param x			x coordinate in the world
 	 * @param y			y coordinate in the world
 	 * @param originX	ox
@@ -1213,11 +1193,32 @@ public class GameCanvas {
 	 * @param scaleY	sy
 	 * @param rotation	rotation (degrees)
 	 */
-	public void drawNinePatch(NinePatch ninePatch,
-							  float x, float y, float originX, float originY,
-							  float width, float height, float scaleX, float scaleY,
-							  float rotation){
-		ninePatch.draw(spriteBatch, x, y, originX, originY, width,height, scaleX, scaleY, rotation);
+	public void drawNinePatch(NinePatch patch,
+							 float x, float y, float originX, float originY,
+							 float width, float height, float scaleX, float scaleY,
+							 float rotation){
+		patch.draw(spriteBatch, x, y, originX, originY, width,height, scaleX, scaleY, rotation);
+		// TODO: Replace with myTenPatch
+	}
+
+	/**
+	 * Draws the NinePatch with the given dimensions
+	 * @param x			x coordinate in the world
+	 * @param y			y coordinate in the world
+	 * @param originX	ox
+	 * @param originY	oy
+	 * @param width		width
+	 * @param height	height
+	 * @param scaleX	sx
+	 * @param scaleY	sy
+	 * @param rotation	rotation (degrees)
+	 */
+	public void drawTenPatch(MyTenPatch patch,
+							 float x, float y, float originX, float originY,
+							 float width, float height, float scaleX, float scaleY,
+							 float rotation){
+		patch.draw(spriteBatch, x, y, originX, originY, width,height, scaleX, scaleY, rotation);
+		// TODO: Replace with myTenPatch
 	}
 
 	/**

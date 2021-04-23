@@ -1,14 +1,14 @@
 package edu.cornell.gdiac.honeyHeistCode.models;
 
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.NinePatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.physics.box2d.*;
+import com.badlogic.gdx.physics.box2d.BodyDef;
+import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.honeyHeistCode.GameCanvas;
-import edu.cornell.gdiac.honeyHeistCode.obstacle.ComplexObstacle;
+import edu.cornell.gdiac.honeyHeistCode.MyTenPatch;
 import edu.cornell.gdiac.honeyHeistCode.obstacle.Obstacle;
 import edu.cornell.gdiac.honeyHeistCode.obstacle.PolygonObstacle;
 import edu.cornell.gdiac.util.FilmStrip;
@@ -31,7 +31,9 @@ public class PlatformModel extends Obstacle {
 
 	private Vector2 worldCenter;
 
-	protected NinePatch ninePatch;
+	protected NinePatch ninePatch; // TODO: TO BE REPLACED WHEN TENPATCH IS COMPLETE
+
+	protected MyTenPatch tenPatch;
 
 	/**
 	 * Enumeration to identify the platform animations
@@ -316,7 +318,19 @@ public class PlatformModel extends Obstacle {
 						0,
 						trueWidth * drawScale.x,
 						trueHeight * drawScale.y,
-						angle );
+						1f, 1f,
+						angle);
+
+				// TODO: Replace with myTenPatch
+//				assert tenPatch != null;
+//				canvas.drawTenPatch(tenPatch,
+//						botLeft.x * drawScale.x,
+//						botLeft.y * drawScale.y,
+//						0,
+//						0,
+//						trueWidth * drawScale.x,
+//						trueHeight * drawScale.y,
+//						angle );
 			}
 		}
 
@@ -348,12 +362,19 @@ public class PlatformModel extends Obstacle {
 		}
 	}
 
-	public void setNinePatch(TextureRegion topLeft, TextureRegion topCenter, TextureRegion topRight,
+	public void setNinePatch(NinePatch patch){
+		this.ninePatch = patch;
+	}
+
+	public void setTenPatch(TextureRegion topLeft, TextureRegion topCenter, TextureRegion topRight,
 							 TextureRegion midLeft, TextureRegion midCenter, TextureRegion midRight,
 							 TextureRegion botLeft, TextureRegion botCenter, TextureRegion botRight) {
-		this.ninePatch = new NinePatch(topLeft, topCenter, topRight,
+		TextureRegion[] t = new TextureRegion[]{
+				topLeft, topCenter, topRight,
 				midLeft, midCenter, midRight,
-				botLeft, botCenter, botRight);
+				botLeft, botCenter, botRight
+		};
+		this.tenPatch = new MyTenPatch(t);
 	}
 
 	/**
