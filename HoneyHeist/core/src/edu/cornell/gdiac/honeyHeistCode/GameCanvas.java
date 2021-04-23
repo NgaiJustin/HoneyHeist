@@ -18,6 +18,7 @@
 package edu.cornell.gdiac.honeyHeistCode;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.g2d.NinePatch;
 import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.*;
@@ -1194,9 +1195,9 @@ public class GameCanvas {
 	 * @param rotation	rotation (degrees)
 	 */
 	public void drawNinePatch(NinePatch patch,
-							 float x, float y, float originX, float originY,
-							 float width, float height, float scaleX, float scaleY,
-							 float rotation){
+							  float x, float y, float originX, float originY,
+							  float width, float height, float scaleX, float scaleY,
+							  float rotation){
 		patch.draw(spriteBatch, x, y, originX, originY, width,height, scaleX, scaleY, rotation);
 		// TODO: Replace with myTenPatch
 	}
