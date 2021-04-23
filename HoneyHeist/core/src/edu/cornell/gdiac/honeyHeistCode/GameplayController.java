@@ -351,6 +351,10 @@ public class GameplayController implements Screen, InputProcessor {
 		levelController.gatherAssets(directory, levelData);
 	}
 
+	public void gatherLevelData(AssetDirectory directory, String dataFilePath){
+		levelController.gatherLevelData(directory, dataFilePath);
+	}
+
 	/**
 	 *
 	 * Adds a physics object in to the insertion queue.

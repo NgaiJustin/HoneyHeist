@@ -1,5 +1,6 @@
 package edu.cornell.gdiac.honeyHeistCode.models;
 
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.honeyHeistCode.models.PlatformModel;
 
@@ -14,9 +15,10 @@ public class SpikedPlatformModel extends PlatformModel{
      *
      * @param data The physics constants and polygon information for the platforms in this model
      */
-    public SpikedPlatformModel(JsonValue data) {
-        super(data, "spiked");
+    public SpikedPlatformModel(JsonValue data, Vector2 worldCenter) {
+        super(data, "spiked", worldCenter);
     }
+
     public SpikedPlatformModel() {
         super();
     }

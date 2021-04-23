@@ -16,6 +16,8 @@ public class FlyingBeeModel extends AbstractBeeModel{
     private FilmStrip flyingAnim;
     /** The animation phase for the walking animation */
     private boolean flyCycle = true;
+    private final int FRAMES_PER_ANIM = 7;
+    private int animFrames = 0;
 
     /**
      * Enumeration to identify the ant animations
@@ -162,24 +164,26 @@ public class FlyingBeeModel extends AbstractBeeModel{
             default:
                 assert false : "Invalid burner enumeration";
         }
+        if (animFrames % FRAMES_PER_ANIM == 0) {
+            if (on) {
+                // Turn on the flames and go back and forth
+                if (node.getFrame() == 0 || node.getFrame() == 1) {
+                    cycle = true;
+                } else if (node.getFrame() == node.getSize() - 1) {
+                    cycle = false;
+                }
 
-        if (on) {
-            // Turn on the flames and go back and forth
-            if (node.getFrame() == 0 || node.getFrame() == 1) {
-                cycle = true;
-            } else if (node.getFrame() == node.getSize()-1) {
-                cycle = false;
-            }
-
-            // Increment
-            if (cycle) {
-                node.setFrame(node.getFrame()+1);
+                // Increment
+                if (cycle) {
+                    node.setFrame(node.getFrame() + 1);
+                } else {
+                    node.setFrame(0);
+                }
             } else {
                 node.setFrame(0);
             }
-        } else {
-            node.setFrame(0);
         }
+        animFrames++;
 
         switch (anim) {
             case FLY:

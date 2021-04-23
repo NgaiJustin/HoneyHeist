@@ -56,6 +56,16 @@ public class PolygonObstacle extends SimpleObstacle {
 	private float[] points;
 
 	/**
+	 * Fixed height (thickness) of platform
+	 */
+	public final float PLATFORM_HEIGHT = 0.5f;
+
+	public float maxX;
+	public float minX;
+	public float maxY;
+	public float minY;
+
+	/**
 	 * Returns the dimensions of this box
 	 *
 	 * This method does NOT return a reference to the dimension vector. Changes to this 
@@ -131,6 +141,11 @@ public class PolygonObstacle extends SimpleObstacle {
 
 		return vertices;
 	}*/
+
+	/**
+	 * Used for non rectangular polygons, for rectangular polygons call the GETTRUEPOINTS BELOW
+	 * @return
+	 */
 	public float[] getTrueVertices(){
 		float[] vertices = getVertices();
 		float angle = getAngle();
@@ -147,6 +162,15 @@ public class PolygonObstacle extends SimpleObstacle {
 		return vertices;
 	}
 
+	/**
+	 * Get the array of points that represent the corners of the rectangle
+	 *
+	 * The floats are returned in the order x1, y1, x2, y2, x3, y3, x4, y4 where
+	 * - 1 is the top left
+	 * - 2 is the bottom left
+	 * - 3 is the bottom right
+	 * - 4 is the top right
+	 */
 	public float[] getTruePoints(){
 		float[] points = getPoints();
 		float angle = getAngle();
@@ -293,6 +317,12 @@ public class PolygonObstacle extends SimpleObstacle {
 		}
 		dimension = new Vector2((maxx-minx), (maxy-miny));
 		sizeCache = new Vector2(dimension);
+
+		// Store values of the rectangular bounds
+		this.maxX = maxx;
+		this.maxY = maxy;
+		this.minX = minx;
+		this.minY = miny;
 	}
 
 	/**

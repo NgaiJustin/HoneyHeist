@@ -7,21 +7,22 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.Json;
-import com.badlogic.gdx.utils.JsonValue;
-import com.badlogic.gdx.utils.JsonWriter;
+import com.badlogic.gdx.utils.*;
 import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.audio.SoundBuffer;
 import edu.cornell.gdiac.honeyHeistCode.WorldController;
+import edu.cornell.gdiac.honeyHeistCode.controllers.aiControllers.AIController;
 import edu.cornell.gdiac.honeyHeistCode.models.*;
 import edu.cornell.gdiac.honeyHeistCode.obstacle.BoxObstacle;
 import edu.cornell.gdiac.honeyHeistCode.obstacle.Obstacle;
 import edu.cornell.gdiac.honeyHeistCode.obstacle.ObstacleSelector;
 import edu.cornell.gdiac.honeyHeistCode.obstacle.PolygonObstacle;
 import edu.cornell.gdiac.util.FilmStrip;
+
+import javax.swing.*;
 
 public class EditorController extends WorldController implements InputProcessor {
     /** Texture asset for mouse crosshairs */
@@ -105,6 +106,10 @@ public class EditorController extends WorldController implements InputProcessor 
 
     private PolygonObstacle honeypatchPreview;
 
+    private String loadPath;
+
+    private AssetDirectory directory;
+
     // Fields for the Editor controller GUI
 //    private EditorOverlay overlay;
 //    private Stage stage;
@@ -133,6 +138,8 @@ public class EditorController extends WorldController implements InputProcessor 
     private Boolean rbPressed = false;  // Reset button
 
     private static float BUTTON_SCALE  = 0.3f;
+
+    public String getLoadPath(){return loadPath;}
 
     private float buttonX(){
         return 11 * canvas.getWidth()/12;
@@ -182,10 +189,6 @@ public class EditorController extends WorldController implements InputProcessor 
     }
 
 
-
-    /** Filehandler for saving and loading jsons */
-    private FileHandle file = Gdx.files.local("savedLevel.json");
-
     /**
      * Creates and initialize a new instance of the platformer game
      * <p>
@@ -196,6 +199,7 @@ public class EditorController extends WorldController implements InputProcessor 
         setDebug(false);
         setComplete(false);
         setFailure(false);
+        loadPath = "platform:defaultLevel";
     }
 
     /**
@@ -207,12 +211,13 @@ public class EditorController extends WorldController implements InputProcessor 
      * @param directory Reference to global asset manager.
      */
     public void gatherAssets(AssetDirectory directory) {
+        this.directory = directory;
+
         crosshairTexture  = new TextureRegion(directory.getEntry( "shared:crosshair", Texture.class ));
         background = new TextureRegion(directory.getEntry( "shared:background",  Texture.class ));
         avatarTexture = new TextureRegion(directory.getEntry("platform:ant", Texture.class));
         chaserBeeTexture = new TextureRegion(directory.getEntry("platform:larvae", Texture.class));
         flyingBeeTexture = new TextureRegion(directory.getEntry("platform:flyingBee", Texture.class));
-        sleeperBeeTexture = new TextureRegion(directory.getEntry("platform:sleeperBee", Texture.class));
         tilesBackground = new TextureRegion(directory.getEntry("shared:tilesBackground", Texture.class));
         poisonTile = new TextureRegion(directory.getEntry( "shared:poisonWall", Texture.class));
 
@@ -223,7 +228,7 @@ public class EditorController extends WorldController implements InputProcessor 
         plopSound = directory.getEntry("platform:plop", SoundBuffer.class);
 
         constants = directory.getEntry("platform:constants2", JsonValue.class);
-        levelData = directory.getEntry("platform:defaultLevel", JsonValue.class);
+        levelData = directory.getEntry(loadPath, JsonValue.class);
         modeFont = directory.getEntry("shared:marker",BitmapFont.class);
 
         beeButton = directory.getEntry("editor:beeButton", Texture.class);
@@ -239,6 +244,11 @@ public class EditorController extends WorldController implements InputProcessor 
 
 
         super.gatherAssets(directory);
+    }
+
+    public void gatherLevelData(AssetDirectory directory){
+        this.directory = directory;
+        levelData = directory.getEntry(loadPath, JsonValue.class);
     }
 
     /**
@@ -259,7 +269,7 @@ public class EditorController extends WorldController implements InputProcessor 
         world = new World(gravity, false);
         setComplete(false);
         setFailure(false);
-        populateLevel();
+        //populateLevel();
         drawOutline = false;
     }
 
@@ -269,9 +279,159 @@ public class EditorController extends WorldController implements InputProcessor 
     public void populateLevel() {
 
         volume = constants.getFloat("volume", 1.0f);
-        level = new LevelModel();
 
-        //Background
+        JsonValue defaults = constants.get("defaults");
+        //Create background
+        PolygonObstacle levelBackground;
+        // Find center of the game
+        Vector2 worldCenter = bounds.getCenter(new Vector2());
+        if (!levelData.get("background").isNull()) {
+            levelBackground = new PolygonObstacle(levelData.get("background").asFloatArray(), 0, 0);
+            levelBackground.setBodyType(BodyDef.BodyType.StaticBody);
+            levelBackground.setDensity(defaults.getFloat("density", 0.0f));
+            levelBackground.setFriction(defaults.getFloat("friction", 0.0f));
+            levelBackground.setRestitution(defaults.getFloat("restitution", 0.0f));
+            levelBackground.setName("background");
+            levelBackground.setDrawScale(scale);
+            levelBackground.setTexture(tilesBackground);
+            levelBackground.setSensor(true);
+            //addObject(levelBackground);
+        } else {
+            levelBackground = null;
+        }
+
+        // Add level goal
+        float dwidth = goalTile.getRegionWidth() / scale.x;
+        float dheight = goalTile.getRegionHeight() / scale.y;
+
+        JsonValue goal = constants.get("goal");
+        float[] goalPos = levelData.get("goalPos").asFloatArray();
+
+        BoxObstacle goalDoor = new BoxObstacle(goalPos[0], goalPos[1], dwidth, dheight);
+        goalDoor.setBodyType(BodyDef.BodyType.StaticBody);
+        goalDoor.setDensity(goal.getFloat("density", 0));
+        goalDoor.setFriction(goal.getFloat("friction", 0));
+        goalDoor.setRestitution(goal.getFloat("restitution", 0));
+        goalDoor.setSensor(true);
+        goalDoor.setDrawScale(scale);
+        goalDoor.setTexture(goalTile);
+        goalDoor.setName("goal");
+        addObject(goalDoor);
+
+
+        // Create the hexagon level
+
+        /*
+        JsonValue c = constants.get("testPlatform2");
+        for (int a=1; a<=4; a++) {
+            float r = 2*a;
+            float l = 0.5f;
+            //float h = c.getFloat("height");
+            float h = 2 * r / (float) Math.sqrt(3) + l / (float) Math.sqrt(3);
+            for (int i = 0; i < 6; i++) {
+                float theta = (float) Math.PI / 3 * i + (float) Math.PI / 6;
+                float x = r * (float) Math.cos(theta) + 16;
+                float y = r * (float) Math.sin(theta) + 9;
+                float[] points = platformPointsFromPoint(x, y, l, h, theta);
+                for (int j = 0; j < points.length; j++) {
+                    System.out.print(points[j] + ", ");
+                }
+                System.out.println("");
+                PolygonObstacle obj;
+                obj = new PolygonObstacle(points, 0, 0);
+                obj.setBodyType(BodyDef.BodyType.StaticBody);
+                obj.setDensity(defaults.getFloat("density", 0.0f));
+                obj.setFriction(defaults.getFloat("friction", 0.0f));
+                obj.setRestitution(defaults.getFloat("restitution", 0.0f));
+                obj.setName("testPlatform");
+                obj.setDrawScale(scale);
+                obj.setTexture(earthTile);
+                addObject(obj);
+            }
+        }
+        */
+
+        // Create platforms
+        PlatformModel platforms = new PlatformModel(levelData.get("platformPos"), worldCenter);
+        platforms.setDrawScale(scale);
+        platforms.setTexture(earthTile);
+        for(PolygonObstacle platform : platforms.getBodies()){
+            addObject(platform);
+        }
+
+        // Create spiked platforms
+        SpikedPlatformModel spikedPlatforms = new SpikedPlatformModel(levelData.get("spikedPlatformPos"), worldCenter);
+        spikedPlatforms.setDrawScale(scale);
+        spikedPlatforms.setTexture(poisonTile); //TODO: Change spikedPlatform texture
+        for(PolygonObstacle spiked : spikedPlatforms.getBodies()){
+            addObject(spiked);
+        }
+
+
+        // Create honeypatches
+        HoneypatchModel honeyPatches = new HoneypatchModel(levelData.get("honeypatchPos"),0.4f, worldCenter);
+        honeyPatches.setDrawScale(scale);
+        honeyPatches.setTexture(earthTile); //TODO: Change honeyPatch texture
+        //dont add yet so that it can overlap
+        //addObject(honeyPatches);
+
+        // This world is heavier
+        world.setGravity(new Vector2(0, defaults.getFloat("gravity", 0)));
+
+        // Create player (ant)
+        dwidth = avatarTexture.getRegionWidth() / scale.x;
+        dheight = avatarTexture.getRegionHeight() / scale.y;
+        float[] playerPos = levelData.get("playerPos").asFloatArray();
+        PlayerModel avatar = new PlayerModel(constants.get("player"), playerPos[0], playerPos[1], dwidth, dheight);
+        avatar.setDrawScale(scale);
+        avatar.setTexture(avatarTexture);
+        addObject(avatar);
+        avatar.setGravityScale(0);
+
+        // Create chaser bees
+
+        Array<AbstractBeeModel> bees = new Array<AbstractBeeModel>();
+        level = new LevelModel(avatar,bees,goalDoor,platforms, spikedPlatforms, honeyPatches, levelBackground, new Rectangle(bounds));
+
+        dwidth = chaserBeeTexture.getRegionWidth() / scale.x;
+        dheight = chaserBeeTexture.getRegionHeight() / scale.y;
+        //JsonValue.JsonIterator groundedBeeIterator = constants.get("groundedBees").iterator();
+        JsonValue groundedBeePositions = levelData.get("groundedBeePos");
+        for (int i=0; i<groundedBeePositions.size; i++){
+            float[] pos = groundedBeePositions.get(i).asFloatArray();
+            ChaserBeeModel chaserBee = new ChaserBeeModel(constants.get("GroundedBee"), pos[0], pos[1], dwidth, dheight);
+            chaserBee.setDrawScale(scale);
+            chaserBee.setTexture(chaserBeeTexture);
+            bees.add(chaserBee);
+            addObject(chaserBee);
+            chaserBee.setGravityScale(0);
+        }
+
+        JsonValue flyingBeePositions = levelData.get("flyingBeePos");
+        for (int i=0; i<flyingBeePositions.size; i++){
+            float[] pos = flyingBeePositions.get(i).asFloatArray();
+            FlyingBeeModel flyingBee = new FlyingBeeModel(constants.get("FlyingBee"), pos[0], pos[1], dwidth, dheight);
+            flyingBee.setDrawScale(scale);
+            flyingBee.setTexture(flyingBeeTexture);
+            bees.add(flyingBee);
+            addObject(flyingBee);
+            flyingBee.setGravityScale(0);
+        }
+
+        //add honeypatches last so that they cover other objects
+        //addObject(honeyPatches);
+        for(PolygonObstacle honeypatch : honeyPatches.getArrayBodies()){
+            addObject(honeypatch);
+        }
+
+        clickCache = new Array<Vector2>();
+        outline = new PolygonShape();
+
+        selector = new ObstacleSelector(world);
+        selector.setTexture(crosshairTexture);
+        selector.setDrawScale(scale);
+
+        /*//Background
         PolygonObstacle levelBackground;
         levelBackground = new PolygonObstacle(levelData.get("background").asFloatArray(), 0, 0);
         levelBackground.setBodyType(BodyDef.BodyType.StaticBody);
@@ -302,24 +462,134 @@ public class EditorController extends WorldController implements InputProcessor 
 
         selector = new ObstacleSelector(world);
         selector.setTexture(crosshairTexture);
+        selector.setDrawScale(scale);*/
+    }
+
+    public void populateLevelFromJson(JsonValue json){
+        // Background
+        level = new LevelModel();
+        PolygonObstacle levelBackground;
+        // Find center of the game
+        Vector2 worldCenter = bounds.getCenter(new Vector2());
+        if (!json.get("background").isNull()) {
+            levelBackground = new PolygonObstacle(json.get("background").asFloatArray(), 0, 0);
+            levelBackground.setBodyType(BodyDef.BodyType.StaticBody);
+            levelBackground.setName("background");
+            levelBackground.setDrawScale(scale);
+            levelBackground.setTexture(tilesBackground);
+            levelBackground.setSensor(true);
+            //addObject(levelBackground);
+            level.setLevelBackground(levelBackground);
+        } else {
+            levelBackground = null;
+        }
+
+        //Goal
+        newGoalDoor(json.get("goalPos").asFloatArray()[0], json.get("goalPos").asFloatArray()[1]);
+
+        //Platforms
+        PlatformModel platforms = new PlatformModel(json.get("platformPos"), worldCenter);
+        platforms.setDrawScale(scale);
+        platforms.setTexture(earthTile);
+        addObject(platforms);
+        level.setPlatforms(platforms);
+
+        //Spiked platforms
+        SpikedPlatformModel spikedPlatforms = new SpikedPlatformModel(json.get("spikedPlatformPos"), worldCenter);
+        spikedPlatforms.setDrawScale(scale);
+        spikedPlatforms.setTexture(poisonTile);
+        addObject(spikedPlatforms);
+        level.setSpikedPlatforms(spikedPlatforms);
+
+        //HoneyPatches
+        HoneypatchModel honeyPatches = new HoneypatchModel(json.get("honeyPatchPos"), 0.5f, worldCenter);
+        honeyPatches.setDrawScale(scale);
+        honeyPatches.setTexture(earthTile);
+        level.setHoneyPatches(honeyPatches);
+
+        level.setBees(new Array<AbstractBeeModel>());
+        //Grounded bees
+        JsonValue groundedBees = json.get("groundedBeePos");
+        for (int i=0; i<groundedBees.size; i++){
+            float[] pos = groundedBees.get(i).asFloatArray();
+            newChaserBee(pos[0], pos[1]);
+        }
+
+        //Flying bees
+        JsonValue flyingBees = json.get("flyingBeePos");
+        for (int i=0; i<flyingBees.size; i++){
+            float[] pos = flyingBees.get(i).asFloatArray();
+            newFlyingBee(pos[0], pos[1]);
+        }
+
+        //Player
+        newPlayer(json.get("playerPos").asFloatArray()[0], json.get("playerPos").asFloatArray()[1]);
+
+
+        addObject(honeyPatches);
+
+        clickCache = new Array<Vector2>();
+        outline = new PolygonShape();
+
+        selector = new ObstacleSelector(world);
+        selector.setTexture(crosshairTexture);
         selector.setDrawScale(scale);
     }
 
     /**
      * Returns whether to process the update loop
-     * <p>
+     *
      * At the start of the update loop, we check if it is time
      * to switch to a new game mode.  If not, the update proceeds
      * normally.
      *
-     * @param dt Number of seconds since last animation frame
+     * @param dt	Number of seconds since last animation frame
+     *
      * @return whether to process the update loop
      */
     public boolean preUpdate(float dt) {
-        if (!super.preUpdate(dt)) {
-            return false;
+        InputController input = InputController.getInstance();
+        input.readInput(bounds, scale);
+        if (listener == null) {
+            return true;
         }
 
+        // Toggle debug
+//		if (input.didDebug()) {
+//			debug = !debug;
+//		}
+
+        // Handle resets
+        if (input.didReset()) {
+            reset();
+        }
+
+        // Now it is time to maybe switch screens.
+        if (input.didExit()) {
+            pause();
+            listener.exitScreen(this, EXIT_QUIT);
+            return false;
+        } else if (input.didAdvance()) {
+            pause();
+            convertToJson();
+            //loadPath = "savedLevel";
+            listener.exitScreen(this, EXIT_NEXT);
+            return false;
+//		} else if (input.didRetreat()) {
+//			pause();
+//			listener.exitScreen(this, EXIT_PREV);
+//			return false;
+        } else if (countdown > 0) {
+            countdown--;
+        } else if (countdown == 0) {
+            if (failed) {
+                reset();
+            } else if (complete) {
+                pause();
+                listener.exitScreen(this, EXIT_NEXT);
+                return false;
+            }
+        }
         return true;
     }
 
@@ -390,12 +660,15 @@ public class EditorController extends WorldController implements InputProcessor 
                 // RESET BUTTON CLICKED
                 else if (Math.abs(rbY() - clickY) < resetButton.getHeight()*BUTTON_SCALE/2){
                     this.rbPressed = true;
+                    levelData = directory.getEntry("platform:defaultLevel", JsonValue.class);
                     reset();
+                    populateLevel();
                 }
                 // SAVE BUTTON CLICKED
                 else if (Math.abs(sbY() - clickY) < saveButton.getHeight()*BUTTON_SCALE/2){
                     this.sbPressed = true;
-                    convertToJson();
+                    //convertToJson();
+                    chooseFile();
                 }
                 // SELECT MODE BUTTON CLICKED
                 else if (Math.abs(smbY() - clickY) < selectModeButton.getHeight()*BUTTON_SCALE/2){
@@ -449,7 +722,7 @@ public class EditorController extends WorldController implements InputProcessor 
                 if (input.didMouseClick()) {
                     clickCache.add(new Vector2(input.getCrossHair().x, input.getCrossHair().y));
                     if (level.getPlayer() == null) {
-                        newPlayer();
+                        newPlayer(clickCache.get(0).x, clickCache.get(0).y);
                     }
                     clickCache.clear();
                 }
@@ -459,7 +732,7 @@ public class EditorController extends WorldController implements InputProcessor 
             if (mode == 2) {
                 if (input.didMouseClick()) {
                     clickCache.add(new Vector2(input.getCrossHair().x, input.getCrossHair().y));
-                    newChaserBee();
+                    newChaserBee(clickCache.get(0).x, clickCache.get(0).y);
                     clickCache.clear();
                 }
             }
@@ -469,7 +742,7 @@ public class EditorController extends WorldController implements InputProcessor 
                 if (input.didMouseClick()) {
                     clickCache.add(new Vector2(input.getCrossHair().x, input.getCrossHair().y));
                     if (level.getGoalDoor() == null) {
-                        newGoalDoor();
+                        newGoalDoor(clickCache.get(0).x, clickCache.get(0).y);
 
                         clickCache.clear();
                     }
@@ -622,7 +895,7 @@ public class EditorController extends WorldController implements InputProcessor 
             if (mode == 7){
                 if (input.didMouseClick()) {
                     clickCache.add(new Vector2(input.getCrossHair().x, input.getCrossHair().y));
-                    newFlyingBee();
+                    newFlyingBee(clickCache.get(0).x, clickCache.get(0).y);
                     clickCache.clear();
                 }
             }
@@ -634,11 +907,11 @@ public class EditorController extends WorldController implements InputProcessor 
 
     }
 
-    private void newGoalDoor() {
+    private void newGoalDoor(float x, float y) {
         float dwidth = goalTile.getRegionWidth() / scale.x;
         float dheight = goalTile.getRegionHeight() / scale.y;
 
-        BoxObstacle goalDoor = new BoxObstacle(clickCache.get(0).x, clickCache.get(0).y,
+        BoxObstacle goalDoor = new BoxObstacle(x, y,
                 dwidth, dheight);
 
         goalDoor.setBodyType(BodyDef.BodyType.StaticBody);
@@ -651,12 +924,12 @@ public class EditorController extends WorldController implements InputProcessor 
         //goalDoor.setActive(false);
     }
 
-    private void newPlayer() {
+    private void newPlayer(float x, float y) {
         float dwidth = avatarTexture.getRegionWidth() / scale.x;
         float dheight = avatarTexture.getRegionHeight() / scale.y;
 
         PlayerModel avatar = new PlayerModel(constants.get("player"),
-                clickCache.get(0).x, clickCache.get(0).y, dwidth, dheight);
+                x, y, dwidth, dheight);
 
         avatar.setDrawScale(scale);
         avatar.setTexture(avatarTexture);
@@ -705,12 +978,12 @@ public class EditorController extends WorldController implements InputProcessor 
         return obj;
     }
 
-    private void newChaserBee() {
+    private void newChaserBee(float x, float y) {
         float dwidth = chaserBeeTexture.getRegionWidth() / scale.x;
         float dheight = chaserBeeTexture.getRegionHeight() / scale.y;
 
         ChaserBeeModel chaserBee = new ChaserBeeModel(constants.get("GroundedBee"),
-                clickCache.get(0).x, clickCache.get(0).y, dwidth, dheight);
+                x, y, dwidth, dheight);
 
         chaserBee.setDrawScale(scale);
         chaserBee.setTexture(chaserBeeTexture);
@@ -720,12 +993,12 @@ public class EditorController extends WorldController implements InputProcessor 
         chaserBee.setGravityScale(0);
     }
 
-    private void newFlyingBee() {
+    private void newFlyingBee(float x, float y) {
         float dwidth = flyingBeeTexture.getRegionWidth() / scale.x;
         float dheight = flyingBeeTexture.getRegionHeight() / scale.y;
 
         FlyingBeeModel flyingBee = new FlyingBeeModel(constants.get("FlyingBee"),
-                clickCache.get(0).x, clickCache.get(0).y, dwidth, dheight);
+                x, y, dwidth, dheight);
 
         flyingBee.setDrawScale(scale);
         flyingBee.setTexture(flyingBeeTexture);
@@ -847,10 +1120,15 @@ public class EditorController extends WorldController implements InputProcessor 
         canvas.clear();
         canvas.begin();
         canvas.draw(background, 0, 0);
+        level.getLevelBackground().draw(canvas);
         for(Obstacle obj : objects) {
             if(obj.getClass() == PolygonObstacle.class) {
                 if (!obj.getName().contains("honeypatch")) {
                     obj.draw(canvas);
+                } else{
+                    Color tint = Color.ORANGE;
+                    tint.set(tint.r,tint.g,tint.b,0.7f);
+                    ((PolygonObstacle) obj).draw(canvas,tint);
                 }
             }else{
                 obj.draw(canvas);
@@ -1091,6 +1369,8 @@ public class EditorController extends WorldController implements InputProcessor 
     }
 
     public void convertToJson(){
+
+        this.loadPath = "savedLevel";
         Level jsonLevel = new Level();
 
         if (level.getGoalDoor()!=null){
@@ -1149,6 +1429,7 @@ public class EditorController extends WorldController implements InputProcessor 
         }
 
 
+        FileHandle file = Gdx.files.local("savedLevel.json");
         Json json = new Json();
         json.setOutputType(JsonWriter.OutputType.json);
         file.writeString(json.prettyPrint(jsonLevel), false);
@@ -1168,6 +1449,26 @@ public class EditorController extends WorldController implements InputProcessor 
             platformArray[i] = platforms.get(i).getTruePoints();
         }
         return platformArray;
+    }
+
+    private void chooseFile(){
+        JFileChooser jfc = new JFileChooser();
+        int r = jfc.showDialog(null, "select");
+        jfc.setVisible(true);
+        if (r == JFileChooser.CANCEL_OPTION){
+            return;
+        }
+
+        String filePath = jfc.getSelectedFile().getAbsolutePath();
+        //System.out.println(filePath);
+        FileHandle loadFile = Gdx.files.absolute(filePath);
+        System.out.println(loadFile);
+        JsonReader reader = new JsonReader();
+        //UBJsonReader reader = new UBJsonReader();
+        JsonValue loadedLevelData = reader.parse(loadFile);
+        reset();
+        populateLevelFromJson(loadedLevelData);
+
     }
 
     // Methods for the GUI
