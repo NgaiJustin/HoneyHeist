@@ -1454,9 +1454,9 @@ public class EditorController extends WorldController implements InputProcessor 
 
     private void chooseFile(){
         JFileChooser jfc = new JFileChooser();
-        jfc.showDialog(null, "select");
+        int r = jfc.showDialog(null, "select");
         jfc.setVisible(true);
-        if (!jfc.getSelectedFile().exists()){
+        if (r == JFileChooser.CANCEL_OPTION){
             return;
         }
 
