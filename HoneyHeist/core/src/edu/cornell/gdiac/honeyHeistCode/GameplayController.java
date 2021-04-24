@@ -53,7 +53,7 @@ public class GameplayController implements Screen, InputProcessor {
 	/** The texture for the background */
 	protected TextureRegion background;
 	/** The font for giving messages to the player */
-	protected BitmapFont displayFont;
+	protected BitmapFont menuFont;
 
 	/** Exit code for quitting the game */
 	public static final int EXIT_QUIT = 0;
@@ -63,6 +63,8 @@ public class GameplayController implements Screen, InputProcessor {
 	public static final int EXIT_PREV = 2;
 	/** Exit code for going to the editor */
 	public static final int EXIT_EDITOR = 3;
+	/** Exit code for going to the menu */
+	public static final int EXIT_MENU = 4;
     /** How many frames after winning/losing do we continue? */
 	public static final int EXIT_COUNT = 100;
 
@@ -126,9 +128,23 @@ public class GameplayController implements Screen, InputProcessor {
 	/** If it's in the pause state */
 	private boolean isPaused;
 	/** Constants for the position of pause button */
-	private final float pauseXPOS = 150;
-	private final float pauseYPOS = 500;
-	private final float pauseScale = 0.5f;
+	private final float PAUSE_XPOS = Gdx.graphics.getWidth()*0.85f;
+	private final float PAUSE_YPOS = Gdx.graphics.getHeight()*0.85f;
+	private final float PAUSE_SCALE = 0.5f;
+	/** Menu button texture */
+	private Texture menuButton;
+	/** Offset for the menu word on the button */
+	private static final float MENU_XOFFSET   = 50.0f;
+	private static final float MENU_YOFFSET   = 10.0f;
+	/** If menu button is pressed */
+	private boolean menuPressed;
+	/** If menu is ready to go */
+	private boolean menuReady;
+	/** Constants for the position of menu button */
+	private final float MENU_XPOS = Gdx.graphics.getWidth()*0.15f;
+	private final float MENU_YPOS = Gdx.graphics.getHeight()*0.85f;
+	private final float MENU_XSCALE = 0.15f;
+	private final float MENU_YSCALE = 0.3f;
 	/** Standard window size (for scaling) */
 	private static int STANDARD_WIDTH  = 800;
 	/** Standard window height (for scaling) */
@@ -346,8 +362,9 @@ public class GameplayController implements Screen, InputProcessor {
 //		goalTile  = new TextureRegion(directory.getEntry( "shared:goal", Texture.class ));
 		// background
 		background = new TextureRegion(directory.getEntry( "shared:background",  Texture.class ));
-		displayFont = directory.getEntry( "shared:retro" ,BitmapFont.class);
+		menuFont = directory.getEntry( "menuFont" ,BitmapFont.class);
 		pauseButton = directory.getEntry("shared:pauseButton", Texture.class);
+		menuButton = directory.getEntry("shared:menuButton", Texture.class);
 		levelController.gatherAssets(directory, levelData);
 	}
 
@@ -403,6 +420,8 @@ public class GameplayController implements Screen, InputProcessor {
     public void reset() {
         // TODO
 		pausePressed = false;
+		menuPressed = false;
+		menuReady = false;
 		isPaused = false;
         levelController.reset();
     }
@@ -420,9 +439,11 @@ public class GameplayController implements Screen, InputProcessor {
      */
     public boolean preUpdate(float dt) {
 		// If in the pause state, do not update
-		if (isPaused) { return false; }
         boolean temp = preUpdateHelper(dt);
         boolean result = levelController.preUpdate(temp);
+		// MENU button has a higher priority then the PAUSE button
+		// so preUpdateHelper needs to proceed first
+		if (isPaused) { return false; }
 //        setFailure(levelController.isFailure());
         return result;
     }
@@ -455,9 +476,13 @@ public class GameplayController implements Screen, InputProcessor {
             listener.exitScreen(this, EXIT_QUIT);
             return false;
         } else if (input.didAdvance()) {
-            pause();
-            listener.exitScreen(this, EXIT_EDITOR);
-            return false;
+			pause();
+			listener.exitScreen(this, EXIT_EDITOR);
+			return false;
+		} else if (menuReady) {
+        	pause();
+        	listener.exitScreen(this, EXIT_MENU);
+        	return false;
 //		} else if (input.didRetreat()) {
 //			pause();
 //			listener.exitScreen(this, EXIT_PREV);
@@ -544,11 +569,19 @@ public class GameplayController implements Screen, InputProcessor {
 		canvas.clear();
 		canvas.begin();
 		canvas.draw(background, 0, 0);
+		Color tint;
 		if (pauseButton != null) {
-			Color tint = (pausePressed ? Color.GRAY: Color.WHITE);
+			tint = (pausePressed ? Color.GRAY: Color.WHITE);
 			canvas.draw(pauseButton, tint, pauseButton.getWidth()/2f, pauseButton.getHeight()/2f,
-					pauseXPOS, pauseYPOS, 0, pauseScale*scaleFactor,
-					pauseScale*scaleFactor);
+					PAUSE_XPOS, PAUSE_YPOS, 0, PAUSE_SCALE*scaleFactor, PAUSE_SCALE*scaleFactor);
+		}
+		if (menuButton != null) {
+			tint = (menuPressed ? Color.GRAY: Color.WHITE);
+			canvas.draw(menuButton, tint, menuButton.getWidth()/2f, menuButton.getHeight()/2f,
+					MENU_XPOS, MENU_YPOS, 0, MENU_XSCALE*scaleFactor, MENU_YSCALE*scaleFactor);
+			// draw the letter
+			canvas.drawText("Menu", menuFont, MENU_XPOS-MENU_XOFFSET,
+					MENU_YPOS+MENU_YOFFSET);
 		}
 		levelController.draw(dt);
 //		canvas.clear();
@@ -716,15 +749,22 @@ public class GameplayController implements Screen, InputProcessor {
 	 */
 	@Override
 	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-		if (pauseButton==null) return true;
+		if (pauseButton==null && menuButton == null) return true;
 
 		// Flip to match graphics coordinates
 		screenY = heightY-screenY;
 
+		// MENU button has a higher priority then the PAUSE button
+		float width = MENU_XSCALE * scaleFactor * menuButton.getWidth() / 2.0f;
+		float height = MENU_YSCALE * scaleFactor * menuButton.getHeight() / 2.0f;
+		if (Math.abs(screenX - MENU_XPOS) < Math.abs(width) && Math.abs(screenY - MENU_YPOS) < Math.abs(height)) {
+			menuPressed = true;
+		}
+
 		float radius, dist;
-		radius = pauseScale*scaleFactor*pauseButton.getWidth()/2.0f;
-		dist = (screenX-pauseXPOS)*(screenX-pauseXPOS)+(screenY-pauseYPOS)* (screenY-pauseYPOS);
-		if (dist < radius*radius) {
+		radius = PAUSE_SCALE * scaleFactor * pauseButton.getWidth() / 2.0f;
+		dist = (screenX - PAUSE_XPOS) * (screenX - PAUSE_XPOS) + (screenY - PAUSE_YPOS) * (screenY - PAUSE_YPOS);
+		if (dist < radius * radius) {
 			pausePressed = true;
 		}
 		return false;
@@ -741,6 +781,12 @@ public class GameplayController implements Screen, InputProcessor {
 	 */
 	@Override
 	public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+		// MENU button has a higher priority then the PAUSE button
+		if (menuPressed) {
+			menuPressed = false;
+			menuReady = true;
+			return false;
+		}
 		if (pausePressed) {
 			pausePressed = false;
 			isPaused = !isPaused;
