@@ -636,7 +636,7 @@ public class EditorController extends WorldController implements InputProcessor 
         } else if (input.didAdvance()) {
             pause();
             tempSave();
-            loadPath = "savedLevel";
+            loadPath = "cachedLevel";
             listener.exitScreen(this, EXIT_NEXT);
             return false;
 //		} else if (input.didRetreat()) {
@@ -1546,7 +1546,7 @@ public class EditorController extends WorldController implements InputProcessor 
 
     public void tempSave(){
         Level level = convertToJsonLevel();
-        String path = Gdx.files.getLocalStoragePath() + "savedLevel.json";
+        String path = Gdx.files.getLocalStoragePath() + "cachedLevel.json";
 
         saveToPath(path, level);
     }
