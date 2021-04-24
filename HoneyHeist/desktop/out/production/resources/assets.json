@@ -14,18 +14,16 @@
     "shared:goal": "shared/goaldoor.png",
     "shared:background": "shared/background.png",
     "shared:whiteSquare": "shared/whiteSquare.png",
+    "shared:pauseButton": "shared/OLDplay.png",
     "shared:tilesBackground": {
       "file": "shared/tilesBackground.png",
       "wrapU": "repeated",
       "wrapV": "repeated"
     },
     "platform:ant": "platform/ant.png",
-    "platform:sleeperBee": "platform/sleeperBee.png",
     "platform:larvae": "platform/larvae.png",
     "platform:flyingBee": "platform/chaserBee.png",
-    "platform:rope": "platform/ropebridge.png",
-    "platform:barrier": "platform/barrier.png",
-    "platform:bullet": "platform/bullet.png",
+
     "platform:playerWalk": {
       "file": "platform/beeWalkstrip.png",
       "sprites": {
@@ -49,10 +47,33 @@
       "sprites": {
         "pacing": {
           "rows": 1,
-          "cols": 4
+          "cols": 5
         }
       }
     },
+    "platform:spikeULeft": "platform/upLeftSpike.png",
+    "platform:spikeUMid": "platform/upMidSpike.png",
+    "platform:spikeURight": "platform/upRightSpike.png",
+    "platform:spikeMLeft": "platform/midLeftSpike.png",
+    "platform:spikeMMid": "platform/midMidSpike.png",
+    "platform:spikeMRight": "platform/midRightSpike.png",
+    "platform:spikeBLeft": "platform/downLeftSpike.png",
+    "platform:spikeBMid": "platform/downMidSpike.png",
+    "platform:spikeBRight": "platform/downRightSpike.png",
+
+    "platform:ULeft" : "platform/upLeft.png",
+    "platform:UMid"  : "platform/upMid.png",
+    "platform:URight": "platform/upRight.png",
+    "platform:MLeft" : "platform/midLeft.png",
+    "platform:MMid"  : "platform/midMid.png",
+    "platform:MRight": "platform/midRight.png",
+    "platform:BLeft" : "platform/downLeft.png",
+    "platform:BMid"  : "platform/downMid.png",
+    "platform:BRight": "platform/downRight.png",
+
+    "platform:platNinePatch" : "platform/platformtiles.png",
+    "platform:spikeNinePatch"  : "platform/spikedtiles.png",
+
     "editor:antButton": "editor/antButton.png",
     "editor:beeButton": "editor/beeButton.png",
     "editor:platformButton": "editor/platformButton.png",
@@ -60,6 +81,7 @@
     "editor:selectModeButton": "editor/selectModeButton.png",
     "editor:saveButton": "editor/saveButton.png",
     "editor:resetButton": "editor/resetButton.png",
+    "editor:loadButton": "editor/loadButton.png",
     "editor:larvaButton": "editor/larvaButton.png",
     "editor:honeyPatchButton": "editor/honeyPatchButton.png",
     "editor:spikedPlatformButton": "editor/spikedPlatformButton.png"
@@ -73,8 +95,7 @@
   "sounds": {
     "platform:jump": "platform/jump.mp3",
     "platform:pew": "platform/pew.mp3",
-    "platform:plop": "platform/plop.mp3",
-    "platform:bgm": "platform/bgm.mp3"
+    "platform:plop": "platform/plop.mp3"
   },
   "fonts": {
     "shared:retro": {

@@ -121,6 +121,11 @@ public class InputController {
      */
     private boolean deletePressed;
     private boolean deletePrevious;
+    /**
+     * Whether the copy button was pressed
+     */
+    private boolean copyPressed;
+    private boolean copyPrevious;
 /*
  **** DEPRECATED BOOLEAN FIELDS
  	/** Whether the button to step back worlds was pressed. * /
@@ -370,6 +375,12 @@ public class InputController {
      * @return true if the delete button was pressed.
      */
     public boolean didDelete() {return deletePressed && !deletePrevious; }
+    /**
+     * Returns true if the copy button was pressed.
+     *
+     * @return true if the copy button was pressed.
+     */
+    public boolean didCopy() {return copyPressed && !copyPrevious; }
 
     /**
      * Creates a new input controller
@@ -421,6 +432,7 @@ public class InputController {
 		mouseRightPrevious = mouseRightPressed;
 		savePrevious = savePressed;
 		deletePrevious = deletePressed;
+		copyPrevious = copyPressed;
 
         // Check to see if a GamePad is connected
         if (xbox != null && xbox.isConnected()) {
@@ -493,6 +505,7 @@ public class InputController {
         modePressed = (secondary && modePressed) || (Gdx.input.isKeyPressed(Input.Keys.M));
         savePressed = (secondary && savePressed) || (Gdx.input.isKeyPressed(Input.Keys.S));
         deletePressed = (secondary && deletePressed) || (Gdx.input.isKeyPressed(Input.Keys.BACKSPACE));
+        copyPressed = (secondary && copyPressed) || (Gdx.input.isKeyPressed(Input.Keys.C));
       
         debugAIPressed = (secondary && debugAIPressed) || (Gdx.input.isKeyPressed(Input.Keys.Z));
         // Directional controls

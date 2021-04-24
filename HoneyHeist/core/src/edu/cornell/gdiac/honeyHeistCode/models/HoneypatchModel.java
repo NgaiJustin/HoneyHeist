@@ -33,7 +33,7 @@ public class HoneypatchModel extends PlatformModel {
         // Delegate to components
         for(PolygonObstacle obj : bodies) {
             Color tint = Color.ORANGE;
-            tint.set(tint.r,tint.g,tint.b,0.7f);
+            tint.set(tint.r,tint.g,tint.b,0.6f);
             obj.draw(canvas,tint);
         }
     }

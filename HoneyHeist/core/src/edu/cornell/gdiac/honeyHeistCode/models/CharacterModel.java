@@ -53,6 +53,10 @@ public class CharacterModel extends CapsuleObstacle {
      */
     protected ObjectSet<Fixture> sensorFixtures;
     /**
+     * Sensor fixtures for isInHoney detection
+     */
+    protected ObjectSet<Fixture> honeyFixtures;
+    /**
      * The physics shape of this object
      */
     protected PolygonShape sensorShape;
@@ -175,6 +179,10 @@ public class CharacterModel extends CapsuleObstacle {
         return sensorFixtures;
     }
 
+    public ObjectSet<Fixture> getHoneyFixtures() {
+        return honeyFixtures;
+    }
+
     /**
      * Returns the name of the ground sensor
      * <p>
@@ -197,7 +205,7 @@ public class CharacterModel extends CapsuleObstacle {
 
     public void startRotation(boolean isClockwise, Vector2 point){
         if (isRotating) return;
-        if(!isInHoney) {
+        if(isGrounded) {
             setBodyType(BodyDef.BodyType.StaticBody);
             sticking = true;
         }
@@ -208,7 +216,7 @@ public class CharacterModel extends CapsuleObstacle {
     }
     public void startRotation(float rotationAmount, boolean isClockwise, Vector2 point){
         if (isRotating) return;
-        if(!isInHoney) {
+        if(isGrounded) {
             setBodyType(BodyDef.BodyType.StaticBody);
             sticking = true;
         }
@@ -294,7 +302,7 @@ public class CharacterModel extends CapsuleObstacle {
                     isGrounded = false;
                 }
             }
-            if(!isGrounded||(isInHoney&&!sticking)){
+            if(!isGrounded){
                 float angle = getAngle();
                 float rotSpeed = ((isInHoney) ? 4f : 13f);
                 if(angle<-0.05) {

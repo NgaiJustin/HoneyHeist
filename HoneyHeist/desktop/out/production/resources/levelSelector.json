@@ -20,7 +20,7 @@
 	},
     "fonts": {
         "times": {
-            "file": "fonts/TimesRoman.ttf",
+            "file": "shared/RetroGame.ttf",
             "size": 32
         }
     },

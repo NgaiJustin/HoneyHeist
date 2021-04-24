@@ -23,6 +23,8 @@ import edu.cornell.gdiac.honeyHeistCode.obstacle.PolygonObstacle;
 import edu.cornell.gdiac.util.FilmStrip;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileFilter;
+import java.io.File;
 
 public class EditorController extends WorldController implements InputProcessor {
     /** Texture asset for mouse crosshairs */
@@ -136,7 +138,7 @@ public class EditorController extends WorldController implements InputProcessor 
     // Fields for the Editor controller GUI
 //    private EditorOverlay overlay;
 //    private Stage stage;
-    private int buttonNum = 10;
+    private int buttonNum = 11;
 
     private Texture antButton;
     private Texture larvaButton;
@@ -147,6 +149,7 @@ public class EditorController extends WorldController implements InputProcessor 
     private Texture goalButton;
     private Texture selectModeButton;
     private Texture saveButton;
+    private Texture loadButton;
     private Texture resetButton;
 
     private Boolean abPressed = false;  // Ant button
@@ -158,6 +161,7 @@ public class EditorController extends WorldController implements InputProcessor 
     private Boolean gbPressed = false;  // Goal button
     private Boolean smbPressed = false; // Select mode button
     private Boolean sbPressed = false;  // Save button
+    private Boolean loadbPressed = false;  // Load button
     private Boolean rbPressed = false;  // Reset button
 
     private static float BUTTON_SCALE  = 0.3f;
@@ -174,28 +178,30 @@ public class EditorController extends WorldController implements InputProcessor 
 
     private float sbY() {return smbY() * 2;}
 
-    private float rbY() {return smbY() * 3;}
+    private float loadbY() {return smbY() * 3;}
 
-    private float spbY() {return smbY() * 4;}
+    private float rbY() {return smbY() * 4;}
+
+    private float spbY() {return smbY() * 5;}
 
     private float pbY(){
-        return smbY() * 5;
+        return smbY() * 6;
     }
 
-    private float hpbY() {return smbY() * 6;}
+    private float hpbY() {return smbY() * 7;}
 
     private float gbY(){
-        return smbY() * 7;
-    }
-
-    private float bbY(){
         return smbY() * 8;
     }
 
-    private float lbY() {return smbY() * 9;}
+    private float bbY(){
+        return smbY() * 9;
+    }
+
+    private float lbY() {return smbY() * 10;}
 
     private float abY(){
-        return smbY() * 10;
+        return smbY() * 11;
     }
 
     private void resetButtons(){
@@ -209,6 +215,7 @@ public class EditorController extends WorldController implements InputProcessor 
         lbPressed = false;
         hpbPressed = false;
         spbPressed = false;
+        loadbPressed = false;
     }
 
 
@@ -269,26 +276,6 @@ public class EditorController extends WorldController implements InputProcessor 
 
         walkingPlayer = directory.getEntry( "platform:walk.pacing", FilmStrip.class );
 
-        SpikeULeft  = new TextureRegion(directory.getEntry("platform:spikeULeft", Texture.class));
-        SpikeUMid   = new TextureRegion(directory.getEntry("platform:spikeUMid", Texture.class));
-        SpikeURight = new TextureRegion(directory.getEntry("platform:spikeURight", Texture.class));
-        SpikeMLeft  = new TextureRegion(directory.getEntry("platform:spikeMLeft", Texture.class));
-        SpikeMMid   = new TextureRegion(directory.getEntry("platform:spikeMMid", Texture.class));
-        SpikeMRight = new TextureRegion(directory.getEntry("platform:spikeMRight", Texture.class));
-        SpikeBLeft  = new TextureRegion(directory.getEntry("platform:spikeBLeft", Texture.class));
-        SpikeBMid   = new TextureRegion(directory.getEntry("platform:spikeBMid", Texture.class));
-        SpikeBRight = new TextureRegion(directory.getEntry("platform:spikeBRight", Texture.class));
-
-        this.ULeft  = new TextureRegion(directory.getEntry("platform:ULeft", Texture.class));
-        this.UMid   = new TextureRegion(directory.getEntry("platform:UMid", Texture.class));
-        this.URight = new TextureRegion(directory.getEntry("platform:URight", Texture.class));
-        this.MLeft  = new TextureRegion(directory.getEntry("platform:MLeft", Texture.class));
-        this.MMid   = new TextureRegion(directory.getEntry("platform:MMid", Texture.class));
-        this.MRight = new TextureRegion(directory.getEntry("platform:MRight", Texture.class));
-        this.BLeft  = new TextureRegion(directory.getEntry("platform:BLeft", Texture.class));
-        this.BMid   = new TextureRegion(directory.getEntry("platform:BMid", Texture.class));
-        this.BRight = new TextureRegion(directory.getEntry("platform:BRight", Texture.class));
-
         jumpSound = directory.getEntry("platform:jump", SoundBuffer.class);
         fireSound = directory.getEntry("platform:pew", SoundBuffer.class);
         plopSound = directory.getEntry("platform:plop", SoundBuffer.class);
@@ -306,6 +293,7 @@ public class EditorController extends WorldController implements InputProcessor 
         goalButton = directory.getEntry("editor:goalButton", Texture.class);
         selectModeButton = directory.getEntry("editor:selectModeButton", Texture.class);
         resetButton = directory.getEntry("editor:resetButton", Texture.class);
+        loadButton = directory.getEntry("editor:loadButton", Texture.class);
         saveButton = directory.getEntry("editor:saveButton", Texture.class);
 
 
@@ -394,8 +382,11 @@ public class EditorController extends WorldController implements InputProcessor 
                 BLeft, BMid, BRight
         );
         addObject(platforms);
+        int p = 0;
         for(PolygonObstacle platform : platforms.getBodies()){
             objects.add(platform);
+            if(p<6){ platform.setActive(false); }
+            p++;
         }
 
         // Create spiked platforms
@@ -542,8 +533,11 @@ public class EditorController extends WorldController implements InputProcessor 
                 BLeft, BMid, BRight
         );
         addObject(platforms);
+        int p = 0;
         for(PolygonObstacle platform : platforms.getBodies()){
             objects.add(platform);
+            if(p<6){ platform.setActive(false); }
+            p++;
         }
         level.setPlatforms(platforms);
 
@@ -633,8 +627,8 @@ public class EditorController extends WorldController implements InputProcessor 
             return false;
         } else if (input.didAdvance()) {
             pause();
-            convertToJson();
-            //loadPath = "savedLevel";
+            tempSave();
+            loadPath = "cachedLevel";
             listener.exitScreen(this, EXIT_NEXT);
             return false;
 //		} else if (input.didRetreat()) {
@@ -727,10 +721,16 @@ public class EditorController extends WorldController implements InputProcessor 
                     populateLevel();
                 }
                 // SAVE BUTTON CLICKED
+                else if (Math.abs(loadbY() - clickY) < loadButton.getHeight()*BUTTON_SCALE/2){
+                    //this.sbPressed = true;
+                    this.loadbPressed = true;
+                    //fullSave();
+                    chooseFile();
+                }
+                // LOAD BUTTON CLICKED
                 else if (Math.abs(sbY() - clickY) < saveButton.getHeight()*BUTTON_SCALE/2){
                     this.sbPressed = true;
-                    //convertToJson();
-                    chooseFile();
+                    fullSave();
                 }
                 // SELECT MODE BUTTON CLICKED
                 else if (Math.abs(smbY() - clickY) < selectModeButton.getHeight()*BUTTON_SCALE/2){
@@ -882,6 +882,32 @@ public class EditorController extends WorldController implements InputProcessor 
                         }
                         selector.getObstacle().markRemoved(true);
                     }
+
+                    if(input.didCopy() && selector.getObstacle() != null){
+                        if (selector.getObstacle().getName().contains("platform")) {
+                            PolygonObstacle temp = newPlatform(
+                                    ((PolygonObstacle)selector.getObstacle()).getTruePoints());
+                            temp.setPosition(temp.getPosition().add(0,platWidth*2));
+                        }
+                        if (selector.getObstacle().getName().contains("spiked")) {
+                            PolygonObstacle temp = newSpikedPlatform(
+                                    ((PolygonObstacle)selector.getObstacle()).getTruePoints());
+                            temp.setPosition(temp.getPosition().add(0,platWidth*2));
+                        }
+                        if (selector.getObstacle().getName().contains("honeypatch")) {
+                            PolygonObstacle temp = newHoneypatch(
+                                    ((PolygonObstacle)selector.getObstacle()).getTruePoints());
+                            temp.setPosition(temp.getPosition().add(0,platWidth*2));
+                        }
+                        if (selector.getObstacle().getClass() == ChaserBeeModel.class) {
+                            ChaserBeeModel temp = (ChaserBeeModel) selector.getObstacle();
+                            newChaserBee(temp.getX(),temp.getY()+temp.getHeight()*2);
+                        }
+                        if (selector.getObstacle().getClass() == FlyingBeeModel.class) {
+                            FlyingBeeModel temp = (FlyingBeeModel) selector.getObstacle();
+                            newFlyingBee(temp.getX(),temp.getY()+temp.getHeight()*2);
+                        }
+                    }
                 }
             }
 
@@ -963,8 +989,18 @@ public class EditorController extends WorldController implements InputProcessor 
             }
         }
 
+        //stop weird character movement
+        if(level.getPlayer() != null){
+            level.getPlayer().setVX(0);
+            level.getPlayer().setVY(0);
+        }
+        for(AbstractBeeModel bee : level.getBees()){
+            bee.setVX(0);
+            bee.setVY(0);
+        }
+
         if (input.didSave()){
-            convertToJson();
+            fullSave();
         }
 
     }
@@ -1002,7 +1038,7 @@ public class EditorController extends WorldController implements InputProcessor 
         level.setPlayer(avatar);
     }
 
-    private void newPlatform(float[] points) {
+    private PolygonObstacle newPlatform(float[] points) {
         PolygonObstacle obj;
         obj = new PolygonObstacle(points, 0, 0);
         obj.setBodyType(BodyDef.BodyType.StaticBody);
@@ -1012,9 +1048,10 @@ public class EditorController extends WorldController implements InputProcessor 
         //obj.setActive(false);
         obj.setName("platform");
         level.getPlatforms().getArrayBodies().add(obj);
+        return obj;
     }
 
-    private void newSpikedPlatform(float[] points) {
+    private PolygonObstacle newSpikedPlatform(float[] points) {
         PolygonObstacle obj;
         obj = new PolygonObstacle(points, 0, 0);
         obj.setBodyType(BodyDef.BodyType.StaticBody);
@@ -1024,6 +1061,7 @@ public class EditorController extends WorldController implements InputProcessor 
         //obj.setActive(false);
         obj.setName("spiked");
         level.getSpikedPlatforms().getArrayBodies().add(obj);
+        return obj;
     }
 
     private PolygonObstacle newHoneypatch(float[] points) {
@@ -1204,7 +1242,7 @@ public class EditorController extends WorldController implements InputProcessor 
                 }*/
                 if (obj.getName().contains("honeypatch")) {
                     Color tint = Color.ORANGE;
-                    tint.set(tint.r,tint.g,tint.b,0.7f);
+                    tint.set(tint.r,tint.g,tint.b,0.6f);
                     ((PolygonObstacle) obj).draw(canvas,tint);
                 }
             }else{
@@ -1292,6 +1330,8 @@ public class EditorController extends WorldController implements InputProcessor 
                 larvaButton.getHeight() / 2, BUTTON_X, spbY(), 0, BUTTON_SCALE, BUTTON_SCALE);
         canvas.draw(honeyPatchButton,  hpbPressed ? Color.GRAY : Color.WHITE, honeyPatchButton.getWidth() / 2,
                 honeyPatchButton.getHeight() / 2, BUTTON_X, hpbY(), 0, BUTTON_SCALE, BUTTON_SCALE);
+        canvas.draw(loadButton,  loadbPressed ? Color.GRAY : Color.WHITE, loadButton.getWidth() / 2,
+                loadButton.getHeight() / 2, BUTTON_X, loadbY(), 0, BUTTON_SCALE, BUTTON_SCALE);
         canvas.end();
 
 
@@ -1420,6 +1460,21 @@ public class EditorController extends WorldController implements InputProcessor 
         return true;
     }
 
+    private float[][] getPlatforms(int platformType){
+        Array<PolygonObstacle> platforms;
+        switch (platformType){
+            case 0: platforms = level.getPlatforms().getArrayBodies(); break;
+            case 1: platforms = level.getSpikedPlatforms().getArrayBodies(); break;
+            case 2: platforms = level.getHoneyPatches().getArrayBodies(); break;
+            default: platforms = new Array<>();
+        }
+        float[][] platformArray = new float[platforms.size][platforms.get(0).getTruePoints().length];
+        for (int i=0; i<platformArray.length; i++){
+            platformArray[i] = platforms.get(i).getTruePoints();
+        }
+        return platformArray;
+    }
+
     public class Level{
         public float[] goalPos;
         public float[] playerPos;
@@ -1445,9 +1500,9 @@ public class EditorController extends WorldController implements InputProcessor 
 
     }
 
-    public void convertToJson(){
+    public Level convertToJsonLevel(){
 
-        this.loadPath = "savedLevel";
+        //this.loadPath = "savedLevel";
         Level jsonLevel = new Level();
 
         if (level.getGoalDoor()!=null){
@@ -1505,32 +1560,59 @@ public class EditorController extends WorldController implements InputProcessor 
             jsonLevel.setHoneyPatch(getPlatforms(2));
         }
 
+        return jsonLevel;
 
-        FileHandle file = Gdx.files.local("savedLevel.json");
+    }
+
+    public class JsonFileFilter extends FileFilter {
+        public boolean accept(File f) {
+            return f.isDirectory() || f.getName().endsWith(".json");
+        }
+
+        public String getDescription() {
+            return "*.json";
+        }
+    }
+
+    public void saveToPath(String path, Level jsonLevel){
+        FileHandle file = Gdx.files.absolute(path);
         Json json = new Json();
         json.setOutputType(JsonWriter.OutputType.json);
         file.writeString(json.prettyPrint(jsonLevel), false);
         System.out.println("saved");
     }
 
-    private float[][] getPlatforms(int platformType){
-        Array<PolygonObstacle> platforms;
-        switch (platformType){
-            case 0: platforms = level.getPlatforms().getArrayBodies(); break;
-            case 1: platforms = level.getSpikedPlatforms().getArrayBodies(); break;
-            case 2: platforms = level.getHoneyPatches().getArrayBodies(); break;
-            default: platforms = new Array<>();
+    public void tempSave(){
+        Level level = convertToJsonLevel();
+        String path = Gdx.files.getLocalStoragePath() + "cachedLevel.json";
+
+        saveToPath(path, level);
+    }
+
+    public void fullSave(){
+        Level level = convertToJsonLevel();
+
+        JFileChooser jfc = new JFileChooser();
+        jfc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        jfc.setFileFilter(new JsonFileFilter());
+        jfc.setSelectedFile(new File("untitled.json"));
+        int r = jfc.showSaveDialog(null);
+        jfc.setVisible(true);
+        if (r == JFileChooser.CANCEL_OPTION)
+            return;
+        String path = jfc.getSelectedFile().getName();
+        if (!path.endsWith(".json")){
+            path = path + ".json";
         }
-        float[][] platformArray = new float[platforms.size][platforms.get(0).getTruePoints().length];
-        for (int i=0; i<platformArray.length; i++){
-            platformArray[i] = platforms.get(i).getTruePoints();
-        }
-        return platformArray;
+        path = jfc.getCurrentDirectory() + "\\" + path;
+
+        saveToPath(path, level);
     }
 
     private void chooseFile(){
         JFileChooser jfc = new JFileChooser();
-        int r = jfc.showDialog(null, "select");
+        jfc.setFileFilter(new JsonFileFilter());
+        int r = jfc.showOpenDialog(null);
         jfc.setVisible(true);
         if (r == JFileChooser.CANCEL_OPTION){
             return;
