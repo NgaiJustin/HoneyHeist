@@ -103,6 +103,10 @@
       "file": "shared/RetroGame.ttf",
       "size": 32
     },
+    "shared:retro": {
+        "file": "shared/RetroGame.ttf",
+        "size": 64
+    },
     "shared:marker": {
       "file": "shared/MarkerFelt.ttf",
       "size": 40

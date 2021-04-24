@@ -747,15 +747,15 @@ public class GameplayController implements Screen, InputProcessor {
 	 */
 	@Override
 	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-		if (pauseButton==null) return true;
+		if (pauseButton==null && menuButton == null) return true;
 
 		// Flip to match graphics coordinates
 		screenY = heightY-screenY;
 
 		float radius, dist;
-		radius = PAUSE_SCALE*scaleFactor*pauseButton.getWidth()/2.0f;
-		dist = (screenX-PAUSE_XPOS)*(screenX-PAUSE_XPOS)+(screenY-PAUSE_YPOS)* (screenY-PAUSE_YPOS);
-		if (dist < radius*radius) {
+		radius = PAUSE_SCALE * scaleFactor * pauseButton.getWidth() / 2.0f;
+		dist = (screenX - PAUSE_XPOS) * (screenX - PAUSE_XPOS) + (screenY - PAUSE_YPOS) * (screenY - PAUSE_YPOS);
+		if (dist < radius * radius) {
 			pausePressed = true;
 		}
 //		radius = MENU_SCALE*scaleFactor*menuButton.getWidth()/2.0f;
@@ -763,9 +763,9 @@ public class GameplayController implements Screen, InputProcessor {
 //		if (dist < radius*radius) {
 //			menuPressed = true;
 //		}
-		float width = MENU_XSCALE*scaleFactor*menuButton.getWidth()/2.0f;
-		float height = MENU_YSCALE*scaleFactor*menuButton.getHeight()/2.0f;
-		if (Math.abs(screenX-MENU_XPOS)<Math.abs(width) && Math.abs(screenY-MENU_YPOS)<Math.abs(height)) {
+		float width = MENU_XSCALE * scaleFactor * menuButton.getWidth() / 2.0f;
+		float height = MENU_YSCALE * scaleFactor * menuButton.getHeight() / 2.0f;
+		if (Math.abs(screenX - MENU_XPOS) < Math.abs(width) && Math.abs(screenY - MENU_YPOS) < Math.abs(height)) {
 			menuPressed = true;
 		}
 		return false;
