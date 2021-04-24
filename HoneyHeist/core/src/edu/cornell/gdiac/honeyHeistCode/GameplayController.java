@@ -439,9 +439,11 @@ public class GameplayController implements Screen, InputProcessor {
      */
     public boolean preUpdate(float dt) {
 		// If in the pause state, do not update
-		if (isPaused) { return false; }
         boolean temp = preUpdateHelper(dt);
         boolean result = levelController.preUpdate(temp);
+		// MENU button has a higher priority then the PAUSE button
+		// so preUpdateHelper needs to proceed first
+		if (isPaused) { return false; }
 //        setFailure(levelController.isFailure());
         return result;
     }
@@ -752,21 +754,18 @@ public class GameplayController implements Screen, InputProcessor {
 		// Flip to match graphics coordinates
 		screenY = heightY-screenY;
 
+		// MENU button has a higher priority then the PAUSE button
+		float width = MENU_XSCALE * scaleFactor * menuButton.getWidth() / 2.0f;
+		float height = MENU_YSCALE * scaleFactor * menuButton.getHeight() / 2.0f;
+		if (Math.abs(screenX - MENU_XPOS) < Math.abs(width) && Math.abs(screenY - MENU_YPOS) < Math.abs(height)) {
+			menuPressed = true;
+		}
+
 		float radius, dist;
 		radius = PAUSE_SCALE * scaleFactor * pauseButton.getWidth() / 2.0f;
 		dist = (screenX - PAUSE_XPOS) * (screenX - PAUSE_XPOS) + (screenY - PAUSE_YPOS) * (screenY - PAUSE_YPOS);
 		if (dist < radius * radius) {
 			pausePressed = true;
-		}
-//		radius = MENU_SCALE*scaleFactor*menuButton.getWidth()/2.0f;
-//		dist = (screenX-MENU_XPOS)*(screenX-MENU_XPOS)+(screenY-MENU_YPOS)* (screenY-MENU_YPOS);
-//		if (dist < radius*radius) {
-//			menuPressed = true;
-//		}
-		float width = MENU_XSCALE * scaleFactor * menuButton.getWidth() / 2.0f;
-		float height = MENU_YSCALE * scaleFactor * menuButton.getHeight() / 2.0f;
-		if (Math.abs(screenX - MENU_XPOS) < Math.abs(width) && Math.abs(screenY - MENU_YPOS) < Math.abs(height)) {
-			menuPressed = true;
 		}
 		return false;
 	}
@@ -782,14 +781,15 @@ public class GameplayController implements Screen, InputProcessor {
 	 */
 	@Override
 	public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-		if (pausePressed) {
-			pausePressed = false;
-			isPaused = !isPaused;
-			return false;
-		}
+		// MENU button has a higher priority then the PAUSE button
 		if (menuPressed) {
 			menuPressed = false;
 			menuReady = true;
+			return false;
+		}
+		if (pausePressed) {
+			pausePressed = false;
+			isPaused = !isPaused;
 			return false;
 		}
 		return true;
