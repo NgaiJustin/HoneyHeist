@@ -23,6 +23,8 @@ import edu.cornell.gdiac.honeyHeistCode.obstacle.PolygonObstacle;
 import edu.cornell.gdiac.util.FilmStrip;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileFilter;
+import java.io.File;
 
 public class EditorController extends WorldController implements InputProcessor {
     /** Texture asset for mouse crosshairs */
@@ -633,8 +635,8 @@ public class EditorController extends WorldController implements InputProcessor 
             return false;
         } else if (input.didAdvance()) {
             pause();
-            convertToJson();
-            //loadPath = "savedLevel";
+            tempSave();
+            loadPath = "cachedLevel";
             listener.exitScreen(this, EXIT_NEXT);
             return false;
 //		} else if (input.didRetreat()) {
@@ -729,7 +731,7 @@ public class EditorController extends WorldController implements InputProcessor 
                 // SAVE BUTTON CLICKED
                 else if (Math.abs(sbY() - clickY) < saveButton.getHeight()*BUTTON_SCALE/2){
                     this.sbPressed = true;
-                    //convertToJson();
+                    //fullSave();
                     chooseFile();
                 }
                 // SELECT MODE BUTTON CLICKED
@@ -964,7 +966,7 @@ public class EditorController extends WorldController implements InputProcessor 
         }
 
         if (input.didSave()){
-            convertToJson();
+            fullSave();
         }
 
     }
@@ -1420,6 +1422,21 @@ public class EditorController extends WorldController implements InputProcessor 
         return true;
     }
 
+    private float[][] getPlatforms(int platformType){
+        Array<PolygonObstacle> platforms;
+        switch (platformType){
+            case 0: platforms = level.getPlatforms().getArrayBodies(); break;
+            case 1: platforms = level.getSpikedPlatforms().getArrayBodies(); break;
+            case 2: platforms = level.getHoneyPatches().getArrayBodies(); break;
+            default: platforms = new Array<>();
+        }
+        float[][] platformArray = new float[platforms.size][platforms.get(0).getTruePoints().length];
+        for (int i=0; i<platformArray.length; i++){
+            platformArray[i] = platforms.get(i).getTruePoints();
+        }
+        return platformArray;
+    }
+
     public class Level{
         public float[] goalPos;
         public float[] playerPos;
@@ -1445,9 +1462,9 @@ public class EditorController extends WorldController implements InputProcessor 
 
     }
 
-    public void convertToJson(){
+    public Level convertToJsonLevel(){
 
-        this.loadPath = "savedLevel";
+        //this.loadPath = "savedLevel";
         Level jsonLevel = new Level();
 
         if (level.getGoalDoor()!=null){
@@ -1505,32 +1522,59 @@ public class EditorController extends WorldController implements InputProcessor 
             jsonLevel.setHoneyPatch(getPlatforms(2));
         }
 
+        return jsonLevel;
 
-        FileHandle file = Gdx.files.local("savedLevel.json");
+    }
+
+    public class JsonFileFilter extends FileFilter {
+        public boolean accept(File f) {
+            return f.isDirectory() || f.getName().endsWith(".json");
+        }
+
+        public String getDescription() {
+            return "*.json";
+        }
+    }
+
+    public void saveToPath(String path, Level jsonLevel){
+        FileHandle file = Gdx.files.absolute(path);
         Json json = new Json();
         json.setOutputType(JsonWriter.OutputType.json);
         file.writeString(json.prettyPrint(jsonLevel), false);
         System.out.println("saved");
     }
 
-    private float[][] getPlatforms(int platformType){
-        Array<PolygonObstacle> platforms;
-        switch (platformType){
-            case 0: platforms = level.getPlatforms().getArrayBodies(); break;
-            case 1: platforms = level.getSpikedPlatforms().getArrayBodies(); break;
-            case 2: platforms = level.getHoneyPatches().getArrayBodies(); break;
-            default: platforms = new Array<>();
+    public void tempSave(){
+        Level level = convertToJsonLevel();
+        String path = Gdx.files.getLocalStoragePath() + "cachedLevel.json";
+
+        saveToPath(path, level);
+    }
+
+    public void fullSave(){
+        Level level = convertToJsonLevel();
+
+        JFileChooser jfc = new JFileChooser();
+        jfc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        jfc.setFileFilter(new JsonFileFilter());
+        jfc.setSelectedFile(new File("untitled.json"));
+        int r = jfc.showSaveDialog(null);
+        jfc.setVisible(true);
+        if (r == JFileChooser.CANCEL_OPTION)
+            return;
+        String path = jfc.getSelectedFile().getName();
+        if (!path.endsWith(".json")){
+            path = path + ".json";
         }
-        float[][] platformArray = new float[platforms.size][platforms.get(0).getTruePoints().length];
-        for (int i=0; i<platformArray.length; i++){
-            platformArray[i] = platforms.get(i).getTruePoints();
-        }
-        return platformArray;
+        path = jfc.getCurrentDirectory() + "\\" + path;
+
+        saveToPath(path, level);
     }
 
     private void chooseFile(){
         JFileChooser jfc = new JFileChooser();
-        int r = jfc.showDialog(null, "select");
+        jfc.setFileFilter(new JsonFileFilter());
+        int r = jfc.showOpenDialog(null);
         jfc.setVisible(true);
         if (r == JFileChooser.CANCEL_OPTION){
             return;

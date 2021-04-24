@@ -1,6 +1,6 @@
 {
   "jsons": {
-    "savedLevel": "savedLevel.json",
+    "cachedLevel": "cachedLevel.json",
     "platform:defaultLevel": "platform/defaultLevel.json"
   }
 }
