@@ -138,7 +138,7 @@ public class EditorController extends WorldController implements InputProcessor 
     // Fields for the Editor controller GUI
 //    private EditorOverlay overlay;
 //    private Stage stage;
-    private int buttonNum = 10;
+    private int buttonNum = 11;
 
     private Texture antButton;
     private Texture larvaButton;
@@ -149,6 +149,7 @@ public class EditorController extends WorldController implements InputProcessor 
     private Texture goalButton;
     private Texture selectModeButton;
     private Texture saveButton;
+    private Texture loadButton;
     private Texture resetButton;
 
     private Boolean abPressed = false;  // Ant button
@@ -160,6 +161,7 @@ public class EditorController extends WorldController implements InputProcessor 
     private Boolean gbPressed = false;  // Goal button
     private Boolean smbPressed = false; // Select mode button
     private Boolean sbPressed = false;  // Save button
+    private Boolean loadbPressed = false;  // Load button
     private Boolean rbPressed = false;  // Reset button
 
     private static float BUTTON_SCALE  = 0.3f;
@@ -176,28 +178,30 @@ public class EditorController extends WorldController implements InputProcessor 
 
     private float sbY() {return smbY() * 2;}
 
-    private float rbY() {return smbY() * 3;}
+    private float loadbY() {return smbY() * 3;}
 
-    private float spbY() {return smbY() * 4;}
+    private float rbY() {return smbY() * 4;}
+
+    private float spbY() {return smbY() * 5;}
 
     private float pbY(){
-        return smbY() * 5;
+        return smbY() * 6;
     }
 
-    private float hpbY() {return smbY() * 6;}
+    private float hpbY() {return smbY() * 7;}
 
     private float gbY(){
-        return smbY() * 7;
-    }
-
-    private float bbY(){
         return smbY() * 8;
     }
 
-    private float lbY() {return smbY() * 9;}
+    private float bbY(){
+        return smbY() * 9;
+    }
+
+    private float lbY() {return smbY() * 10;}
 
     private float abY(){
-        return smbY() * 10;
+        return smbY() * 11;
     }
 
     private void resetButtons(){
@@ -211,6 +215,7 @@ public class EditorController extends WorldController implements InputProcessor 
         lbPressed = false;
         hpbPressed = false;
         spbPressed = false;
+        loadbPressed = false;
     }
 
 
@@ -271,26 +276,6 @@ public class EditorController extends WorldController implements InputProcessor 
 
         walkingPlayer = directory.getEntry( "platform:walk.pacing", FilmStrip.class );
 
-        SpikeULeft  = new TextureRegion(directory.getEntry("platform:spikeULeft", Texture.class));
-        SpikeUMid   = new TextureRegion(directory.getEntry("platform:spikeUMid", Texture.class));
-        SpikeURight = new TextureRegion(directory.getEntry("platform:spikeURight", Texture.class));
-        SpikeMLeft  = new TextureRegion(directory.getEntry("platform:spikeMLeft", Texture.class));
-        SpikeMMid   = new TextureRegion(directory.getEntry("platform:spikeMMid", Texture.class));
-        SpikeMRight = new TextureRegion(directory.getEntry("platform:spikeMRight", Texture.class));
-        SpikeBLeft  = new TextureRegion(directory.getEntry("platform:spikeBLeft", Texture.class));
-        SpikeBMid   = new TextureRegion(directory.getEntry("platform:spikeBMid", Texture.class));
-        SpikeBRight = new TextureRegion(directory.getEntry("platform:spikeBRight", Texture.class));
-
-        this.ULeft  = new TextureRegion(directory.getEntry("platform:ULeft", Texture.class));
-        this.UMid   = new TextureRegion(directory.getEntry("platform:UMid", Texture.class));
-        this.URight = new TextureRegion(directory.getEntry("platform:URight", Texture.class));
-        this.MLeft  = new TextureRegion(directory.getEntry("platform:MLeft", Texture.class));
-        this.MMid   = new TextureRegion(directory.getEntry("platform:MMid", Texture.class));
-        this.MRight = new TextureRegion(directory.getEntry("platform:MRight", Texture.class));
-        this.BLeft  = new TextureRegion(directory.getEntry("platform:BLeft", Texture.class));
-        this.BMid   = new TextureRegion(directory.getEntry("platform:BMid", Texture.class));
-        this.BRight = new TextureRegion(directory.getEntry("platform:BRight", Texture.class));
-
         jumpSound = directory.getEntry("platform:jump", SoundBuffer.class);
         fireSound = directory.getEntry("platform:pew", SoundBuffer.class);
         plopSound = directory.getEntry("platform:plop", SoundBuffer.class);
@@ -308,6 +293,7 @@ public class EditorController extends WorldController implements InputProcessor 
         goalButton = directory.getEntry("editor:goalButton", Texture.class);
         selectModeButton = directory.getEntry("editor:selectModeButton", Texture.class);
         resetButton = directory.getEntry("editor:resetButton", Texture.class);
+        loadButton = directory.getEntry("editor:loadButton", Texture.class);
         saveButton = directory.getEntry("editor:saveButton", Texture.class);
 
 
@@ -729,10 +715,16 @@ public class EditorController extends WorldController implements InputProcessor 
                     populateLevel();
                 }
                 // SAVE BUTTON CLICKED
-                else if (Math.abs(sbY() - clickY) < saveButton.getHeight()*BUTTON_SCALE/2){
-                    this.sbPressed = true;
+                else if (Math.abs(loadbY() - clickY) < loadButton.getHeight()*BUTTON_SCALE/2){
+                    //this.sbPressed = true;
+                    this.loadbPressed = true;
                     //fullSave();
                     chooseFile();
+                }
+                // LOAD BUTTON CLICKED
+                else if (Math.abs(sbY() - clickY) < saveButton.getHeight()*BUTTON_SCALE/2){
+                    this.sbPressed = true;
+                    fullSave();
                 }
                 // SELECT MODE BUTTON CLICKED
                 else if (Math.abs(smbY() - clickY) < selectModeButton.getHeight()*BUTTON_SCALE/2){
@@ -1332,6 +1324,8 @@ public class EditorController extends WorldController implements InputProcessor 
                 larvaButton.getHeight() / 2, BUTTON_X, spbY(), 0, BUTTON_SCALE, BUTTON_SCALE);
         canvas.draw(honeyPatchButton,  hpbPressed ? Color.GRAY : Color.WHITE, honeyPatchButton.getWidth() / 2,
                 honeyPatchButton.getHeight() / 2, BUTTON_X, hpbY(), 0, BUTTON_SCALE, BUTTON_SCALE);
+        canvas.draw(loadButton,  loadbPressed ? Color.GRAY : Color.WHITE, loadButton.getWidth() / 2,
+                loadButton.getHeight() / 2, BUTTON_X, loadbY(), 0, BUTTON_SCALE, BUTTON_SCALE);
         canvas.end();
 
 
