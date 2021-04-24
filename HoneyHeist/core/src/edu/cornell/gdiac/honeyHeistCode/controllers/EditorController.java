@@ -23,8 +23,8 @@ import edu.cornell.gdiac.honeyHeistCode.obstacle.PolygonObstacle;
 import edu.cornell.gdiac.util.FilmStrip;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileFilter;
 import java.io.File;
-import java.io.FileFilter;
 
 public class EditorController extends WorldController implements InputProcessor {
     /** Texture asset for mouse crosshairs */
@@ -1526,6 +1526,16 @@ public class EditorController extends WorldController implements InputProcessor 
 
     }
 
+    public class JsonFileFilter extends FileFilter {
+        public boolean accept(File f) {
+            return f.isDirectory() || f.getName().endsWith(".json");
+        }
+
+        public String getDescription() {
+            return "*.json";
+        }
+    }
+
     public void saveToPath(String path, Level jsonLevel){
         FileHandle file = Gdx.files.absolute(path);
         Json json = new Json();
@@ -1546,6 +1556,7 @@ public class EditorController extends WorldController implements InputProcessor 
 
         JFileChooser jfc = new JFileChooser();
         jfc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        jfc.setFileFilter(new JsonFileFilter());
         jfc.setSelectedFile(new File("untitled.json"));
         int r = jfc.showSaveDialog(null);
         jfc.setVisible(true);
@@ -1562,7 +1573,8 @@ public class EditorController extends WorldController implements InputProcessor 
 
     private void chooseFile(){
         JFileChooser jfc = new JFileChooser();
-        int r = jfc.showDialog(null, "select");
+        jfc.setFileFilter(new JsonFileFilter());
+        int r = jfc.showOpenDialog(null);
         jfc.setVisible(true);
         if (r == JFileChooser.CANCEL_OPTION){
             return;
