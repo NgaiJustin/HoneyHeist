@@ -160,28 +160,6 @@ public class EditorController extends WorldController implements InputProcessor 
     private Boolean sbPressed = false;  // Save button
     private Boolean rbPressed = false;  // Reset button
 
-    /** Platform texture */
-    private TextureRegion ULeft;
-    private TextureRegion UMid;
-    private TextureRegion URight;
-    private TextureRegion MLeft;
-    private TextureRegion MMid;
-    private TextureRegion MRight;
-    private TextureRegion BLeft;
-    private TextureRegion BMid;
-    private TextureRegion BRight;
-
-    /** Spike textures */
-    private TextureRegion SpikeULeft;
-    private TextureRegion SpikeUMid;
-    private TextureRegion SpikeURight;
-    private TextureRegion SpikeMLeft;
-    private TextureRegion SpikeMMid;
-    private TextureRegion SpikeMRight;
-    private TextureRegion SpikeBLeft;
-    private TextureRegion SpikeBMid;
-    private TextureRegion SpikeBRight;
-
     private static float BUTTON_SCALE  = 0.3f;
 
     public String getLoadPath(){return loadPath;}
@@ -301,15 +279,15 @@ public class EditorController extends WorldController implements InputProcessor 
         SpikeBMid   = new TextureRegion(directory.getEntry("platform:spikeBMid", Texture.class));
         SpikeBRight = new TextureRegion(directory.getEntry("platform:spikeBRight", Texture.class));
 
-        ULeft  = new TextureRegion(directory.getEntry("platform:ULeft", Texture.class));
-        UMid   = new TextureRegion(directory.getEntry("platform:UMid", Texture.class));
-        URight = new TextureRegion(directory.getEntry("platform:URight", Texture.class));
-        MLeft  = new TextureRegion(directory.getEntry("platform:MLeft", Texture.class));
-        MMid   = new TextureRegion(directory.getEntry("platform:MMid", Texture.class));
-        MRight = new TextureRegion(directory.getEntry("platform:MRight", Texture.class));
-        BLeft  = new TextureRegion(directory.getEntry("platform:BLeft", Texture.class));
-        BMid   = new TextureRegion(directory.getEntry("platform:BMid", Texture.class));
-        BRight = new TextureRegion(directory.getEntry("platform:BRight", Texture.class));
+        this.ULeft  = new TextureRegion(directory.getEntry("platform:ULeft", Texture.class));
+        this.UMid   = new TextureRegion(directory.getEntry("platform:UMid", Texture.class));
+        this.URight = new TextureRegion(directory.getEntry("platform:URight", Texture.class));
+        this.MLeft  = new TextureRegion(directory.getEntry("platform:MLeft", Texture.class));
+        this.MMid   = new TextureRegion(directory.getEntry("platform:MMid", Texture.class));
+        this.MRight = new TextureRegion(directory.getEntry("platform:MRight", Texture.class));
+        this.BLeft  = new TextureRegion(directory.getEntry("platform:BLeft", Texture.class));
+        this.BMid   = new TextureRegion(directory.getEntry("platform:BMid", Texture.class));
+        this.BRight = new TextureRegion(directory.getEntry("platform:BRight", Texture.class));
 
         jumpSound = directory.getEntry("platform:jump", SoundBuffer.class);
         fireSound = directory.getEntry("platform:pew", SoundBuffer.class);

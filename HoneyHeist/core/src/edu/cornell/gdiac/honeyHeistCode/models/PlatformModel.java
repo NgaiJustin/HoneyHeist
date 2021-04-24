@@ -265,16 +265,6 @@ public class PlatformModel extends Obstacle {
 				Vector2 botLeftToRight = new Vector2(botRight.cpy().sub(botLeft.cpy()));
 				float angle = botLeftToRight.angleDeg();
 
-				assert ninePatch != null;
-//				canvas.drawNinePatch(ninePatch,
-//						botLeft.x * drawScale.x,
-//						botLeft.y * drawScale.y,
-//						0,
-//						0,
-//						trueWidth * drawScale.x,
-//						trueHeight * drawScale.y,
-//						1f, 1f,
-//						angle);
 
 				float step = D_THICKNESS;
 
