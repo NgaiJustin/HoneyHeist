@@ -286,7 +286,6 @@ public class LevelSelector implements Screen {
         // change the size
         levelEditor.invalidate();
         levelEditor.setSize(EDITOR_WIDTH, EDITOR_HEIGHT);
-        System.out.println(stage.getHeight() + " + " + stage.getWidth());
         levelEditor.setPosition(stage.getWidth()*0.1f, stage.getHeight()*0.8f);
         levelEditor.validate();
         // add listen to pressing event
