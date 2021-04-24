@@ -359,6 +359,9 @@ public class LevelController implements ContactListener {
     /** Mark set to handle more sophisticated collision callbacks */
     protected ObjectSet<Fixture> sensorFixtures;
 
+    /** Mark set to handle more sophisticated collision callbacks */
+    protected ObjectSet<Fixture> honeyFixtures;
+
 //    OrthographicCamera camera;
 
     /**
@@ -392,6 +395,7 @@ public class LevelController implements ContactListener {
         setFailure(false);
         world.setContactListener(this);
         sensorFixtures = new ObjectSet<Fixture>();
+        honeyFixtures = new ObjectSet<Fixture>();
 //        this.camera = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
     }
 
@@ -497,6 +501,7 @@ public class LevelController implements ContactListener {
         addQueue.clear();
         world.dispose();
         sensorFixtures.clear();
+        honeyFixtures.clear();
 
         world = new World(gravity, false);
         world.setContactListener(this);
@@ -876,8 +881,11 @@ public class LevelController implements ContactListener {
             avatar.startRotation(platforms.getRemainingAngle(), platforms.isClockwise(), level.getOrigin());
         }
 
-        if(!avatar.isGrounded()&&!avatar.isInHoney()){
+        if(!avatar.isGrounded()){
             sensorFixtures.clear();
+        }
+        if(!avatar.isInHoney()){
+            honeyFixtures.clear();
         }
 
         // Process AI action
@@ -894,8 +902,11 @@ public class LevelController implements ContactListener {
                     //&&((bee.isGrounded() && !bee.isInHoney())||(bee.isInHoney() && bee.getHoneyTime()==0))){
                 bee.startRotation(platforms.getRemainingAngle(), platforms.isClockwise(), level.getOrigin());
             }
-            if(!bee.isGrounded()&&!bee.isInHoney()){
+            if(!bee.isGrounded()){
                 bee.getSensorFixtures().clear();
+            }
+            if(!bee.isInHoney()){
+                bee.getHoneyFixtures().clear();
             }
         }
 
@@ -1005,27 +1016,27 @@ public class LevelController implements ContactListener {
                     bee.getSensorFixtures().add(bee == bd1 ? fix2 : fix1); // Could have more than one ground
                 }
                 if (((bee.getSensorName().equals(fd2) && bee != bd1)&& fix2.isSensor()&&(bd1.getName().contains("honeypatch")) &&
-                        !bee.getSensorFixtures().contains(fix1)) ||
+                        !bee.getHoneyFixtures().contains(fix1)) ||
                     ((bee.getSensorName().equals(fd1) && bee != bd2)&& fix1.isSensor()&&(bd2.getName().contains("honeypatch"))&&
-                            !bee.getSensorFixtures().contains(fix2))) {
+                            !bee.getHoneyFixtures().contains(fix2))) {
                     //System.out.print(bee.getSensorName()+" in honeypatch\n");
                     //bee.setGrounded(true);
                     bee.setInHoney(true);
                     //bee.setHoneyTime(0.5f);
-                    bee.getSensorFixtures().add(bee == bd1 ? fix2 : fix1); // Could have more than one ground
+                    bee.getHoneyFixtures().add(bee == bd1 ? fix2 : fix1); // Could have more than one ground
                     bee.setMaxspeed(level.getHoneyPatches().getSlowSpeed());
                 }
             }
             // Check for honeypatch
             if (((avatar.getSensorName().equals(fd2) && avatar != bd1)&& fix2.isSensor() && (bd1.getName().contains("honeypatch"))&&
-                    !sensorFixtures.contains(fix1)) ||
+                    !honeyFixtures.contains(fix1)) ||
                 ((avatar.getSensorName().equals(fd1) && avatar != bd2)&& fix1.isSensor() && (bd2.getName().contains("honeypatch"))&&
-                        !sensorFixtures.contains(fix2))) {
+                        !honeyFixtures.contains(fix2))) {
                 //avatar.setGrounded(true);
                 //System.out.print("honeypatch!\n");
                 avatar.setInHoney(true);
                 //avatar.setHoneyTime(0.5f);
-                sensorFixtures.add(avatar == bd1 ? fix2 : fix1);
+                honeyFixtures.add(avatar == bd1 ? fix2 : fix1);
                 avatar.setMaxspeed(level.getHoneyPatches().getSlowSpeed());
             }
 
@@ -1080,8 +1091,8 @@ public class LevelController implements ContactListener {
             }
             if (((avatar.getSensorName().equals(fd2) && avatar != bd1)&& fix2.isSensor()&&(bd1.getName().contains("honeypatch")))  ||
                     ((avatar.getSensorName().equals(fd1)  && avatar != bd2)&& fix1.isSensor()&&(bd2.getName().contains("honeypatch")))) {
-                sensorFixtures.remove(avatar == bd1 ? fix2 : fix1);
-                if(sensorFixtures.size == 0) {
+                honeyFixtures.remove(avatar == bd1 ? fix2 : fix1);
+                if(honeyFixtures.size == 0) {
                     avatar.setDefaultMaxspeed();
                     avatar.setInHoney(false);
                 }
@@ -1100,9 +1111,9 @@ public class LevelController implements ContactListener {
                 }
                 if (((bee.getSensorName().equals(fd2) && bee != bd1)&& fix2.isSensor()&&(bd1.getName().contains("honeypatch"))) ||
                         ((bee.getSensorName().equals(fd1) && bee != bd2)&& fix1.isSensor()&&(bd2.getName().contains("honeypatch")))) {
-                    bee.getSensorFixtures().remove(bee == bd1 ? fix2 : fix1);
+                    bee.getHoneyFixtures().remove(bee == bd1 ? fix2 : fix1);
                     //System.out.print("exiting honeypatch!\n");
-                    if (bee.getSensorFixtures().size == 0) {
+                    if (bee.getHoneyFixtures().size == 0) {
                         bee.setDefaultMaxspeed();
                         bee.setInHoney(false);
                     }

@@ -19,6 +19,7 @@ public abstract class AbstractBeeModel extends CharacterModel {
         setName("bee");
         sensorName = "BeeGroundSensor"+x+y;
         sensorFixtures = new ObjectSet<Fixture>();
+        honeyFixtures = new ObjectSet<Fixture>();
     }
 
     /**

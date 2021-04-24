@@ -1225,7 +1225,7 @@ public class EditorController extends WorldController implements InputProcessor 
                 }*/
                 if (obj.getName().contains("honeypatch")) {
                     Color tint = Color.ORANGE;
-                    tint.set(tint.r,tint.g,tint.b,0.7f);
+                    tint.set(tint.r,tint.g,tint.b,0.6f);
                     ((PolygonObstacle) obj).draw(canvas,tint);
                 }
             }else{
