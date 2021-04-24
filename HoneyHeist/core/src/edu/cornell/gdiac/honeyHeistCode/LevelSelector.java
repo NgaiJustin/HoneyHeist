@@ -270,9 +270,6 @@ public class LevelSelector implements Screen {
         // set background
         table.setBackground(skin.getDrawable("background"));
 
-//        HorizontalGroup horizontalGroup = new HorizontalGroup();
-
-//        table.add(stack);
         // *** levelEditor button *** //
         TextureRegion levelEditorImage = new TextureRegion(internal.getEntry("levelEditor", Texture.class));
         TextureRegionDrawable levelEditorDrawable = new TextureRegionDrawable(levelEditorImage);
@@ -305,12 +302,10 @@ public class LevelSelector implements Screen {
 
         // *** level buttons *** //
         TextureRegion buttonImage = new TextureRegion(internal.getEntry("button", Texture.class));
-        Drawable buttonUpDrawable = skin.getDrawable("levelButton");
-        TextureRegionDrawable buttonDown = new TextureRegionDrawable(buttonImage);
+        TextureRegionDrawable buttonDrawable = new TextureRegionDrawable(buttonImage);
         TextButtonStyle buttonStyle = new TextButtonStyle();
-        buttonStyle.up = buttonUpDrawable;
-//        buttonStyle.up = buttonDown.tint(Color.GRAY);
-        buttonStyle.down = buttonDown.tint(Color.GRAY);
+        buttonStyle.up = buttonDrawable;
+        buttonStyle.down = buttonDrawable.tint(Color.GRAY);
         buttonStyle.font = skin.getFont("font");
         levelButtons = new TextButton[20];
         Table levelTable = new Table();

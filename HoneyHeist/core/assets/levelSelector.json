@@ -1,6 +1,6 @@
 {
 	"textures": {
-        "background": "shared/background.png",
+        "background": "shared/background_menu.png",
 		"play": "shared/play.png",
         "levelEditor": "editor/levelLabel.png",
         "button": "shared/button_level.png",
