@@ -884,6 +884,32 @@ public class EditorController extends WorldController implements InputProcessor 
                         }
                         selector.getObstacle().markRemoved(true);
                     }
+
+                    if(input.didCopy() && selector.getObstacle() != null){
+                        if (selector.getObstacle().getName().contains("platform")) {
+                            PolygonObstacle temp = newPlatform(
+                                    ((PolygonObstacle)selector.getObstacle()).getTruePoints());
+                            temp.setPosition(temp.getPosition().add(0,platWidth*2));
+                        }
+                        if (selector.getObstacle().getName().contains("spiked")) {
+                            PolygonObstacle temp = newSpikedPlatform(
+                                    ((PolygonObstacle)selector.getObstacle()).getTruePoints());
+                            temp.setPosition(temp.getPosition().add(0,platWidth*2));
+                        }
+                        if (selector.getObstacle().getName().contains("honeypatch")) {
+                            PolygonObstacle temp = newHoneypatch(
+                                    ((PolygonObstacle)selector.getObstacle()).getTruePoints());
+                            temp.setPosition(temp.getPosition().add(0,platWidth*2));
+                        }
+                        if (selector.getObstacle().getClass() == ChaserBeeModel.class) {
+                            ChaserBeeModel temp = (ChaserBeeModel) selector.getObstacle();
+                            newChaserBee(temp.getX(),temp.getY()+temp.getHeight()*2);
+                        }
+                        if (selector.getObstacle().getClass() == FlyingBeeModel.class) {
+                            FlyingBeeModel temp = (FlyingBeeModel) selector.getObstacle();
+                            newFlyingBee(temp.getX(),temp.getY()+temp.getHeight()*2);
+                        }
+                    }
                 }
             }
 
@@ -965,6 +991,16 @@ public class EditorController extends WorldController implements InputProcessor 
             }
         }
 
+        //stop weird character movement
+        if(level.getPlayer() != null){
+            level.getPlayer().setVX(0);
+            level.getPlayer().setVY(0);
+        }
+        for(AbstractBeeModel bee : level.getBees()){
+            bee.setVX(0);
+            bee.setVY(0);
+        }
+
         if (input.didSave()){
             fullSave();
         }
@@ -1004,7 +1040,7 @@ public class EditorController extends WorldController implements InputProcessor 
         level.setPlayer(avatar);
     }
 
-    private void newPlatform(float[] points) {
+    private PolygonObstacle newPlatform(float[] points) {
         PolygonObstacle obj;
         obj = new PolygonObstacle(points, 0, 0);
         obj.setBodyType(BodyDef.BodyType.StaticBody);
@@ -1014,9 +1050,10 @@ public class EditorController extends WorldController implements InputProcessor 
         //obj.setActive(false);
         obj.setName("platform");
         level.getPlatforms().getArrayBodies().add(obj);
+        return obj;
     }
 
-    private void newSpikedPlatform(float[] points) {
+    private PolygonObstacle newSpikedPlatform(float[] points) {
         PolygonObstacle obj;
         obj = new PolygonObstacle(points, 0, 0);
         obj.setBodyType(BodyDef.BodyType.StaticBody);
@@ -1026,6 +1063,7 @@ public class EditorController extends WorldController implements InputProcessor 
         //obj.setActive(false);
         obj.setName("spiked");
         level.getSpikedPlatforms().getArrayBodies().add(obj);
+        return obj;
     }
 
     private PolygonObstacle newHoneypatch(float[] points) {
