@@ -81,6 +81,7 @@
     "editor:selectModeButton": "editor/selectModeButton.png",
     "editor:saveButton": "editor/saveButton.png",
     "editor:resetButton": "editor/resetButton.png",
+    "editor:loadButton": "editor/loadButton.png",
     "editor:larvaButton": "editor/larvaButton.png",
     "editor:honeyPatchButton": "editor/honeyPatchButton.png",
     "editor:spikedPlatformButton": "editor/spikedPlatformButton.png"
