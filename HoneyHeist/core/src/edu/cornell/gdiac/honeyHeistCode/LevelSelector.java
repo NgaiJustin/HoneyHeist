@@ -8,15 +8,22 @@ import com.badlogic.gdx.controllers.Controller;
 import com.badlogic.gdx.controllers.ControllerListener;
 import com.badlogic.gdx.controllers.ControllerMapping;
 
-import com.badlogic.gdx.utils.Json;
+import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.*;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton.*;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
+import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.JsonValue;
+import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import edu.cornell.gdiac.assets.*;
-import edu.cornell.gdiac.honeyHeistCode.GameCanvas;
 import edu.cornell.gdiac.util.*;
 
 import java.util.Arrays;
 
-public class LevelSelector implements Screen, InputProcessor, ControllerListener {
+public class LevelSelector implements Screen {
     /** Internal assets for this loading screen */
     private AssetDirectory internal;
     /** The actual assets to be loaded */
@@ -24,6 +31,7 @@ public class LevelSelector implements Screen, InputProcessor, ControllerListener
 
     /** Background texture for start-up */
     private Texture background;
+    private TextureRegion backgroundRegion;
     /** levelEditor button */
     private Texture levelEditor;
     /** is levelEditor button pressed */
@@ -44,26 +52,13 @@ public class LevelSelector implements Screen, InputProcessor, ControllerListener
     private String selectedLevelData;
     /** level buttons, should have the size specified by allLevelData */
     private Texture[] buttons;
+    private TextButton[] levelButtons;
     /** Exit code for going to the playing level */
     public static final int EXIT_QUIT = 0;
     /** Exit code for going to the editor */
     public static final int EXIT_EDITOR = 1;
     private static final float Y_OFFSET = 50.0f;
     private static final float TITLE_OFFSET = 100.0f;
-
-//    // statusBar is a "texture atlas." Break it up into parts.
-//    /** Left cap to the status background (grey region) */
-    private TextureRegion statusBkgLeft;
-//    /** Middle portion of the status background (grey region) */
-    private TextureRegion statusBkgMiddle;
-//    /** Right cap to the status background (grey region) */
-    private TextureRegion statusBkgRight;
-//    /** Left cap to the status forground (colored region) */
-    private TextureRegion statusFrgLeft;
-//    /** Middle portion of the status forground (colored region) */
-    private TextureRegion statusFrgMiddle;
-//    /** Right cap to the status forground (colored region) */
-    private TextureRegion statusFrgRight;
 
     /** Default budget for asset loader (do nothing but load 60 fps) */
     private static int DEFAULT_BUDGET = 15;
@@ -86,8 +81,6 @@ public class LevelSelector implements Screen, InputProcessor, ControllerListener
     /** Listener that will update the player mode when we are done */
     private ScreenListener listener;
 
-//    /** The width of the progress bar */
-    private int width;
     /** The y-coordinate of the center of the progress bar */
     private int centerY;
     /** The x-coordinate of the center of the progress bar */
@@ -106,6 +99,19 @@ public class LevelSelector implements Screen, InputProcessor, ControllerListener
 
     /** Whether or not this player mode is still active */
     private boolean active;
+
+    // Scene2d
+    private Stage stage;
+    private Skin skin;
+    private Table table;
+    private int LEVEL_PER_ROW = 6;
+    // Whether the level buttons are pressed.
+    private boolean[] pressStates;
+    private boolean isPressLevelEditor;
+    // magic numbers for widgets
+    private int EDITOR_WIDTH = 150;
+    private int EDITOR_HEIGHT = 70;
+    private int EDITOR_POSX = 100;
 
     /**
      * Returns the press state.
@@ -212,7 +218,6 @@ public class LevelSelector implements Screen, InputProcessor, ControllerListener
         // get the level data
         allLevelData = internal.getEntry("levelData", JsonValue.class);
         totalLevelNum = allLevelData.size;
-        System.out.println(totalLevelNum);
         buttons = new Texture[totalLevelNum];
         // initailize the buttons to null
         Arrays.fill(buttons, null);
@@ -227,19 +232,136 @@ public class LevelSelector implements Screen, InputProcessor, ControllerListener
 
         // No progress so far.
         progress = 0;
-        pressState = -1;
+//        pressState = -1;
+        pressState = 0;
+        isPressLevelEditor = false;
 
-        Gdx.input.setInputProcessor( this );
+//        Gdx.input.setInputProcessor( this );
 
-        // Let ANY connected controller start the game.
-        for (XBoxController controller : Controllers.get().getXBoxControllers()) {
-            controller.addListener( this );
-        }
+//        // Let ANY connected controller start the game.
+//        for (XBoxController controller : Controllers.get().getXBoxControllers()) {
+//            controller.addListener( this );
+//        }
 
         // Start loading the real assets
         assets = new AssetDirectory( file );
         assets.loadAssets();
         active = true;
+
+        pressStates = new boolean[totalLevelNum];
+        // stage
+        stage = new Stage();
+        Gdx.input.setInputProcessor(stage);
+        // root table
+        table = new Table();
+        table.align(Align.top);
+        // size the root table to the stage (but should generally only be used on the root table)
+        table.setFillParent(true);
+        stage.addActor(table);
+        // turn on debug lines to visualize the layout
+//        table.setDebug(true);
+        // add assets to skin
+        skin = new Skin();
+        skin.add("background", background);
+        skin.add("title", title);
+        skin.add("levelButton", internal.getEntry("button", Texture.class));
+        skin.add("font", internal.getEntry("times", BitmapFont.class));
+        skin.add("levelEditor", internal.getEntry("levelEditor", Texture.class));
+        // set background
+        table.setBackground(skin.getDrawable("background"));
+
+//        HorizontalGroup horizontalGroup = new HorizontalGroup();
+
+//        table.add(stack);
+        // *** levelEditor button *** //
+        TextureRegion levelEditorImage = new TextureRegion(internal.getEntry("levelEditor", Texture.class));
+        TextureRegionDrawable levelEditorDrawable = new TextureRegionDrawable(levelEditorImage);
+        TextButtonStyle levelEditorStyle = new TextButtonStyle();
+        levelEditorStyle.up = levelEditorDrawable;
+        levelEditorStyle.down = levelEditorDrawable.tint(Color.GRAY);
+        levelEditorStyle.font = skin.getFont("font");
+        TextButton levelEditor = new TextButton("Edit", levelEditorStyle);
+//        Cell editorCell = table.add(levelEditor).width(Value.percentWidth(0.15f)).height(
+//                Value.percentHeight(0.2f)).left();
+        // change the size
+        levelEditor.invalidate();
+        levelEditor.setSize(EDITOR_WIDTH, EDITOR_HEIGHT);
+        System.out.println(stage.getHeight() + " + " + stage.getWidth());
+        levelEditor.setPosition(stage.getWidth()*0.1f, stage.getHeight()*0.8f);
+        levelEditor.validate();
+        // add listen to pressing event
+        levelEditor.addListener(new ChangeListener() {
+            public void changed(ChangeEvent event, Actor actor) {
+                isPressLevelEditor = true;
+            }
+        });
+        stage.addActor(levelEditor);
+
+        // *** title *** //
+        Image titleImage = new Image(title);
+        // adjust the position of titleCell
+        Cell titleCell = table.add(titleImage).
+                height(Value.percentHeight(1.5f)).width(Value.percentWidth(1.5f));
+        titleCell.padTop(stage.getHeight()/8).padBottom(stage.getHeight()/32);
+
+        // *** level buttons *** //
+        TextureRegion buttonImage = new TextureRegion(internal.getEntry("button", Texture.class));
+        Drawable buttonUpDrawable = skin.getDrawable("levelButton");
+        TextureRegionDrawable buttonDown = new TextureRegionDrawable(buttonImage);
+        TextButtonStyle buttonStyle = new TextButtonStyle();
+        buttonStyle.up = buttonUpDrawable;
+//        buttonStyle.up = buttonDown.tint(Color.GRAY);
+        buttonStyle.down = buttonDown.tint(Color.GRAY);
+        buttonStyle.font = skin.getFont("font");
+        levelButtons = new TextButton[20];
+        Table levelTable = new Table();
+        // implementation 1
+        for (int i=0; i<20; i++) {
+            if (i%(LEVEL_PER_ROW*2-1)==LEVEL_PER_ROW) {
+                table.row();
+                levelTable = new Table();
+                table.add(levelTable);
+            } else if (i%(LEVEL_PER_ROW*2-1)== 0) {
+                table.row();
+                levelTable = new Table();
+                table.add(levelTable);
+            }
+            levelButtons[i] = new TextButton(String.valueOf(i+1), buttonStyle);
+            // finalI is used for inner class
+            final int finalI = i;
+            levelButtons[i].addListener(new ChangeListener() {
+                public void changed(ChangeEvent event, Actor actor) {
+                    // "the button can only be pressed if the level is unlocked"
+                    if (finalI < totalLevelNum && allLevelData.get(finalI).get("unlock").asBoolean()) {
+                        pressState = finalI + 1;
+                        selectedLevelData = allLevelData.get(pressState - 1).get("file").asString();
+                    }
+                }
+            });
+            levelTable.add(levelButtons[i]).height(Value.percentHeight(1.5f)).width(Value.percentWidth(1.55f)).
+                    padLeft(5f).padRight(5f);
+
+        // implementation 2
+//            levelButtons[i] = new TextButton(String.valueOf(i+1), buttonStyle);
+//            table.add(levelButtons[i]).height(Value.percentHeight(1.2f)).width(Value.percentWidth(1.25f)).
+//                    padLeft(20f).padRight(20f);
+//            levelTable.add(levelButtons[i]).fillX().fillY();
+            // 4 levels per row
+//            if (i%LEVEL_PER_ROW == (LEVEL_PER_ROW-1)) {
+//                if (i/LEVEL_PER_ROW%2 == 0) {
+////                    table.row().spaceLeft(50f);
+//                    table.row().right();
+//                } else {
+////                    table.row().spaceRight(50f);
+//                    table.row().left();
+//                }
+////                levelTable.row();
+//            }
+
+        }
+
+//        image1.setPosition(Gdx.graphics.getWidth()/3-image1.getWidth()/2,Gdx.graphics.getHeight()*2/3-image1.getHeight()/2);
+//        stage.addActor(image1);
     }
 
     /**
@@ -248,6 +370,10 @@ public class LevelSelector implements Screen, InputProcessor, ControllerListener
     public void dispose() {
         internal.unloadAssets();
         internal.dispose();
+
+        if (stage != null) {
+            stage.dispose();
+        }
     }
 
     /**
@@ -259,35 +385,25 @@ public class LevelSelector implements Screen, InputProcessor, ControllerListener
      *
      * @param delta Number of seconds since last animation frame
      */
-    private void update(float delta) {
-        boolean flag = true;
-        for (Texture button : buttons) {
-            if (button != null) {
-                flag = false;
-                break;
-            }
-        }
-        if (flag) {
-            assets.update(budget);
-            this.progress = assets.getProgress();
-            if (progress >= 1.0f) {
-                this.progress = 1.0f;
-                for (int i=0; i<buttons.length; i++) {
-                    buttons[i] = internal.getEntry("button", Texture.class);
-                }
-            }
-        }
-//        if (levelOne == null && levelTwo == null && levelThree == null) {
+//    private void update(float delta) {
+//        boolean flag = true;
+//        for (TextButton button : levelButtons) {
+//            if (button != null) {
+//                flag = false;
+//                break;
+//            }
+//        }
+//        if (flag) {
 //            assets.update(budget);
 //            this.progress = assets.getProgress();
 //            if (progress >= 1.0f) {
 //                this.progress = 1.0f;
-//                levelOne = internal.getEntry("button", Texture.class);
-//                levelTwo = internal.getEntry("button", Texture.class);
-//                levelThree = internal.getEntry("button", Texture.class);
+//                for (int i=0; i<buttons.length; i++) {
+//                    buttons[i] = internal.getEntry("button", Texture.class);
+//                }
 //            }
 //        }
-    }
+//    }
 
     /**
      * Draw the status of this player mode.
@@ -298,51 +414,33 @@ public class LevelSelector implements Screen, InputProcessor, ControllerListener
      */
     private void draw() {
         canvas.begin();
-        canvas.draw(background, 0, 0);
-        canvas.draw(title, Color.WHITE, title.getWidth()/2f, title.getHeight()/2f,
-                centerX, canvas.getHeight()-TITLE_OFFSET, 0, TITLE_SCALE*scale,
-                TITLE_SCALE*scale);
-        Color tint;
-        // new
-        if (levelEditor != null) {
-            tint = (pressState == -2 ? Color.GRAY: Color.WHITE);
-            canvas.draw(levelEditor, tint, levelEditor.getWidth()/2f, levelEditor.getHeight()/2f,
-                    centerX/3f, canvas.getHeight()-TITLE_OFFSET, 0, LEVELSELECT_SCALE*scale,
-                    LEVELSELECT_SCALE*scale);
-        }
-        for (int i=0; i<buttons.length; i++) {
-            if (buttons[i] != null) {
-                // pressState is one bigger than the button index
-                tint = (pressState == i+1 ? Color.GRAY: Color.WHITE);
-                // draw the button
-                Texture button = buttons[i];
-                // pos_offset helps to decide the position of the button
-                float pos_offset = (i+1)/(float)totalLevelNum;
-                canvas.draw(button, tint, button.getWidth()/2f, button.getHeight()/2f,
-                    centerX*pos_offset, centerY+Y_OFFSET, 0, BUTTON_SCALE*scale,
-                        BUTTON_SCALE*scale);
-                // draw the letter
-                canvas.drawText(Integer.toString(i+1), displayFont, centerX*pos_offset-COUNTER_OFFSET,
-                        centerY+Y_OFFSET+COUNTER_OFFSET);
-            }
-        }
-//        if (levelOne != null) {
-//            Color tint = (pressState == 1 ? Color.GRAY: Color.WHITE);
-//            // draw the button
-//            canvas.draw(levelOne, tint, levelOne.getWidth()/2f, levelOne.getHeight()/2f,
-//                    centerX/2f, centerY/2f, 0, BUTTON_SCALE*scale, BUTTON_SCALE*scale);
-//            // draw the letter
-//            canvas.drawText("1", displayFont, centerX/2f-COUNTER_OFFSET, centerY/2f+COUNTER_OFFSET);
+//        canvas.draw(background, 0, 0);
+//        canvas.draw(title, Color.WHITE, title.getWidth()/2f, title.getHeight()/2f,
+//                centerX, canvas.getHeight()-TITLE_OFFSET, 0, TITLE_SCALE*scale,
+//                TITLE_SCALE*scale);
+//        Color tint;
+//        // new
+//        if (levelEditor != null) {
+//            tint = (pressState == -2 ? Color.GRAY: Color.WHITE);
+//            canvas.draw(levelEditor, tint, levelEditor.getWidth()/2f, levelEditor.getHeight()/2f,
+//                    centerX/3f, canvas.getHeight()-TITLE_OFFSET, 0, LEVELSELECT_SCALE*scale,
+//                    LEVELSELECT_SCALE*scale);
 //        }
-//        if (levelTwo != null) {
-//            Color tint = (pressState == 2 ? Color.GRAY: Color.WHITE);
-//            canvas.draw(levelTwo, tint, levelTwo.getWidth()/2f, levelTwo.getHeight()/2f,
-//                    centerX, centerY/2f, 0, BUTTON_SCALE*scale, BUTTON_SCALE*scale);
-//        }
-//        if (levelThree != null) {
-//            Color tint = (pressState == 3 ? Color.GRAY: Color.WHITE);
-//            canvas.draw(levelThree, tint, levelThree.getWidth()/2f, levelThree.getHeight()/2f,
-//                    centerX*1.5f, centerY/2f, 0, BUTTON_SCALE*scale, BUTTON_SCALE*scale);
+//        for (int i=0; i<buttons.length; i++) {
+//            if (buttons[i] != null) {
+//                // pressState is one bigger than the button index
+//                tint = (pressState == i+1 ? Color.GRAY: Color.WHITE);
+//                // draw the button
+//                Texture button = buttons[i];
+//                // pos_offset helps to decide the position of the button
+//                float pos_offset = (i+1)/(float)totalLevelNum;
+//                canvas.draw(button, tint, button.getWidth()/2f, button.getHeight()/2f,
+//                    centerX*pos_offset, centerY+Y_OFFSET, 0, BUTTON_SCALE*scale,
+//                        BUTTON_SCALE*scale);
+//                // draw the letter
+//                canvas.drawText(Integer.toString(i+1), displayFont, centerX*pos_offset-COUNTER_OFFSET,
+//                        centerY+Y_OFFSET+COUNTER_OFFSET);
+//            }
 //        }
         canvas.end();
     }
@@ -357,16 +455,37 @@ public class LevelSelector implements Screen, InputProcessor, ControllerListener
      * @param delta Number of seconds since last animation frame
      */
     public void render(float delta) {
+//        if (active) {
+//            update(delta);
+//            draw();
+//
+//            if (isReady() && listener != null && pressLevelEditor) {
+//                listener.exitScreen(this, EXIT_EDITOR);
+//            }
+//
+//            // We are are ready, notify our listener
+//            else if (isReady() && listener != null) {
+//                listener.exitScreen(this, EXIT_QUIT);
+//            }
+//        }
+        assets.update(budget);
+        this.progress = assets.getProgress();
+        if (progress < 1.0f) {
+            active = false;
+        } else {
+            progress = 1.0f;
+            active = true;
+        }
         if (active) {
-            update(delta);
-            draw();
-
-            if (isReady() && listener != null && pressLevelEditor) {
+            Gdx.gl.glClearColor(1, 1, 1, 1);
+            Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+            stage.act();
+            stage.draw();
+            if (isPressLevelEditor) {
                 listener.exitScreen(this, EXIT_EDITOR);
+                return;
             }
-
-            // We are are ready, notify our listener
-            else if (isReady() && listener != null) {
+            if (pressState != 0) {
                 listener.exitScreen(this, EXIT_QUIT);
             }
         }
@@ -390,6 +509,7 @@ public class LevelSelector implements Screen, InputProcessor, ControllerListener
         centerY = height/2;
         centerX = width/2;
         heightY = height;
+//        stage.getViewport().update(width,height,true);
     }
 
     /**
@@ -398,6 +518,7 @@ public class LevelSelector implements Screen, InputProcessor, ControllerListener
     public void show() {
         // Useless if called in outside animation loop
         active = true;
+
     }
 
     /**
@@ -417,254 +538,233 @@ public class LevelSelector implements Screen, InputProcessor, ControllerListener
         this.listener = listener;
     }
 
-    // PROCESSING PLAYER INPUT
-    /**
-     * Called when the screen was touched or a mouse button was pressed.
-     *
-     * This method checks to see if the play button is available and if the click
-     * is in the bounds of the play button.  If so, it signals the that the button
-     * has been pressed and is currently down. Any mouse button is accepted.
-     *
-     * @param screenX the x-coordinate of the mouse on the screen
-     * @param screenY the y-coordinate of the mouse on the screen
-     * @param pointer the button or touch finger number
-     * @return whether to hand the event to other listeners.
-     */
-    public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-        boolean flag = levelEditor == null;
-        for (Texture b : buttons) {
-            if (b != null) {
-                flag = false;
-                break;
-            }
-        }
-        if (flag || pressState == 0) {
-            return true;
-        }
-//        if ((levelOne == null && levelTwo == null && levelThree == null) || pressState == 0) {
+//    // PROCESSING PLAYER INPUT
+//    /**
+//     * Called when the screen was touched or a mouse button was pressed.
+//     *
+//     * This method checks to see if the play button is available and if the click
+//     * is in the bounds of the play button.  If so, it signals the that the button
+//     * has been pressed and is currently down. Any mouse button is accepted.
+//     *
+//     * @param screenX the x-coordinate of the mouse on the screen
+//     * @param screenY the y-coordinate of the mouse on the screen
+//     * @param pointer the button or touch finger number
+//     * @return whether to hand the event to other listeners.
+//     */
+//    public boolean touchDown(int screenX, int screenY, int pointer, int button) {
+//        boolean flag = levelEditor == null;
+//        for (Texture b : buttons) {
+//            if (b != null) {
+//                flag = false;
+//                break;
+//            }
+//        }
+//        if (flag || pressState == 0) {
 //            return true;
 //        }
-
-        // Flip to match graphics coordinates
-        screenY = heightY-screenY;
-
-        // TODO: Fix scaling
-        // Play button is a circle.
-        float radius, dist;
-        for (int i=0; i<buttons.length; i++) {
-            // "the button can only be pressed if the level is unlocked"
-            if (buttons[i] != null && allLevelData.get(i).get("unlock").asBoolean()) {
-                radius = BUTTON_SCALE*scale*buttons[i].getWidth()/2.0f;
-                float offset = (i+1)/(float)totalLevelNum;
-                dist = (screenX-centerX*offset)*(screenX-centerX*offset)+(screenY-centerY-Y_OFFSET)*
-                        (screenY-centerY-Y_OFFSET);
-                if (dist < radius*radius) {
-                    pressState = i+1;
-                }
-            }
-        }
-        if (levelEditor != null) {
-            radius = LEVELSELECT_SCALE*scale*levelEditor.getWidth()/2.0f;
-            dist = (screenX-centerX/3f)*(screenX-centerX/3f)+(screenY-(canvas.getHeight()-TITLE_OFFSET))*
-                    (screenY-(canvas.getHeight()-TITLE_OFFSET));
-            if (dist < radius*radius) {
-                pressState = -2;
-                pressLevelEditor = true;
-            }
-        }
-//        if (levelOne != null) {
-//            radius = BUTTON_SCALE*scale*levelOne.getWidth()/2.0f;
-//            dist = (screenX-centerX/2f)*(screenX-centerX/2f)+(screenY-centerY/2f)*(screenY-centerY/2f);
+////        if ((levelOne == null && levelTwo == null && levelThree == null) || pressState == 0) {
+////            return true;
+////        }
+//
+//        // Flip to match graphics coordinates
+//        screenY = heightY-screenY;
+//
+//        // TODO: Fix scaling
+//        // Play button is a circle.
+//        float radius, dist;
+//        for (int i=0; i<buttons.length; i++) {
+//            // "the button can only be pressed if the level is unlocked"
+//            if (buttons[i] != null && allLevelData.get(i).get("unlock").asBoolean()) {
+//                radius = BUTTON_SCALE*scale*buttons[i].getWidth()/2.0f;
+//                float offset = (i+1)/(float)totalLevelNum;
+//                dist = (screenX-centerX*offset)*(screenX-centerX*offset)+(screenY-centerY-Y_OFFSET)*
+//                        (screenY-centerY-Y_OFFSET);
+//                if (dist < radius*radius) {
+//                    pressState = i+1;
+//                }
+//            }
+//        }
+//        if (levelEditor != null) {
+//            radius = LEVELSELECT_SCALE*scale*levelEditor.getWidth()/2.0f;
+//            dist = (screenX-centerX/3f)*(screenX-centerX/3f)+(screenY-(canvas.getHeight()-TITLE_OFFSET))*
+//                    (screenY-(canvas.getHeight()-TITLE_OFFSET));
 //            if (dist < radius*radius) {
+//                pressState = -2;
+//                pressLevelEditor = true;
+//            }
+//        }
+//        return false;
+//    }
+//    /**
+//     * Called when a finger was lifted or a mouse button was released.
+//     *
+//     * This method checks to see if the play button is currently pressed down. If so,
+//     * it signals the that the player is ready to go.
+//     *
+//     * @param screenX the x-coordinate of the mouse on the screen
+//     * @param screenY the y-coordinate of the mouse on the screen
+//     * @param pointer the button or touch finger number
+//     * @return whether to hand the event to other listeners.
+//     */
+//    public boolean touchUp(int screenX, int screenY, int pointer, int button) {
+//        if (pressState >= 1 && pressState <= totalLevelNum) {
+////        if (pressState == 1 || pressState == 2 || pressState == 3) {
+//            // set the selected level number according to the pressState
+//            levelNumber = pressState;
+//            selectedLevelData = allLevelData.get(levelNumber-1).get("file").asString();
+//            System.out.println(selectedLevelData);
+//            pressState = 0;
+//            return false;
+//        } else if (pressState == -2) {
+//            // press the level editor
+//            pressState = 0;
+//            return false;
+//        }
+//        return true;
+//    }
+//
+//    /**
+//     * Called when a button on the Controller was pressed.
+//     *
+//     * The buttonCode is controller specific. This listener only supports the start
+//     * button on an X-Box controller.  This outcome of this method is identical to
+//     * pressing (but not releasing) the play button.
+//     *
+//     * @param controller The game controller
+//     * @param buttonCode The button pressed
+//     * @return whether to hand the event to other listeners.
+//     */
+//    public boolean buttonDown (Controller controller, int buttonCode) {
+//        // for now XBOX can only go to the first level
+//        if (pressState == -1) {
+//            ControllerMapping mapping = controller.getMapping();
+//            if (mapping != null && buttonCode == mapping.buttonStart ) {
 //                pressState = 1;
+//                return false;
 //            }
 //        }
-//        if (levelTwo != null) {
-//            radius = BUTTON_SCALE*scale*levelTwo.getWidth()/2.0f;
-//            dist = (screenX-centerX)*(screenX-centerX)+(screenY-centerY/2f)*(screenY-centerY/2f);
-//            if (dist < radius*radius) {
-//                pressState = 2;
-//            }
-//        }
-//        if (levelThree != null) {
-//            radius = BUTTON_SCALE*scale*levelThree.getWidth()/2.0f;
-//            dist = (screenX-centerX*1.5f)*(screenX-centerX*1.5f)+(screenY-centerY/2f)*(screenY-centerY/2f);
-//            if (dist < radius*radius) {
-//                pressState = 3;
-//            }
-//        }
-        return false;
-    }
-    /**
-     * Called when a finger was lifted or a mouse button was released.
-     *
-     * This method checks to see if the play button is currently pressed down. If so,
-     * it signals the that the player is ready to go.
-     *
-     * @param screenX the x-coordinate of the mouse on the screen
-     * @param screenY the y-coordinate of the mouse on the screen
-     * @param pointer the button or touch finger number
-     * @return whether to hand the event to other listeners.
-     */
-    public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-        if (pressState >= 1 && pressState <= totalLevelNum) {
+//        return true;
+//    }
+//
+//    /**
+//     * Called when a button on the Controller was released.
+//     *
+//     * The buttonCode is controller specific. This listener only supports the start
+//     * button on an X-Box controller.  This outcome of this method is identical to
+//     * releasing the the play button after pressing it.
+//     *
+//     * @param controller The game controller
+//     * @param buttonCode The button pressed
+//     * @return whether to hand the event to other listeners.
+//     */
+//    public boolean buttonUp (Controller controller, int buttonCode) {
 //        if (pressState == 1 || pressState == 2 || pressState == 3) {
-            // set the selected level number according to the pressState
-            levelNumber = pressState;
-            selectedLevelData = allLevelData.get(levelNumber-1).get("file").asString();
-            System.out.println(selectedLevelData);
-            pressState = 0;
-            return false;
-        } else if (pressState == -2) {
-            // press the level editor
-            pressState = 0;
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     * Called when a button on the Controller was pressed.
-     *
-     * The buttonCode is controller specific. This listener only supports the start
-     * button on an X-Box controller.  This outcome of this method is identical to
-     * pressing (but not releasing) the play button.
-     *
-     * @param controller The game controller
-     * @param buttonCode The button pressed
-     * @return whether to hand the event to other listeners.
-     */
-    public boolean buttonDown (Controller controller, int buttonCode) {
-        // for now XBOX can only go to the first level
-        if (pressState == -1) {
-            ControllerMapping mapping = controller.getMapping();
-            if (mapping != null && buttonCode == mapping.buttonStart ) {
-                pressState = 1;
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
-     * Called when a button on the Controller was released.
-     *
-     * The buttonCode is controller specific. This listener only supports the start
-     * button on an X-Box controller.  This outcome of this method is identical to
-     * releasing the the play button after pressing it.
-     *
-     * @param controller The game controller
-     * @param buttonCode The button pressed
-     * @return whether to hand the event to other listeners.
-     */
-    public boolean buttonUp (Controller controller, int buttonCode) {
-        if (pressState == 1 || pressState == 2 || pressState == 3) {
-            ControllerMapping mapping = controller.getMapping();
-            if (mapping != null && buttonCode == mapping.buttonStart ) {
-                pressState = 0;
-                return false;
-            }
-        }
-        return true;
-    }
-
-    // UNSUPPORTED METHODS FROM InputProcessor
-
-    /**
-     * Called when a key is pressed (UNSUPPORTED)
-     *
-     * @param keycode the key pressed
-     * @return whether to hand the event to other listeners.
-     */
-    public boolean keyDown(int keycode) {
-        return true;
-    }
-
-    /**
-     * Called when a key is typed (UNSUPPORTED)
-     *
-     //	 * @param keycode the key typed
-     * @return whether to hand the event to other listeners.
-     */
-    public boolean keyTyped(char character) {
-        return true;
-    }
-
-    /**
-     * Called when a key is released (UNSUPPORTED)
-     *
-     * @param keycode the key released
-     * @return whether to hand the event to other listeners.
-     */
-    public boolean keyUp(int keycode) {
-        return true;
-    }
-
-    /**
-     * Called when the mouse was moved without any buttons being pressed. (UNSUPPORTED)
-     *
-     * @param screenX the x-coordinate of the mouse on the screen
-     * @param screenY the y-coordinate of the mouse on the screen
-     * @return whether to hand the event to other listeners.
-     */
-    public boolean mouseMoved(int screenX, int screenY) {
-        return true;
-    }
-
-    /**
-     * Called when the mouse wheel was scrolled. (UNSUPPORTED)
-     *
-     * @param dx the amount of horizontal scroll
-     * @param dy the amount of vertical scroll
-     *
-     * @return whether to hand the event to other listeners.
-     */
-    public boolean scrolled(float dx, float dy) {
-        return true;
-    }
-
-    /**
-     * Called when the mouse or finger was dragged. (UNSUPPORTED)
-     *
-     * @param screenX the x-coordinate of the mouse on the screen
-     * @param screenY the y-coordinate of the mouse on the screen
-     * @param pointer the button or touch finger number
-     * @return whether to hand the event to other listeners.
-     */
-    public boolean touchDragged(int screenX, int screenY, int pointer) {
-        return true;
-    }
-
-    // UNSUPPORTED METHODS FROM ControllerListener
-
-    /**
-     * Called when a controller is connected. (UNSUPPORTED)
-     *
-     * @param controller The game controller
-     */
-    public void connected (Controller controller) {}
-
-    /**
-     * Called when a controller is disconnected. (UNSUPPORTED)
-     *
-     * @param controller The game controller
-     */
-    public void disconnected (Controller controller) {}
-
-    /**
-     * Called when an axis on the Controller moved. (UNSUPPORTED)
-     *
-     * The axisCode is controller specific. The axis value is in the range [-1, 1].
-     *
-     * @param controller The game controller
-     * @param axisCode 	The axis moved
-     * @param value 	The axis value, -1 to 1
-     * @return whether to hand the event to other listeners.
-     */
-    public boolean axisMoved (Controller controller, int axisCode, float value) {
-        return true;
-    }
-
+//            ControllerMapping mapping = controller.getMapping();
+//            if (mapping != null && buttonCode == mapping.buttonStart ) {
+//                pressState = 0;
+//                return false;
+//            }
+//        }
+//        return true;
+//    }
+//
+//    // UNSUPPORTED METHODS FROM InputProcessor
+//
+//    /**
+//     * Called when a key is pressed (UNSUPPORTED)
+//     *
+//     * @param keycode the key pressed
+//     * @return whether to hand the event to other listeners.
+//     */
+//    public boolean keyDown(int keycode) {
+//        return true;
+//    }
+//
+//    /**
+//     * Called when a key is typed (UNSUPPORTED)
+//     *
+//     //	 * @param keycode the key typed
+//     * @return whether to hand the event to other listeners.
+//     */
+//    public boolean keyTyped(char character) {
+//        return true;
+//    }
+//
+//    /**
+//     * Called when a key is released (UNSUPPORTED)
+//     *
+//     * @param keycode the key released
+//     * @return whether to hand the event to other listeners.
+//     */
+//    public boolean keyUp(int keycode) {
+//        return true;
+//    }
+//
+//    /**
+//     * Called when the mouse was moved without any buttons being pressed. (UNSUPPORTED)
+//     *
+//     * @param screenX the x-coordinate of the mouse on the screen
+//     * @param screenY the y-coordinate of the mouse on the screen
+//     * @return whether to hand the event to other listeners.
+//     */
+//    public boolean mouseMoved(int screenX, int screenY) {
+//        return true;
+//    }
+//
+//    /**
+//     * Called when the mouse wheel was scrolled. (UNSUPPORTED)
+//     *
+//     * @param dx the amount of horizontal scroll
+//     * @param dy the amount of vertical scroll
+//     *
+//     * @return whether to hand the event to other listeners.
+//     */
+//    public boolean scrolled(float dx, float dy) {
+//        return true;
+//    }
+//
+//    /**
+//     * Called when the mouse or finger was dragged. (UNSUPPORTED)
+//     *
+//     * @param screenX the x-coordinate of the mouse on the screen
+//     * @param screenY the y-coordinate of the mouse on the screen
+//     * @param pointer the button or touch finger number
+//     * @return whether to hand the event to other listeners.
+//     */
+//    public boolean touchDragged(int screenX, int screenY, int pointer) {
+//        return true;
+//    }
+//
+//    // UNSUPPORTED METHODS FROM ControllerListener
+//
+//    /**
+//     * Called when a controller is connected. (UNSUPPORTED)
+//     *
+//     * @param controller The game controller
+//     */
+//    public void connected (Controller controller) {}
+//
+//    /**
+//     * Called when a controller is disconnected. (UNSUPPORTED)
+//     *
+//     * @param controller The game controller
+//     */
+//    public void disconnected (Controller controller) {}
+//
+//    /**
+//     * Called when an axis on the Controller moved. (UNSUPPORTED)
+//     *
+//     * The axisCode is controller specific. The axis value is in the range [-1, 1].
+//     *
+//     * @param controller The game controller
+//     * @param axisCode 	The axis moved
+//     * @param value 	The axis value, -1 to 1
+//     * @return whether to hand the event to other listeners.
+//     */
+//    public boolean axisMoved (Controller controller, int axisCode, float value) {
+//        return true;
+//    }
+//
     /**
      * Called when the Screen is paused.
      *
