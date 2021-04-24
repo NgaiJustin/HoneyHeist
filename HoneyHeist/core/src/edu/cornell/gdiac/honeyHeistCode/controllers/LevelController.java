@@ -416,8 +416,6 @@ public class LevelController implements ContactListener {
         walkingLarvae  = directory.getEntry( "platform:larvaeWalk.pacing", FilmStrip.class );
         flyingBeeStrip = directory.getEntry( "platform:beeFly.pacing", FilmStrip.class );
 
-
-
         SpikeULeft  = new TextureRegion(directory.getEntry("platform:spikeULeft", Texture.class));
         SpikeUMid   = new TextureRegion(directory.getEntry("platform:spikeUMid", Texture.class));
         SpikeURight = new TextureRegion(directory.getEntry("platform:spikeURight", Texture.class));
@@ -440,7 +438,6 @@ public class LevelController implements ContactListener {
 
         platNinePatch  = new NinePatch(directory.getEntry("platform:platNinePatch", Texture.class),  16, 16 ,16 ,16 );
         spikeNinePatch = new NinePatch(directory.getEntry("platform:spikeNinePatch", Texture.class),  16, 16 ,16 ,16 );
-
 
         jumpSound = directory.getEntry("platform:jump", SoundBuffer.class);
         fireSound = directory.getEntry("platform:pew", SoundBuffer.class);
@@ -630,7 +627,7 @@ public class LevelController implements ContactListener {
         PlatformModel platforms = new PlatformModel(levelData.get("platformPos"), worldCenter);
         platforms.setDrawScale(scale);
         platforms.setTexture(earthTile);
-        platforms.setNinePatch(platNinePatch);
+        platforms.setNinePatch(platNinePatch); // TODO: To be removed when tenpatch is complete
         platforms.setTenPatch(
                 ULeft, UMid, URight,
                 MLeft, MMid, MRight,
@@ -641,8 +638,7 @@ public class LevelController implements ContactListener {
         // Create spiked platforms
         SpikedPlatformModel spikedPlatforms = new SpikedPlatformModel(levelData.get("spikedPlatformPos"), worldCenter);
         spikedPlatforms.setDrawScale(scale);
-        // spikedPlatforms.setTexture(poisonTile);
-        spikedPlatforms.setNinePatch(spikeNinePatch);
+        spikedPlatforms.setNinePatch(spikeNinePatch);  // TODO: To be removed when tenpatch is complete
         spikedPlatforms.setTenPatch(
                 SpikeULeft, SpikeUMid, SpikeURight,
                 SpikeMLeft, SpikeMMid, SpikeMRight,
