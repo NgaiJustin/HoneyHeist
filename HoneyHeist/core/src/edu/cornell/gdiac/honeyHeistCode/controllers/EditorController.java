@@ -382,8 +382,11 @@ public class EditorController extends WorldController implements InputProcessor 
                 BLeft, BMid, BRight
         );
         addObject(platforms);
+        int p = 0;
         for(PolygonObstacle platform : platforms.getBodies()){
             objects.add(platform);
+            if(p<6){ platform.setActive(false); }
+            p++;
         }
 
         // Create spiked platforms
@@ -530,8 +533,11 @@ public class EditorController extends WorldController implements InputProcessor 
                 BLeft, BMid, BRight
         );
         addObject(platforms);
+        int p = 0;
         for(PolygonObstacle platform : platforms.getBodies()){
             objects.add(platform);
+            if(p<6){ platform.setActive(false); }
+            p++;
         }
         level.setPlatforms(platforms);
 
