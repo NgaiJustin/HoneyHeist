@@ -13,6 +13,7 @@ package edu.cornell.gdiac.honeyHeistCode.controllers;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.NinePatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
@@ -23,9 +24,7 @@ import com.badlogic.gdx.utils.ObjectSet;
 import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.audio.SoundBuffer;
 import edu.cornell.gdiac.honeyHeistCode.GameCanvas;
-
 import edu.cornell.gdiac.honeyHeistCode.controllers.aiControllers.AIController;
-
 import edu.cornell.gdiac.honeyHeistCode.models.*;
 import edu.cornell.gdiac.honeyHeistCode.obstacle.BoxObstacle;
 import edu.cornell.gdiac.honeyHeistCode.obstacle.Obstacle;
@@ -287,84 +286,77 @@ public class LevelController implements ContactListener {
         this.scale.y = canvas.getHeight()/bounds.getHeight();
     }
 
-    /**
-     * Texture asset for player avatar
-     */
+    /** Player texture and filmstrip */
     private TextureRegion avatarTexture;
-    /**
-     * Texture filmstrip for player walking animation
-     */
     private FilmStrip walkingPlayer;
 
-    /**
-     * Texture asset for chaser bee avatar
-     */
+    /** Larvae texture and filmstrip */
     private TextureRegion chaserBeeTexture;
-    /**
-     * Texture filmstrip for player larvae animation
-     */
     private FilmStrip walkingLarvae;
 
-    /**
-     * Texture asset for chaser bee avatar
-     */
+    /** Bee texture and filmstrip */
     private TextureRegion flyingBeeTexture;
-    /**
-     * Texture filmstrip for player bee animation
-     */
-    private FilmStrip flyingBeestrip;
+    private FilmStrip flyingBeeStrip;
 
-    /**
-     * Texture asset for testEnemy avatar
-     */
-    private TextureRegion sleeperBeeTexture;
+    /** Platform texture */
+    private TextureRegion ULeft;
+    private TextureRegion UMid;
+    private TextureRegion URight;
+    private TextureRegion MLeft;
+    private TextureRegion MMid;
+    private TextureRegion MRight;
+    private TextureRegion BLeft;
+    private TextureRegion BMid;
+    private TextureRegion BRight;
 
-    /**
-     * The jump sound.  We only want to play once.
-     */
+    /** Spike textures */
+    private TextureRegion SpikeULeft;
+    private TextureRegion SpikeUMid;
+    private TextureRegion SpikeURight;
+    private TextureRegion SpikeMLeft;
+    private TextureRegion SpikeMMid;
+    private TextureRegion SpikeMRight;
+    private TextureRegion SpikeBLeft;
+    private TextureRegion SpikeBMid;
+    private TextureRegion SpikeBRight;
+
+    /** NinePatches TO BE REPLACED WITH TENPATCH WHEN COMPLETED */
+    private NinePatch platNinePatch;
+    private NinePatch spikeNinePatch;
+
+    /** The jump sound.  We only want to play once. */
     private SoundBuffer bgm;
-    private long bgmId = -1;
-    /**
-     * The jump sound.  We only want to play once.
-     */
+    private long bgmId = 10;
+
+    /** The jump sound.  We only want to play once */
     private SoundBuffer jumpSound;
     private long jumpId = -1;
-    /**
-     * The weapon fire sound.  We only want to play once.
-     */
+
+    /** The weapon fire sound.  We only want to play once. */
     private SoundBuffer fireSound;
     private long fireId = -1;
-    /**
-     * The weapon pop sound.  We only want to play once.
-     */
+
+    /** The weapon pop sound.  We only want to play once. */
     private SoundBuffer plopSound;
     private long plopId = -1;
-    /**
-     * The default sound volume
-     */
+
+    /** The default sound volume */
     private float volume;
-    /**
-     * Constant data across levels
-     */
+
+    /** Constant data across levels */
     private JsonValue constants;
-    /**
-     * Data for the level
-     */
+
+    /** Data for the level */
     private JsonValue levelData;
-    /**
-     * Reference to the level model
-     */
+
+    /** Reference to the level model */
     private LevelModel level;
 
 
-    /**
-     * Reference to the AI Controller
-     */
+    /** Reference to the AI Controller */
     private AIController aIController;
 
-    /**
-     * Mark set to handle more sophisticated collision callbacks
-     */
+    /** Mark set to handle more sophisticated collision callbacks */
     protected ObjectSet<Fixture> sensorFixtures;
 
 //    OrthographicCamera camera;
@@ -412,19 +404,41 @@ public class LevelController implements ContactListener {
      * @param directory Reference to global asset manager.
      */
     public void gatherAssets(AssetDirectory directory, String dataFilePath) {
-        avatarTexture = new TextureRegion(directory.getEntry("platform:ant", Texture.class));
+        avatarTexture    = new TextureRegion(directory.getEntry("platform:ant", Texture.class));
         chaserBeeTexture = new TextureRegion(directory.getEntry("platform:larvae", Texture.class));
         flyingBeeTexture = new TextureRegion(directory.getEntry("platform:flyingBee", Texture.class));
-        sleeperBeeTexture = new TextureRegion(directory.getEntry("platform:sleeperBee", Texture.class));
 
-        walkingPlayer = directory.getEntry( "platform:playerWalk.pacing", FilmStrip.class );
-        walkingLarvae = directory.getEntry( "platform:larvaeWalk.pacing", FilmStrip.class );
-        flyingBeestrip = directory.getEntry( "platform:beeFly.pacing", FilmStrip.class );
+        walkingPlayer  = directory.getEntry( "platform:playerWalk.pacing", FilmStrip.class );
+        walkingLarvae  = directory.getEntry( "platform:larvaeWalk.pacing", FilmStrip.class );
+        flyingBeeStrip = directory.getEntry( "platform:beeFly.pacing", FilmStrip.class );
+
+        SpikeULeft  = new TextureRegion(directory.getEntry("platform:spikeULeft", Texture.class));
+        SpikeUMid   = new TextureRegion(directory.getEntry("platform:spikeUMid", Texture.class));
+        SpikeURight = new TextureRegion(directory.getEntry("platform:spikeURight", Texture.class));
+        SpikeMLeft  = new TextureRegion(directory.getEntry("platform:spikeMLeft", Texture.class));
+        SpikeMMid   = new TextureRegion(directory.getEntry("platform:spikeMMid", Texture.class));
+        SpikeMRight = new TextureRegion(directory.getEntry("platform:spikeMRight", Texture.class));
+        SpikeBLeft  = new TextureRegion(directory.getEntry("platform:spikeBLeft", Texture.class));
+        SpikeBMid   = new TextureRegion(directory.getEntry("platform:spikeBMid", Texture.class));
+        SpikeBRight = new TextureRegion(directory.getEntry("platform:spikeBRight", Texture.class));
+
+        ULeft  = new TextureRegion(directory.getEntry("platform:ULeft", Texture.class));
+        UMid   = new TextureRegion(directory.getEntry("platform:UMid", Texture.class));
+        URight = new TextureRegion(directory.getEntry("platform:URight", Texture.class));
+        MLeft  = new TextureRegion(directory.getEntry("platform:MLeft", Texture.class));
+        MMid   = new TextureRegion(directory.getEntry("platform:MMid", Texture.class));
+        MRight = new TextureRegion(directory.getEntry("platform:MRight", Texture.class));
+        BLeft  = new TextureRegion(directory.getEntry("platform:BLeft", Texture.class));
+        BMid   = new TextureRegion(directory.getEntry("platform:BMid", Texture.class));
+        BRight = new TextureRegion(directory.getEntry("platform:BRight", Texture.class));
+
+        platNinePatch  = new NinePatch(directory.getEntry("platform:platNinePatch", Texture.class),  16, 16 ,16 ,16 );
+        spikeNinePatch = new NinePatch(directory.getEntry("platform:spikeNinePatch", Texture.class),  16, 16 ,16 ,16 );
 
         jumpSound = directory.getEntry("platform:jump", SoundBuffer.class);
         fireSound = directory.getEntry("platform:pew", SoundBuffer.class);
         plopSound = directory.getEntry("platform:plop", SoundBuffer.class);
-        bgm = directory.getEntry("platform:bgm", SoundBuffer.class);
+        //bgm = directory.getEntry("platform:bgm", SoundBuffer.class);
 
         constants = directory.getEntry("platform:constants2", JsonValue.class);
         levelData = directory.getEntry(dataFilePath, JsonValue.class);
@@ -441,6 +455,10 @@ public class LevelController implements ContactListener {
 
         // This is just for Debugging.
         whiteSquare = new TextureRegion(directory.getEntry( "shared:whiteSquare", Texture.class ));
+    }
+
+    public void gatherLevelData(AssetDirectory directory, String dataFilePath){
+        levelData = directory.getEntry(dataFilePath, JsonValue.class);
     }
 
     /**
@@ -482,7 +500,7 @@ public class LevelController implements ContactListener {
         setComplete(false);
         setFailure(false);
         populateLevel();
-        playSound(bgm, 1);
+        //playSound(bgm, 1);
     }
 
     /**
@@ -532,6 +550,8 @@ public class LevelController implements ContactListener {
         JsonValue defaults = constants.get("defaults");
         //Create background
         PolygonObstacle levelBackground;
+        // Find center of the game
+        Vector2 worldCenter = bounds.getCenter(new Vector2());
         if (!levelData.get("background").isNull()) {
             levelBackground = new PolygonObstacle(levelData.get("background").asFloatArray(), 0, 0);
             levelBackground.setBodyType(BodyDef.BodyType.StaticBody);
@@ -599,20 +619,31 @@ public class LevelController implements ContactListener {
         */
 
         // Create platforms
-        PlatformModel platforms = new PlatformModel(levelData.get("platformPos"));
+        PlatformModel platforms = new PlatformModel(levelData.get("platformPos"), worldCenter);
         platforms.setDrawScale(scale);
         platforms.setTexture(earthTile);
+        platforms.setNinePatch(platNinePatch); // TODO: To be removed when tenpatch is complete
+        platforms.setTenPatch(
+                ULeft, UMid, URight,
+                MLeft, MMid, MRight,
+                BLeft, BMid, BRight
+        );
         addObject(platforms);
 
         // Create spiked platforms
-        SpikedPlatformModel spikedPlatforms = new SpikedPlatformModel(levelData.get("spikedPlatformPos"));
+        SpikedPlatformModel spikedPlatforms = new SpikedPlatformModel(levelData.get("spikedPlatformPos"), worldCenter);
         spikedPlatforms.setDrawScale(scale);
-        spikedPlatforms.setTexture(poisonTile); //TODO: Change spikedPlatform texture
-
+        spikedPlatforms.setNinePatch(spikeNinePatch);  // TODO: To be removed when tenpatch is complete
+        spikedPlatforms.setTenPatch(
+                SpikeULeft, SpikeUMid, SpikeURight,
+                SpikeMLeft, SpikeMMid, SpikeMRight,
+                SpikeBLeft, SpikeBMid, SpikeBRight
+        );
+        // spikedPlatforms.setAnimationStrip(PlatformModel.PlatformAnimations.SHUFFLE, spikeCenter);
         addObject(spikedPlatforms);
 
         // Create honeypatches
-        HoneypatchModel honeyPatches = new HoneypatchModel(levelData.get("honeypatchPos"),0.4f);
+        HoneypatchModel honeyPatches = new HoneypatchModel(levelData.get("honeypatchPos"),0.4f, worldCenter);
         honeyPatches.setDrawScale(scale);
         honeyPatches.setTexture(earthTile); //TODO: Change honeyPatch texture
         //dont add yet so that it can overlap
@@ -635,8 +666,6 @@ public class LevelController implements ContactListener {
 
         Array<AbstractBeeModel> bees = new Array<AbstractBeeModel>();
         level = new LevelModel(avatar,bees,goalDoor,platforms, spikedPlatforms, honeyPatches, levelBackground, new Rectangle(bounds));
-
-
 
         aIController = new AIController(level, whiteSquare);
 
@@ -661,7 +690,7 @@ public class LevelController implements ContactListener {
             FlyingBeeModel flyingBee = new FlyingBeeModel(constants.get("FlyingBee"), pos[0], pos[1], dwidth, dheight);
             flyingBee.setDrawScale(scale);
             flyingBee.setTexture(flyingBeeTexture);
-            flyingBee.setAnimationStrip(FlyingBeeModel.BeeAnimations.FLY, flyingBeestrip);
+            flyingBee.setAnimationStrip(FlyingBeeModel.BeeAnimations.FLY, flyingBeeStrip);
             bees.add(flyingBee);
             addObject(flyingBee);
             aIController.createAIForSingleCharacter(flyingBee, constants.get("FlyingBee").get("ai_controller_options"));
@@ -693,6 +722,7 @@ public class LevelController implements ContactListener {
          */
 
         volume = constants.getFloat("volume", 1.0f);
+
     }
 
 
@@ -834,6 +864,8 @@ public class LevelController implements ContactListener {
         PlayerModel avatar  = level.getPlayer();
         PlatformModel platforms = level.getPlatforms();
         avatar.applyForce();
+
+        platforms.animatePlatform(PlatformModel.PlatformAnimations.SHUFFLE, true);
 
         if((platforms.isRotating() && !avatar.isRotating()) && (avatar.isGrounded() || avatar.isInHoney())){
                 //&&((avatar.isGrounded() && !avatar.isInHoney())||(avatar.isInHoney() && avatar.getHoneyTime()==0))){
@@ -1239,6 +1271,9 @@ public class LevelController implements ContactListener {
         }
         if (fireSound.isPlaying(fireId)) {
             fireSound.stop(fireId);
+        }
+        if (bgm.isPlaying(bgmId)){
+            bgm.stop(bgmId);
         }
     }
 
