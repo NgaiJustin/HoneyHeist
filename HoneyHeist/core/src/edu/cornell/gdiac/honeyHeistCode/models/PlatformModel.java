@@ -1,11 +1,14 @@
 package edu.cornell.gdiac.honeyHeistCode.models;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.NinePatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.FloatArray;
 import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.honeyHeistCode.GameCanvas;
 import edu.cornell.gdiac.honeyHeistCode.MyTenPatch;
@@ -31,9 +34,20 @@ public class PlatformModel extends Obstacle {
 
 	private Vector2 worldCenter;
 
+	public final float D_THICKNESS = 0.5f;
+
 	protected NinePatch ninePatch; // TODO: TO BE REPLACED WHEN TENPATCH IS COMPLETE
 
 	protected MyTenPatch tenPatch;
+
+	// To draw the tilled center tiles
+	private TextureRegion UMid;
+	private TextureRegion MMid;
+	private TextureRegion BMid;
+
+	// Edge tiles
+	private TextureRegion ULeft;
+	private TextureRegion URight;
 
 	/**
 	 * Enumeration to identify the platform animations
@@ -44,29 +58,6 @@ public class PlatformModel extends Obstacle {
 		// Future animations to be supported
 	};
 
-	/**
-	 * Enumeration to represent the orientation of a platform.
-	 *
-	 * Platforms are named in clock wise order with zero being
-	 * the horizontal platform.
-	 */
-	private enum PlatformOrientation {
-		ZERO(0),
-		ONE(60),
-		TWO(120),
-		THREE(180),
-		FOUR(240),
-		FIVE(300);
-
-		private float degree;
-
-		PlatformOrientation(float deg){
-			this.degree = deg;
-		}
-		public float getDeg(){
-			return degree;
-		}
-	}
 
 	/**
 	 * Creates a new platform model with the given data.
@@ -243,38 +234,6 @@ public class PlatformModel extends Obstacle {
 	}
 
 	/**
-	 * Returns a PlatformOrientation classification based on the rectangular
-	 * bound of a platform and the center of the world.
-	 *
-	 * @param worldCenter	(x,y) coordinate of the center of the world
-	 * @return	Classification of the platform
-	 */
-	private PlatformOrientation getOrientation(Vector2 topRight,  Vector2 topLeft,
-											   Vector2 botLeft, Vector2 botRight,
-											   Vector2 worldCenter) {
-		// Defensive copies
-		worldCenter = worldCenter.cpy();
-
-		// Case for horizontal platforms
-		if (Math.abs(botLeft.x - topLeft.x) < 0.001f &&
-				Math.abs(botRight.x - topRight.x) < 0.001f){
-
-			// Top horizontal platform: facing down
-			if (topLeft.y > botLeft.y && topRight.y > botRight.y){
-				return PlatformOrientation.THREE;
-			}
-			// Bot horizontal platform: facing up
-			else if (topLeft.y < botLeft.y && topRight.y < botRight.y){
-				return PlatformOrientation.ZERO;
-			}
-			else {
-				throw new IllegalArgumentException("Not a valid platform: ");
-			}
-		}
-		return null;
-	}
-
-	/**
 	 * Draws the physics object.
 	 *
 	 * @param canvas Drawing context
@@ -293,50 +252,158 @@ public class PlatformModel extends Obstacle {
 				float trueWidth = Math.max(botLeft.dst(botRight), botLeft.dst(topLeft));
 				float trueHeight = obj.PLATFORM_HEIGHT;
 
+				Vector2 objCenter = obj.getCenter();
 				Vector2 scaledPlatCenter = new Vector2(
-						obj.getCenter().x * drawScale.x,
-						obj.getCenter().y * drawScale.y);
+						objCenter.x * drawScale.x,
+						objCenter.y * drawScale.y);
 
 				Vector2 scaledWorldCenter = new Vector2(
 						worldCenter.x * drawScale.x,
 						worldCenter.y * drawScale.y
 				);
 
+				Vector2 botLeftToRight = new Vector2(botRight.cpy().sub(botLeft.cpy()));
+				float angle = botLeftToRight.angleDeg();
+
+
+				float step = D_THICKNESS;
+
+				// Draw the tiled topCenter, midCenter and botCenter tiles.
+				// Vector2 topStart = nextVert(objCenter, angle + 90, step);
+				Vector2 midStart = objCenter.cpy();
+				// Vector2 botStart = nextVert(objCenter, angle - 90, step);
+
 				float minx = Math.min(Math.min(Math.min(corners[0], corners[2]), corners[4]), corners[6]);
 				float maxx = Math.max(Math.max(Math.max(corners[0], corners[2]), corners[4]), corners[6]);
 				float miny = Math.min(Math.min(Math.min(corners[1], corners[3]), corners[5]), corners[7]);
 				float maxy = Math.max(Math.max(Math.max(corners[1], corners[3]), corners[5]), corners[7]);
 
-				Vector2 botLeftToRight = new Vector2(botRight.cpy().sub(botLeft.cpy()));
-				float angle = botLeftToRight.angleDeg();
+				int numCenters = (int) (trueWidth / step);
+				// FloatArray topTileCenters = computerCenters(topStart, angle, step, numCenters, minx, maxx, miny, maxy);
+				FloatArray midTileCenters = computerCenters(midStart, angle, step, numCenters, minx, maxx, miny, maxy);
+				// FloatArray botTileCenters = computerCenters(botStart, angle, step, numCenters, minx, maxx, miny, maxy);
 
-				assert ninePatch != null;
-				canvas.drawNinePatch(ninePatch,
-						botLeft.x * drawScale.x,
-						botLeft.y * drawScale.y,
-						0,
-						0,
-						trueWidth * drawScale.x,
-						trueHeight * drawScale.y,
-						1f, 1f,
-						angle);
+				// Tile center tiles first
+				assert UMid != null: "Missing upper center tile texture";
+				assert MMid != null: "Missing middle center tile texture";
+				assert BMid != null: "Missing bottom center tile texture";
+				for (int ii = 0; ii < midTileCenters.size; ii += 2){
+					canvas.draw(UMid, Color.WHITE,
+							UMid.getRegionHeight()/2f,
+							UMid.getRegionWidth()/2f,
+							midTileCenters.get(ii) * drawScale.x,
+							midTileCenters.get(ii+1) * drawScale.y,
+							angle * MathUtils.degRad, 1f, 1f);
+				}
+
+				// Draw left edge tiles
+				float xstep = MathUtils.cosDeg(angle) * (trueWidth/2 - step/2);
+				float ystep = MathUtils.sinDeg(angle) * (trueWidth/2 - step/2);
+				Vector2 leftEdgeCenter = midStart.cpy().add(-xstep, -ystep);
+				canvas.draw(ULeft, Color.WHITE,
+						ULeft.getRegionHeight()/2f,
+						ULeft.getRegionWidth()/2f,
+						leftEdgeCenter.x * drawScale.x,
+						leftEdgeCenter.y * drawScale.y,
+						angle * MathUtils.degRad, 1f, 1f);
+
+				// Draw right edge tiles
+				Vector2 rightEdgeCenter = midStart.cpy().add(xstep, ystep);
+				canvas.draw(URight, Color.WHITE,
+						URight.getRegionHeight()/2f,
+						URight.getRegionWidth()/2f,
+						rightEdgeCenter.x * drawScale.x,
+						rightEdgeCenter.y * drawScale.y,
+						angle * MathUtils.degRad, 1f, 1f);
 
 				// TODO: Replace with myTenPatch
-//				assert tenPatch != null;
-//				canvas.drawTenPatch(tenPatch,
-//						botLeft.x * drawScale.x,
-//						botLeft.y * drawScale.y,
-//						0,
-//						0,
-//						trueWidth * drawScale.x,
-//						trueHeight * drawScale.y,
-//						angle );
 			}
 		}
-
 	}
 
+	/**
+	 * Returns the result of moving a step amount in the given angle from v
+	 * @param v 	Starting coordinate
+	 * @param angle	Travel angle (degrees)
+	 * @param step	Distance to travel
+	 * @return		Float array for new coordinate [x, y]
+	 */
+	private Vector2 nextVert(Vector2 v, float angle, float step){
+		float cos = MathUtils.cosDeg(angle) * step;
+		float sin = MathUtils.sinDeg(angle) * step;
+		return v.cpy().add(cos, sin);
+	}
 
+	/** Returns an array of x,y coordinates denote where the tiled centers should be */
+	private FloatArray computerCenters(Vector2 startVert, float angle, float step, int centerNum,
+									   float minx, float maxx, float miny, float maxy){
+
+		FloatArray temp = new FloatArray(2*centerNum);
+		float cos = MathUtils.cosDeg(angle) * step;
+		float sin = MathUtils.sinDeg(angle) * step;
+
+		// First half of centers: moving forward
+		Vector2 v = startVert.cpy();
+		float[] vbound = getSquareBounds(v.x, v.y, angle, step/2);
+		float vminx = vbound[0];
+		float vmaxx = vbound[1];
+		float vminy = vbound[2];
+		float vmaxy = vbound[3];
+
+		// Only draw if the square is within the bound of the platform
+		while(minx <= vminx && vmaxx <= maxx && miny <= vminy && vmaxy <= maxy){
+			temp.add(v.x);
+			temp.add(v.y);
+			v.add(cos, sin);
+
+			// Compute new bounds of the square to be drawn
+			vbound = getSquareBounds(v.x, v.y, angle, step/2);
+			vminx = vbound[0];
+			vmaxx = vbound[1];
+			vminy = vbound[2];
+			vmaxy = vbound[3];
+		}
+
+		// Second half of centers: moving backwards
+		v = startVert.cpy().add(-cos, -sin);
+		vbound = getSquareBounds(v.x, v.y, angle, step/2);
+		vminx = vbound[0];
+		vmaxx = vbound[1];
+		vminy = vbound[2];
+		vmaxy = vbound[3];
+
+		// Only draw if the square is within the bound of the platform
+		while(minx <= vminx && vmaxx <= maxx && miny <= vminy && vmaxy <= maxy){
+			temp.add(v.x);
+			temp.add(v.y);
+			v.add(-cos, -sin);
+
+			// Compute new bounds of the square to be drawn
+			vbound = getSquareBounds(v.x, v.y, angle, step/2);
+			vminx = vbound[0];
+			vmaxx = vbound[1];
+			vminy = vbound[2];
+			vmaxy = vbound[3];
+		}
+		return temp;
+	}
+
+	private float[] getSquareBounds(float cx, float cy, float angle, float radius){
+		float xmin = cx;
+		float xmax = cx;
+		float ymin = cy;
+		float ymax = cy;
+		for (int q = 45; q < 360; q += 90){
+			float x = MathUtils.cosDeg(angle + q ) * radius + cx;
+			float y = MathUtils.sinDeg(angle + q ) * radius + cy;
+			xmin = Math.min(xmin, x);
+			xmax = Math.max(xmax, x);
+			ymin = Math.min(ymin, y);
+			ymax = Math.max(ymax, y);
+		}
+
+		return new float[]{xmin, xmax, ymin, ymax};
+	}
 
 
 	/**
@@ -353,7 +420,6 @@ public class PlatformModel extends Obstacle {
 		}
 	}
 
-
 	
 	public void setTexture(TextureRegion texture) {
 		this.texture = texture;
@@ -369,6 +435,12 @@ public class PlatformModel extends Obstacle {
 	public void setTenPatch(TextureRegion topLeft, TextureRegion topCenter, TextureRegion topRight,
 							 TextureRegion midLeft, TextureRegion midCenter, TextureRegion midRight,
 							 TextureRegion botLeft, TextureRegion botCenter, TextureRegion botRight) {
+		// TODO: Remove unnecessary texture regions
+		this.UMid = topCenter;
+		this.MMid = midCenter;
+		this.BMid = botCenter;
+		this.ULeft = topLeft;
+		this.URight = topRight;
 		TextureRegion[] t = new TextureRegion[]{
 				topLeft, topCenter, topRight,
 				midLeft, midCenter, midRight,

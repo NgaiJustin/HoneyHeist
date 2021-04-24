@@ -15,7 +15,6 @@ import com.badlogic.gdx.utils.*;
 import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.audio.SoundBuffer;
 import edu.cornell.gdiac.honeyHeistCode.WorldController;
-import edu.cornell.gdiac.honeyHeistCode.controllers.aiControllers.AIController;
 import edu.cornell.gdiac.honeyHeistCode.models.*;
 import edu.cornell.gdiac.honeyHeistCode.obstacle.BoxObstacle;
 import edu.cornell.gdiac.honeyHeistCode.obstacle.Obstacle;
@@ -54,9 +53,6 @@ public class EditorController extends WorldController implements InputProcessor 
      * Texture asset for tilesBackground
      */
     private TextureRegion tilesBackground;
-
-    /** The texture for spiked platforms */
-    protected TextureRegion poisonTile;
 
     private BitmapFont modeFont;
 
@@ -270,9 +266,28 @@ public class EditorController extends WorldController implements InputProcessor 
         chaserBeeTexture = new TextureRegion(directory.getEntry("platform:larvae", Texture.class));
         flyingBeeTexture = new TextureRegion(directory.getEntry("platform:flyingBee", Texture.class));
         tilesBackground = new TextureRegion(directory.getEntry("shared:tilesBackground", Texture.class));
-        poisonTile = new TextureRegion(directory.getEntry( "shared:poisonWall", Texture.class));
 
         walkingPlayer = directory.getEntry( "platform:walk.pacing", FilmStrip.class );
+
+        SpikeULeft  = new TextureRegion(directory.getEntry("platform:spikeULeft", Texture.class));
+        SpikeUMid   = new TextureRegion(directory.getEntry("platform:spikeUMid", Texture.class));
+        SpikeURight = new TextureRegion(directory.getEntry("platform:spikeURight", Texture.class));
+        SpikeMLeft  = new TextureRegion(directory.getEntry("platform:spikeMLeft", Texture.class));
+        SpikeMMid   = new TextureRegion(directory.getEntry("platform:spikeMMid", Texture.class));
+        SpikeMRight = new TextureRegion(directory.getEntry("platform:spikeMRight", Texture.class));
+        SpikeBLeft  = new TextureRegion(directory.getEntry("platform:spikeBLeft", Texture.class));
+        SpikeBMid   = new TextureRegion(directory.getEntry("platform:spikeBMid", Texture.class));
+        SpikeBRight = new TextureRegion(directory.getEntry("platform:spikeBRight", Texture.class));
+
+        this.ULeft  = new TextureRegion(directory.getEntry("platform:ULeft", Texture.class));
+        this.UMid   = new TextureRegion(directory.getEntry("platform:UMid", Texture.class));
+        this.URight = new TextureRegion(directory.getEntry("platform:URight", Texture.class));
+        this.MLeft  = new TextureRegion(directory.getEntry("platform:MLeft", Texture.class));
+        this.MMid   = new TextureRegion(directory.getEntry("platform:MMid", Texture.class));
+        this.MRight = new TextureRegion(directory.getEntry("platform:MRight", Texture.class));
+        this.BLeft  = new TextureRegion(directory.getEntry("platform:BLeft", Texture.class));
+        this.BMid   = new TextureRegion(directory.getEntry("platform:BMid", Texture.class));
+        this.BRight = new TextureRegion(directory.getEntry("platform:BRight", Texture.class));
 
         jumpSound = directory.getEntry("platform:jump", SoundBuffer.class);
         fireSound = directory.getEntry("platform:pew", SoundBuffer.class);
@@ -369,44 +384,10 @@ public class EditorController extends WorldController implements InputProcessor 
         goalDoor.setName("goal");
         addObject(goalDoor);
 
-
-        // Create the hexagon level
-
-        /*
-        JsonValue c = constants.get("testPlatform2");
-        for (int a=1; a<=4; a++) {
-            float r = 2*a;
-            float l = 0.5f;
-            //float h = c.getFloat("height");
-            float h = 2 * r / (float) Math.sqrt(3) + l / (float) Math.sqrt(3);
-            for (int i = 0; i < 6; i++) {
-                float theta = (float) Math.PI / 3 * i + (float) Math.PI / 6;
-                float x = r * (float) Math.cos(theta) + 16;
-                float y = r * (float) Math.sin(theta) + 9;
-                float[] points = platformPointsFromPoint(x, y, l, h, theta);
-                for (int j = 0; j < points.length; j++) {
-                    System.out.print(points[j] + ", ");
-                }
-                System.out.println("");
-                PolygonObstacle obj;
-                obj = new PolygonObstacle(points, 0, 0);
-                obj.setBodyType(BodyDef.BodyType.StaticBody);
-                obj.setDensity(defaults.getFloat("density", 0.0f));
-                obj.setFriction(defaults.getFloat("friction", 0.0f));
-                obj.setRestitution(defaults.getFloat("restitution", 0.0f));
-                obj.setName("testPlatform");
-                obj.setDrawScale(scale);
-                obj.setTexture(earthTile);
-                addObject(obj);
-            }
-        }
-        */
-
         // Create platforms
         PlatformModel platforms = new PlatformModel(levelData.get("platformPos"), worldCenter);
         platforms.setDrawScale(scale);
-        platforms.setTexture(earthTile);
-        platforms.setNinePatch(platNinePatch);
+        // platforms.setTexture(earthTile);
         platforms.setTenPatch(
                 ULeft, UMid, URight,
                 MLeft, MMid, MRight,
@@ -420,8 +401,6 @@ public class EditorController extends WorldController implements InputProcessor 
         // Create spiked platforms
         SpikedPlatformModel spikedPlatforms = new SpikedPlatformModel(levelData.get("spikedPlatformPos"), worldCenter);
         spikedPlatforms.setDrawScale(scale);
-        //spikedPlatforms.setTexture(poisonTile); //TODO: Change spikedPlatform texture
-        spikedPlatforms.setNinePatch(spikeNinePatch);
         spikedPlatforms.setTenPatch(
                 SpikeULeft, SpikeUMid, SpikeURight,
                 SpikeMLeft, SpikeMMid, SpikeMRight,
@@ -555,8 +534,8 @@ public class EditorController extends WorldController implements InputProcessor 
         //Platforms
         PlatformModel platforms = new PlatformModel(json.get("platformPos"), worldCenter);
         platforms.setDrawScale(scale);
-        platforms.setTexture(earthTile);
-        platforms.setNinePatch(platNinePatch);
+        // platforms.setTexture(earthTile);
+        // platforms.setNinePatch(platNinePatch);
         platforms.setTenPatch(
                 ULeft, UMid, URight,
                 MLeft, MMid, MRight,
@@ -571,8 +550,8 @@ public class EditorController extends WorldController implements InputProcessor 
         //Spiked platforms
         SpikedPlatformModel spikedPlatforms = new SpikedPlatformModel(json.get("spikedPlatformPos"), worldCenter);
         spikedPlatforms.setDrawScale(scale);
-        spikedPlatforms.setTexture(poisonTile);
-        spikedPlatforms.setNinePatch(spikeNinePatch);
+        // spikedPlatforms.setTexture(poisonTile);
+        // spikedPlatforms.setNinePatch(spikeNinePatch);
         spikedPlatforms.setTenPatch(
                 SpikeULeft, SpikeUMid, SpikeURight,
                 SpikeMLeft, SpikeMMid, SpikeMRight,
@@ -1028,7 +1007,7 @@ public class EditorController extends WorldController implements InputProcessor 
         obj = new PolygonObstacle(points, 0, 0);
         obj.setBodyType(BodyDef.BodyType.StaticBody);
         obj.setDrawScale(scale);
-        obj.setTexture(earthTile);
+        // obj.setTexture(earthTile);
         addObject(obj);
         //obj.setActive(false);
         obj.setName("platform");
@@ -1040,7 +1019,7 @@ public class EditorController extends WorldController implements InputProcessor 
         obj = new PolygonObstacle(points, 0, 0);
         obj.setBodyType(BodyDef.BodyType.StaticBody);
         obj.setDrawScale(scale);
-        obj.setTexture(poisonTile);
+        // obj.setTexture(poisonTile);
         addObject(obj);
         //obj.setActive(false);
         obj.setName("spiked");
