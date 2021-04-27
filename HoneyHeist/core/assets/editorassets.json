@@ -1,0 +1,6 @@
+{
+  "jsons": {
+    "cachedLevel": "cachedLevel.json",
+    "platform:defaultLevel": "platform/defaultLevel.json"
+  }
+}

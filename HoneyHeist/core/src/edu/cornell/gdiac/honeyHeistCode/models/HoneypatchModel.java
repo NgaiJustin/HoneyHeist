@@ -1,6 +1,7 @@
 package edu.cornell.gdiac.honeyHeistCode.models;
 
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.honeyHeistCode.GameCanvas;
 import edu.cornell.gdiac.honeyHeistCode.obstacle.Obstacle;
@@ -10,8 +11,8 @@ public class HoneypatchModel extends PlatformModel {
 
     private float slowSpeed;
 
-    public HoneypatchModel(JsonValue data, float slowSpeed){
-        super(data,"honeypatch");
+    public HoneypatchModel(JsonValue data, float slowSpeed, Vector2 worldCenter){
+        super(data,"honeypatch", worldCenter);
         this.setSensor(true);
         this.slowSpeed = slowSpeed;
     }
@@ -32,7 +33,7 @@ public class HoneypatchModel extends PlatformModel {
         // Delegate to components
         for(PolygonObstacle obj : bodies) {
             Color tint = Color.ORANGE;
-            tint.set(tint.r,tint.g,tint.b,0.7f);
+            tint.set(tint.r,tint.g,tint.b,0.6f);
             obj.draw(canvas,tint);
         }
     }

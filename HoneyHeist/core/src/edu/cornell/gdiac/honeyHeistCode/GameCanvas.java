@@ -18,6 +18,7 @@
 package edu.cornell.gdiac.honeyHeistCode;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.g2d.NinePatch;
 import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.g2d.*;
@@ -1180,6 +1181,47 @@ public class GameCanvas {
 		debugRender.setColor(color);
 		debugRender.ellipse(x0-w, y0-h, 2*w, 2*h, 12);
 	}
+
+	/**
+	 * Draws the NinePatch with the given dimensions
+	 * @param x			x coordinate in the world
+	 * @param y			y coordinate in the world
+	 * @param originX	ox
+	 * @param originY	oy
+	 * @param width		width
+	 * @param height	height
+	 * @param scaleX	sx
+	 * @param scaleY	sy
+	 * @param rotation	rotation (degrees)
+	 */
+	public void drawNinePatch(NinePatch patch,
+							  float x, float y, float originX, float originY,
+							  float width, float height, float scaleX, float scaleY,
+							  float rotation){
+		patch.draw(spriteBatch, x, y, originX, originY, width,height, scaleX, scaleY, rotation);
+		// TODO: Replace with myTenPatch
+	}
+
+	/**
+	 * Draws the NinePatch with the given dimensions
+	 * @param x			x coordinate in the world
+	 * @param y			y coordinate in the world
+	 * @param originX	ox
+	 * @param originY	oy
+	 * @param width		width
+	 * @param height	height
+	 * @param scaleX	sx
+	 * @param scaleY	sy
+	 * @param rotation	rotation (degrees)
+	 */
+	public void drawTenPatch(MyTenPatch patch,
+							 float x, float y, float originX, float originY,
+							 float width, float height, float scaleX, float scaleY,
+							 float rotation){
+		patch.draw(spriteBatch, x, y, originX, originY, width,height, scaleX, scaleY, rotation);
+		// TODO: Replace with myTenPatch
+	}
+
 	/**
 	 * Compute the affine transform (and store it in local) for this image.
 	 * 
