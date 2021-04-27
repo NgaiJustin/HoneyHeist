@@ -1,10 +1,9 @@
 {
 	"textures": {
-        "background": "shared/background.png",
+        "background": "shared/background_menu.png",
 		"play": "shared/play.png",
-        "totalLevels": 3,
+        "levelEditor": "editor/levelLabel.png",
         "button": "shared/button_level.png",
-        "levelEditor": "editor/levelEditor.png",
         "title": "shared/levelslabel.png",
         "progress": {
             "file":      "shared/progressbar.png",
