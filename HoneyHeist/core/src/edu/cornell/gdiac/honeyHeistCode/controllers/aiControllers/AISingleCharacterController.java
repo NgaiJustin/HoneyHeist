@@ -76,7 +76,7 @@ public class AISingleCharacterController {
 
     private FSMState state;
     private long ticks;
-    private static final int ticksBeforeChangeInRandomDirection = 120;
+    private int ticksBeforeChangeInRandomDirection;
 	private static final int ticksBeforeChangeInChaseDirection = 5;
 	private static final float checkLength = 1.5f;
     private Vector2 target;
@@ -88,6 +88,7 @@ public class AISingleCharacterController {
     private Vector2 positionAtLastWander;
     private Vector2 currentDirection;
     private Vector2 temp;
+    private float directionChangeCoolDown;
 
     Random random = new Random();
 
@@ -121,9 +122,9 @@ public class AISingleCharacterController {
 		this.chaseSpeedFactor = data.getFloat("chase_speed_factor");
 		this.checkIfItWillFallOffPlatform = data.getInt("check_fall_off_platform") == 1 ? true : false;
 		this.wanderRadius = data.getFloat("wander_radius");
+		this.ticksBeforeChangeInRandomDirection = data.getInt("ticksBeforeChangeInRandomDirection");
 
 		state = FSMState.WANDER;
-		ticks = 0;
 		lineToTarget = new DirectedLineSegment(controlledCharacter.getPosition(), target);
 		tempLineSegment = new DirectedLineSegment();
 		bottomChecker = new DirectedLineSegment();
@@ -133,7 +134,8 @@ public class AISingleCharacterController {
 		currentDirection = new Vector2();
 		positionAtLastWander = new Vector2();
 		positionAtLastWander.set(controlledCharacter.getPosition());
-
+		directionChangeCoolDown = 0;
+		ticks = 0;
 		initDirection();
 	}
 
@@ -144,6 +146,7 @@ public class AISingleCharacterController {
 		updateLineToTarget();
 		updateFSMState();
 		updateDirectionBasedOnState();
+		directionChangeCoolDown ++;
 		ticks ++;
 	}
 
@@ -262,6 +265,7 @@ public class AISingleCharacterController {
 		switch (this.state) {
 			case WANDER:
 				if (characterType == CharacterType.GROUNDED_CHARACTER) {
+					rotateWanderDirectionForGroundedEnemy((float)Math.toDegrees(controlledCharacter.getAngle()));
 					wanderDirectionForGroundedEnemy();
 				} else {
 					wanderDirectionForFlyingEnemy();
@@ -284,14 +288,26 @@ public class AISingleCharacterController {
 		}
 	}
 
+	private void rotateWanderDirectionForGroundedEnemy(float rotation) {
+		if (controlledCharacter.getMovement() <= 0) {
+			rotation = 180 + rotation;
+		}
+		direction.setByVector(controlledCharacter.getPosition(), direction.getDirection().setAngleDeg(rotation));
+	}
+
 	private void wanderDirectionForGroundedEnemy() {
 		direction.setByVector(controlledCharacter.getPosition(), direction.getDirection());
-		if (isLineCollidingWithAPlatform(direction)) {
-			changeToOppositeDirection();
+		if (directionChangeCoolDown >= ticksBeforeChangeInRandomDirection) {
+			if (isLineCollidingWithAPlatform(direction)) {
+				changeToOppositeDirection();
+				directionChangeCoolDown = 0;
+			}
+			if (checkIfItWillFallOffPlatform && willCharacterFallOffPlatform()) {
+				changeToOppositeDirection();
+				directionChangeCoolDown = 0;
+			}
 		}
-		if (checkIfItWillFallOffPlatform && willCharacterFallOffPlatform()) {
-			changeToOppositeDirection();
-		}
+
 	}
 
 	private boolean isExitingWanderRadius() {
