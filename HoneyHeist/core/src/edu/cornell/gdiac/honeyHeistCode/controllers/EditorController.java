@@ -1604,7 +1604,12 @@ public class EditorController extends WorldController implements InputProcessor 
         if (!path.endsWith(".json")){
             path = path + ".json";
         }
-        path = jfc.getCurrentDirectory() + "\\" + path;
+
+        if(System.getProperty("os.name").contains("Windows")) {
+            path = jfc.getCurrentDirectory() + "\\" + path;
+        } else {
+            path = jfc.getCurrentDirectory() + "/" + path;
+        }
 
         saveToPath(path, level);
     }
