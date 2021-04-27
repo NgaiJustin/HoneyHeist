@@ -16,10 +16,9 @@ public class AIController {
     AIGraphModel aIGraphModel;
     LevelModel levelModel;
 
-    public AIController(LevelModel levelModel, TextureRegion whiteSquare) {
+    public AIController(LevelModel levelModel) {
         this.levelModel = levelModel;
         aICharacterControllers = new HashMap<CharacterModel, AISingleCharacterController>();
-        aIGraphModel = new AIGraphModel(levelModel, whiteSquare);
     }
 
     public void createAIForSingleCharacter(CharacterModel characterModel, JsonValue data) {
@@ -40,16 +39,6 @@ public class AIController {
                 ((FlyingBeeModel) bee).setVMovement(aICharacterController.getMovementDirection().y * bee.getForce());
             }
         }
-    }
-
-    public void updateAccessibility() {
-        aIGraphModel.updateAccessibility();
-    }
-
-    public void drawDebugTileMap(GameCanvas canvas, Vector2 scale) {
-
-        aIGraphModel.setTextures();
-        aIGraphModel.drawDebug(canvas, scale);
     }
 
     public void drawDebugLines(GameCanvas canvas, Vector2 scale) {

@@ -48,7 +48,8 @@
         "target": 0,
         "wander_speed_factor": 0.5,
         "chase_speed_factor": 0.5,
-        "check_fall_off_platform": 1
+        "check_fall_off_platform": 1,
+        "ticksBeforeChangeInRandomDirection": 60
       }
     },
   "FlyingBee": {
@@ -75,7 +76,8 @@
       "target": 0,
       "wander_speed_factor": 0.5,
       "chase_speed_factor": 0.5,
-      "check_fall_off_platform": 0
+      "check_fall_off_platform": 0,
+      "ticksBeforeChangeInRandomDirection": 120
     }
   }
 }

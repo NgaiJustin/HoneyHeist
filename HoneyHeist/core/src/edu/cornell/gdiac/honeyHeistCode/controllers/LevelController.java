@@ -671,8 +671,8 @@ public class LevelController implements ContactListener {
 
         Array<AbstractBeeModel> bees = new Array<AbstractBeeModel>();
         level = new LevelModel(avatar,bees,goalDoor,platforms, spikedPlatforms, honeyPatches, levelBackground, new Rectangle(bounds));
-
-        aIController = new AIController(level, whiteSquare);
+      
+        aIController = new AIController(level);
 
         dwidth = chaserBeeTexture.getRegionWidth() / scale.x;
         dheight = chaserBeeTexture.getRegionHeight() / scale.y;
@@ -1134,9 +1134,6 @@ public class LevelController implements ContactListener {
      * @param dt	Number of seconds since last animation frame
      */
     public void draw(float dt) {
-        if (aIDebug) {
-            aIController.drawDebugTileMap(canvas, scale);
-        }
         for(Obstacle obj : objects) {
             obj.draw(canvas);
         }

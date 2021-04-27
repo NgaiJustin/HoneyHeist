@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.honeyHeistCode.GameCanvas;
 import edu.cornell.gdiac.honeyHeistCode.models.LevelModel;
 import edu.cornell.gdiac.honeyHeistCode.models.PlatformModel;
@@ -17,34 +18,55 @@ import edu.cornell.gdiac.honeyHeistCode.obstacle.PolygonObstacle;
 import java.util.HashMap;
 
 public class AIGraphModel implements Graph<AIGraphModel.AINodeModel> {
-    LevelModel levelModel;
-    HashMap<Vector2, AINodeModel> nodes;
+    Array<AINodeModel> nodes;
+    float maxRadiusOfNode;
     int count;
 
     //DEBUGGING
     TextureRegion whiteSquare;
 
-    public AIGraphModel(LevelModel levelModel, TextureRegion whiteSquare) {
-        this.levelModel = levelModel;
-        nodes = new HashMap<Vector2, AINodeModel>();
+    public AIGraphModel(JsonValue aIGraphData, TextureRegion whiteSquare) {
+        nodes = new Array<AINodeModel>();
         this.whiteSquare = whiteSquare;
-        boolean evenRow = false;
-        for (float y = levelModel.getBounds().y; y < levelModel.getBounds().height; y += (AINodeModel.MIN_NODE_RADIUS)) {
+        this.maxRadiusOfNode = aIGraphData.getFloat("maxRadiusOfNode");
+        float minRadiusOfNode = (float)Math.sqrt(3) * (maxRadiusOfNode/2);
+        float xMin = aIGraphData.getFloat("minX");
+        float xMax = aIGraphData.getFloat("maxX");
+        float yMin = aIGraphData.getFloat("minY");
+        float yMax = aIGraphData.getFloat("maxY");
+        float yMiddle = (yMax + yMin) / 2;
+        boolean evenRow = true;
+        for (float y = yMiddle; y <= yMax; y += minRadiusOfNode) {
             evenRow = !evenRow;
-            for (float x = evenRow ? (float) (levelModel.getBounds().x + AINodeModel.MAX_NODE_RADIUS * 1.5) : levelModel.getBounds().x;
-                 x < levelModel.getBounds().width; x += (AINodeModel.MAX_NODE_RADIUS * 3)) {
+            for (float x = evenRow ? (float) (xMin + maxRadiusOfNode * 1.5) : xMin;
+                 x <= xMax; x += (maxRadiusOfNode * 3)) {
                 addNode(new AINodeModel(x, y, true));
             }
         }
-    }
-
-    public void updateAccessibility() {
-        PlatformModel platforms = levelModel.getPlatforms();
-        for(AINodeModel node : nodes.values()) {
-            for(PolygonObstacle platform : platforms.getBodies()) {
-                node.setAccessible(!node.doesPolygonIntersectNode(platform.getTrueVertices()));
+        evenRow = false;
+        for (float y = yMiddle - minRadiusOfNode; y >= yMin; y -= minRadiusOfNode) {
+            evenRow = !evenRow;
+            for (float x = evenRow ? (float) (xMin + maxRadiusOfNode * 1.5) : xMin;
+                 x <= xMax; x += (maxRadiusOfNode * 3)) {
+                addNode(new AINodeModel(x, y, true));
             }
         }
+        for (int i = 0; i < aIGraphData.get("accessibility").size; i++) {
+            boolean accessible = aIGraphData.get("accessibility").getInt(i) == 1;
+            setAccessibility(i, accessible);
+        }
+    }
+
+    private void setAccessibility(int index, boolean accessibility) {
+        if (index > count) {
+            return;
+        }
+        nodes.get(index).setAccessible(accessibility);
+    }
+
+    private AINodeModel createNodeModel(JsonValue nodeData) {
+        boolean accessible = nodeData.getFloat(2) == 1;
+        return new AINodeModel(nodeData.getFloat(0), nodeData.getFloat(1), accessible);
     }
 
     public int getNodeCount() {
@@ -56,7 +78,7 @@ public class AIGraphModel implements Graph<AIGraphModel.AINodeModel> {
     }
 
     private void addNode(AINodeModel node) {
-        nodes.put(node.getPosition(), node);
+        nodes.add(node);
         count++;
     }
 
@@ -66,13 +88,13 @@ public class AIGraphModel implements Graph<AIGraphModel.AINodeModel> {
     }
 
     public void drawDebug(GameCanvas canvas, Vector2 drawScale) {
-        for (AINodeModel node : nodes.values()) {
+        for (AINodeModel node : nodes) {
             node.drawDebug(canvas, drawScale);
         }
     }
 
     public void setTextures() {
-        for (AINodeModel node : nodes.values()) {
+        for (AINodeModel node : nodes) {
             node.setTexture(whiteSquare);
         }
     }
@@ -99,7 +121,8 @@ public class AIGraphModel implements Graph<AIGraphModel.AINodeModel> {
         // Debugging
         Texture texture;
         PolygonObstacle polygonObstacle;
-
+        Color accessibleColor = new Color(1,1,1,.5f);
+        Color inaccessibleColor = new Color(1,0,0,0.5f);
 
 
         public AINodeModel(float x, float y, boolean accessible) {
@@ -209,10 +232,10 @@ public class AIGraphModel implements Graph<AIGraphModel.AINodeModel> {
         public void drawDebug(GameCanvas canvas, Vector2 scale) {
             polygonObstacle.setDrawScale(scale);
             if (accessible) {
-                polygonObstacle.draw(canvas, Color.WHITE);
+                polygonObstacle.draw(canvas, accessibleColor);
             }
             else {
-                polygonObstacle.draw(canvas, Color.RED);
+                polygonObstacle.draw(canvas, inaccessibleColor);
             }
         }
 
