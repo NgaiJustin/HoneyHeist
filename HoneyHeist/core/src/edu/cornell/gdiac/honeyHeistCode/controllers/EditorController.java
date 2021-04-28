@@ -819,7 +819,7 @@ public class EditorController extends WorldController implements InputProcessor 
                     selector.select(input.getCrossHair().x, input.getCrossHair().y);
                 }
 
-                if (selector.isSelected()) {
+                if (selector.isSelected() && selector.getObstacle() != null) {
 
                     //if dragging, move selected
                     if (input.didMouseDrag()) {
@@ -857,7 +857,7 @@ public class EditorController extends WorldController implements InputProcessor 
                     }
 
                     //have to remove objects from level model + mark them to be removed
-                    if (input.didDelete() && selector.getObstacle() != null) {
+                    if (input.didDelete()) {
                         if (selector.getObstacle().getName().contains("platform")) {
                             PolygonObstacle obj = (PolygonObstacle) selector.getObstacle();
                             level.getPlatforms().getArrayBodies().removeValue(obj, false);
@@ -883,7 +883,7 @@ public class EditorController extends WorldController implements InputProcessor 
                         selector.getObstacle().markRemoved(true);
                     }
 
-                    if(input.didCopy() && selector.getObstacle() != null){
+                    if(input.didCopy()){
                         if (selector.getObstacle().getName().contains("platform")) {
                             PolygonObstacle temp = newPlatform(
                                     ((PolygonObstacle)selector.getObstacle()).getTruePoints());
