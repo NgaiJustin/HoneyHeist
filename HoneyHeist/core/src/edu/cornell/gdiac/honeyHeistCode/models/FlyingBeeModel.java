@@ -78,6 +78,14 @@ public class FlyingBeeModel extends AbstractBeeModel{
         return vMovement;
     }
 
+    /**
+     * Remove all forces on the bee - Halts movement
+     */
+    public void haltMovement(){
+        body.setAngularVelocity(0);
+        body.setLinearVelocity(0,0);
+    }
+
     @Override
     public void applyForce() {
         if (!isActive()) {
