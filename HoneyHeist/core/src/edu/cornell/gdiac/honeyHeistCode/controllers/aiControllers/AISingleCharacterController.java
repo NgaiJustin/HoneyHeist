@@ -237,6 +237,9 @@ public class AISingleCharacterController {
 	 */
 	private void updateFSMState() {
 		float distanceToPlayer = controlledCharacter.getPosition().dst(levelModel.getPlayer().getPosition());
+		if (levelModel.getPlatforms().isRotating()) {
+			updatePositionAtLastWander();
+		}
 		switch (this.state) {
 			case WANDER:
 				if (distanceToPlayer < chaseRadius && !isLineCollidingWithAPlatform(lineToTarget)) {
@@ -253,9 +256,13 @@ public class AISingleCharacterController {
 			case CHASE:
 				if (distanceToPlayer > chaseRadius || isLineCollidingWithAPlatform(lineToTarget)) {
 					this.state = FSMState.WANDER;
-					positionAtLastWander.set(controlledCharacter.getPosition());
+					updatePositionAtLastWander();
 				}
 		}
+	}
+
+	private void updatePositionAtLastWander() {
+		positionAtLastWander.set(controlledCharacter.getPosition());
 	}
 
 	/**
