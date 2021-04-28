@@ -445,6 +445,7 @@ public class LevelController implements ContactListener {
         //bgm = directory.getEntry("platform:bgm", SoundBuffer.class);
 
         constants = directory.getEntry("platform:constants2", JsonValue.class);
+        System.out.println("DatafilePath = " + dataFilePath);
         levelData = directory.getEntry(dataFilePath, JsonValue.class);
 //        levelData = directory.getEntry("platform:prototypeLevel", JsonValue.class);
 //        super.gatherAssets(directory);
