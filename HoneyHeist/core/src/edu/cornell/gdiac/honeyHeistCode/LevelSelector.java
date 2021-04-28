@@ -230,7 +230,7 @@ public class LevelSelector implements Screen {
         totalLevelNum = allLevelData.size;
 //        totalLevelNum = 20;
         final int totalLevelTest = 20;
-        System.out.println(totalLevelNum);
+//        System.out.println(totalLevelNum);
         buttons = new Texture[totalLevelTest];
         // initailize the buttons to null
         Arrays.fill(buttons, null);
@@ -327,7 +327,7 @@ public class LevelSelector implements Screen {
         buttonStyle.font = skin.getFont("font");
         levelButtons = new TextButton[totalLevelTest];
         int numberOfPage = totalLevelTest/LEVEL_PER_PAGE;
-        System.out.println("total page number = " + numberOfPage);
+//        System.out.println("total page number = " + numberOfPage);
         for (int idx=0; idx <= numberOfPage; idx++) {
             Table page = new Table();
             Table levelTable = new Table();
@@ -401,7 +401,7 @@ public class LevelSelector implements Screen {
         leftArrow.addListener(new ChangeListener() {
             public void changed(ChangeEvent event, Actor actor) {
                 if (currentPage > 0) currentPage --;
-                System.out.println(currentPage);
+//                System.out.println(currentPage);
                 float pageWidth = stage.getWidth()*0.6f;
                 scroller.scrollTo(pageWidth*currentPage, scroller.getHeight(), pageWidth, scroller.getHeight());
             }
@@ -411,7 +411,7 @@ public class LevelSelector implements Screen {
         rightArrow.addListener(new ChangeListener() {
             public void changed(ChangeEvent event, Actor actor) {
                 if (currentPage < totalLevelTest/LEVEL_PER_PAGE) currentPage ++;
-                System.out.println(currentPage);
+//                System.out.println(currentPage);
                 float pageWidth = stage.getWidth()*0.6f;
                 scroller.scrollTo(pageWidth*currentPage, scroller.getHeight(), pageWidth, scroller.getHeight());
             }
