@@ -42,6 +42,12 @@ public class LevelSelector implements Screen {
     private int levelNumber;
     /** number of total levels */
     private int totalLevelNum;
+    /** number of levels per page */
+    private int LEVEL_PER_PAGE = 7;
+    /** number of levels per row */
+    private int LEVEL_PER_ROW = 4;
+    /** current page. Initially it's 0. */
+    private int currentPage;
     /** The font for numbers of level displayed */
     private BitmapFont displayFont;
     /** Offset for the number message on the screen */
@@ -104,7 +110,7 @@ public class LevelSelector implements Screen {
     private Stage stage;
     private Skin skin;
     private Table table;
-    private int LEVEL_PER_ROW = 6;
+//    private int LEVEL_PER_ROW = 6;
     // Whether the level buttons are pressed.
     private boolean[] pressStates;
     private boolean isPressLevelEditor;
@@ -112,6 +118,10 @@ public class LevelSelector implements Screen {
     private int EDITOR_WIDTH = 150;
     private int EDITOR_HEIGHT = 70;
     private int EDITOR_POSX = 100;
+    // left/right arrow button
+    private Button leftArrow;
+    private Button rightArrow;
+    private ScrollPane scroller;
 
     /**
      * Returns the press state.
@@ -218,7 +228,10 @@ public class LevelSelector implements Screen {
         // get the level data
         allLevelData = internal.getEntry("levelData", JsonValue.class);
         totalLevelNum = allLevelData.size;
-        buttons = new Texture[totalLevelNum];
+//        totalLevelNum = 20;
+        final int totalLevelTest = 20;
+        System.out.println(totalLevelNum);
+        buttons = new Texture[totalLevelTest];
         // initailize the buttons to null
         Arrays.fill(buttons, null);
 
@@ -235,6 +248,7 @@ public class LevelSelector implements Screen {
 //        pressState = -1;
         pressState = 0;
         isPressLevelEditor = false;
+        currentPage = 0;
 
 //        Gdx.input.setInputProcessor( this );
 
@@ -259,7 +273,7 @@ public class LevelSelector implements Screen {
         table.setFillParent(true);
         stage.addActor(table);
         // turn on debug lines to visualize the layout
-//        table.setDebug(true);
+        table.setDebug(true);
         // add assets to skin
         skin = new Skin();
         skin.add("background", background);
@@ -283,7 +297,7 @@ public class LevelSelector implements Screen {
         // change the size
         levelEditor.invalidate();
         levelEditor.setSize(EDITOR_WIDTH, EDITOR_HEIGHT);
-        levelEditor.setPosition(stage.getWidth()*0.1f, stage.getHeight()*0.8f);
+        levelEditor.setPosition(stage.getWidth()*0.1f, stage.getHeight()*0.6f);
         levelEditor.validate();
         // add listen to pressing event
         levelEditor.addListener(new ChangeListener() {
@@ -296,51 +310,63 @@ public class LevelSelector implements Screen {
         // *** title *** //
         Image titleImage = new Image(title);
         // adjust the position of titleCell
-        Cell titleCell = table.add(titleImage).
-                height(Value.percentHeight(1.5f)).width(Value.percentWidth(1.5f));
+        Cell titleCell = table.add(titleImage).colspan(2).
+                height(Value.percentHeight(2f)).width(Value.percentWidth(2f));
         titleCell.padTop(stage.getHeight()/8).padBottom(stage.getHeight()/32);
 
         // *** level buttons *** //
+        table.row();
+        Table scrollTable = new Table();
+
+        // level buttons
         TextureRegion buttonImage = new TextureRegion(internal.getEntry("button", Texture.class));
         TextureRegionDrawable buttonDrawable = new TextureRegionDrawable(buttonImage);
         TextButtonStyle buttonStyle = new TextButtonStyle();
         buttonStyle.up = buttonDrawable;
         buttonStyle.down = buttonDrawable.tint(Color.GRAY);
         buttonStyle.font = skin.getFont("font");
-        levelButtons = new TextButton[20];
-        Table levelTable = new Table();
-        // implementation 1
-        for (int i=0; i<20; i++) {
-            if (i%(LEVEL_PER_ROW*2-1)==LEVEL_PER_ROW) {
-                table.row();
-                levelTable = new Table();
-                table.add(levelTable);
-            } else if (i%(LEVEL_PER_ROW*2-1)== 0) {
-                table.row();
-                levelTable = new Table();
-                table.add(levelTable);
-            }
-            levelButtons[i] = new TextButton(String.valueOf(i+1), buttonStyle);
-            // finalI is used for inner class
-            final int finalI = i;
-            levelButtons[i].addListener(new ChangeListener() {
-                public void changed(ChangeEvent event, Actor actor) {
-                    // "the button can only be pressed if the level is unlocked"
-                    if (finalI < totalLevelNum && allLevelData.get(finalI).get("unlock").asBoolean()) {
-                        pressState = finalI + 1;
-                        selectedLevelData = allLevelData.get(pressState - 1).get("file").asString();
-                    }
+        levelButtons = new TextButton[totalLevelTest];
+        int numberOfPage = totalLevelTest/LEVEL_PER_PAGE;
+        System.out.println("total page number = " + numberOfPage);
+        for (int idx=0; idx <= numberOfPage; idx++) {
+            Table page = new Table();
+            Table levelTable = new Table();
+            // implementation 1
+            for (int i = 0; i < totalLevelTest; i++) {
+                // first line has one more level button than the second line
+                if (i % (LEVEL_PER_ROW * 2 - 1) == LEVEL_PER_ROW && i / LEVEL_PER_PAGE == idx) {
+                    page.row();
+                    levelTable = new Table();
+                    page.add(levelTable).colspan(2).pad(10f);
+                } else if (i % (LEVEL_PER_ROW * 2 - 1) == 0 && i / LEVEL_PER_PAGE == idx) {
+                    page.row();
+                    levelTable = new Table();
+                    page.add(levelTable).colspan(2);
                 }
-            });
-            levelTable.add(levelButtons[i]).height(Value.percentHeight(1.5f)).width(Value.percentWidth(1.55f)).
-                    padLeft(5f).padRight(5f);
+                // create buttons for this specific page
+                if (i / LEVEL_PER_PAGE == idx) {
+                    levelButtons[i] = new TextButton(String.valueOf(i + 1), buttonStyle);
+                    // finalI is used for inner class
+                    final int finalI = i;
+                    levelButtons[i].addListener(new ChangeListener() {
+                        public void changed(ChangeEvent event, Actor actor) {
+                            // "the button can only be pressed if the level is unlocked"
+                            if (finalI < totalLevelNum && allLevelData.get(finalI).get("unlock").asBoolean()) {
+                                pressState = finalI + 1;
+                                selectedLevelData = allLevelData.get(pressState - 1).get("file").asString();
+                            }
+                        }
+                    });
+                    levelTable.add(levelButtons[i]).height(100).width(120).
+                            padLeft(5f).padRight(5f);
+                }
 
-        // implementation 2
+                // implementation 2
 //            levelButtons[i] = new TextButton(String.valueOf(i+1), buttonStyle);
 //            table.add(levelButtons[i]).height(Value.percentHeight(1.2f)).width(Value.percentWidth(1.25f)).
 //                    padLeft(20f).padRight(20f);
 //            levelTable.add(levelButtons[i]).fillX().fillY();
-            // 4 levels per row
+                // 4 levels per row
 //            if (i%LEVEL_PER_ROW == (LEVEL_PER_ROW-1)) {
 //                if (i/LEVEL_PER_ROW%2 == 0) {
 ////                    table.row().spaceLeft(50f);
@@ -351,11 +377,61 @@ public class LevelSelector implements Screen {
 //                }
 ////                levelTable.row();
 //            }
-
+            }
+            scrollTable.add(page).width(stage.getWidth()*0.6f);
         }
+        scroller = new ScrollPane(scrollTable);
+        table.add(scroller).size(stage.getWidth()*0.6f, stage.getHeight()*0.5f).colspan(2);
 
-//        image1.setPosition(Gdx.graphics.getWidth()/3-image1.getWidth()/2,Gdx.graphics.getHeight()*2/3-image1.getHeight()/2);
-//        stage.addActor(image1);
+        // *** left & right buttons *** //
+        table.row();
+        TextureRegion leftArrowImage = new TextureRegion(internal.getEntry("left", Texture.class));
+        TextureRegionDrawable leftArrowDrawable = new TextureRegionDrawable(leftArrowImage);
+        TextButtonStyle leftArrowStyle = new TextButtonStyle();
+        leftArrowStyle.up = leftArrowDrawable;
+        leftArrowStyle.down = leftArrowDrawable.tint(Color.GRAY);
+        leftArrowStyle.font = skin.getFont("font");
+        TextureRegion rightArrowImage = new TextureRegion(internal.getEntry("right", Texture.class));
+        TextureRegionDrawable rightArrowDrawable = new TextureRegionDrawable(rightArrowImage);
+        TextButtonStyle rightArrowStyle = new TextButtonStyle();
+        rightArrowStyle.up = rightArrowDrawable;
+        rightArrowStyle.down = rightArrowDrawable.tint(Color.GRAY);
+        rightArrowStyle.font = skin.getFont("font");
+        leftArrow = new Button(leftArrowStyle);
+        leftArrow.addListener(new ChangeListener() {
+            public void changed(ChangeEvent event, Actor actor) {
+                if (currentPage > 0) currentPage --;
+                System.out.println(currentPage);
+                float pageWidth = stage.getWidth()*0.6f;
+                scroller.scrollTo(pageWidth*currentPage, scroller.getHeight(), pageWidth, scroller.getHeight());
+            }
+        });
+        table.add(leftArrow).left().height(Value.percentHeight(3f)).width(Value.percentWidth(3f)).top();
+        rightArrow = new Button(rightArrowStyle);
+        rightArrow.addListener(new ChangeListener() {
+            public void changed(ChangeEvent event, Actor actor) {
+                if (currentPage < totalLevelTest/LEVEL_PER_PAGE) currentPage ++;
+                System.out.println(currentPage);
+                float pageWidth = stage.getWidth()*0.6f;
+                scroller.scrollTo(pageWidth*currentPage, scroller.getHeight(), pageWidth, scroller.getHeight());
+            }
+        });
+        table.add(rightArrow).right().height(Value.percentHeight(3f)).width(Value.percentWidth(3f)).top();
+        // scroll pane
+//        table.row();
+//        Table scrollTable = new Table();
+//        scrollTable.add(new Image(title));
+//        scrollTable.add(new Image(title));
+//        scrollTable.add(new Image(title));
+//        scrollTable.add(new Image(title));
+//        scrollTable.row();
+//        scrollTable.add(new Image(title));
+//        scrollTable.row();
+//        scrollTable.add(new Image(title));
+//
+//        scroller = new ScrollPane(scrollTable);
+//
+//        table.add(scroller).size(stage.getWidth()*0.6f, stage.getHeight()*0.5f);
     }
 
     /**

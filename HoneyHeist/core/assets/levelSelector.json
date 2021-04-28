@@ -2,9 +2,11 @@
 	"textures": {
         "background": "shared/background_menu.png",
 		"play": "shared/play.png",
-        "levelEditor": "editor/levelLabel.png",
-        "button": "shared/button_level.png",
-        "title": "shared/levelslabel.png",
+        "levelEditor": "shared/button.png",
+        "button": "shared/level.png",
+        "title": "shared/levelselectlabel.png",
+        "left": "shared/left_arrow.png",
+        "right": "shared/right_arrow.png",
         "progress": {
             "file":      "shared/progressbar.png",
             "atlas":     {
@@ -19,7 +21,7 @@
 	},
     "fonts": {
         "times": {
-            "file": "shared/RetroGame.ttf",
+            "file": "shared/LoRes9OTWide-Bold.ttf",
             "size": 32
         }
     },
