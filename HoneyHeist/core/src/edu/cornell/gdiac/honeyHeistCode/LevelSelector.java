@@ -39,7 +39,7 @@ public class LevelSelector implements Screen {
     /** Title texture */
     private Texture title;
     /** selected level number */
-    private int levelNumber;
+    private int currentLevelNum;
     /** number of total levels */
     private int totalLevelNum;
     /** number of levels per page */
@@ -98,7 +98,7 @@ public class LevelSelector implements Screen {
 
     /** Current progress (0 to 1) of the asset manager */
     private float progress;
-    /** The current state of the play button */
+    /** The current state of the play button; it should be one bigger than the button index. */
     private int   pressState;
     /** The amount of time to devote to loading assets (as opposed to on screen hints, etc.) */
     private int   budget;
@@ -137,8 +137,8 @@ public class LevelSelector implements Screen {
      *
      * @return the selected level number.
      */
-    public int getLevelNumber() {
-        return levelNumber;
+    public int getCurrentLevelNum() {
+        return currentLevelNum;
     }
 
     /**
@@ -227,11 +227,11 @@ public class LevelSelector implements Screen {
 
         // get the level data
         allLevelData = internal.getEntry("levelData", JsonValue.class).get("levels");
-        System.out.println(allLevelData);
+//        System.out.println(allLevelData);
 //        allLevelData.get(finalI).get("unlock").asBoolean();
 //        totalLevelNum = allLevelData.size;
         totalLevelNum = allLevelData.size;
-        System.out.println(totalLevelNum);
+//        System.out.println(totalLevelNum);
 
 //        totalLevelNum = 20;
         final int totalLevelTest = 20;
@@ -254,6 +254,7 @@ public class LevelSelector implements Screen {
         pressState = 0;
         isPressLevelEditor = false;
         currentPage = 0;
+        currentLevelNum = 0;
 
 //        Gdx.input.setInputProcessor( this );
 
@@ -357,6 +358,7 @@ public class LevelSelector implements Screen {
                             // "the button can only be pressed if the level is unlocked"
                             if (finalI < totalLevelNum && allLevelData.get(finalI).get("unlock").asBoolean()) {
                                 pressState = finalI + 1;
+                                currentLevelNum = pressState;
                                 selectedLevelData = allLevelData.get(pressState - 1).get("file").asString();
                             }
                         }
@@ -433,6 +435,16 @@ public class LevelSelector implements Screen {
         if (stage != null) {
             stage.dispose();
         }
+    }
+
+    /**
+     * Called when this the current level is completed and go to the next level.
+     */
+    public String nextLevelData() {
+        if (currentLevelNum < totalLevelNum-1) {
+            currentLevelNum ++;
+        }
+        return allLevelData.get(currentLevelNum - 1).get("file").asString();
     }
 
     /**

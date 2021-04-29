@@ -493,10 +493,10 @@ public class GameplayController implements Screen, InputProcessor {
 			if (levelController.isFailure()) {
 				reset();
 			} else if (levelController.isComplete()) {
-				/*pause();
+				pause();
 				listener.exitScreen(this, EXIT_NEXT);
-				return false;*/
-				reset();
+				return false;
+//				reset();
 			}
 		}
 		return true;
