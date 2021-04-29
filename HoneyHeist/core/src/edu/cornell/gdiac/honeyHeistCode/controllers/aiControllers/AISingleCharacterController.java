@@ -333,6 +333,7 @@ public class AISingleCharacterController {
 		}
 		if (isLineCollidingWithAPoisonPlatform(direction)) {
 			changeToOppositeDirection();
+			positionAtLastWander.add(direction.getDirection());
 		}
 		else if (isLineCollidingWithAPlatform(direction)) {
 			getViableDirection12();
