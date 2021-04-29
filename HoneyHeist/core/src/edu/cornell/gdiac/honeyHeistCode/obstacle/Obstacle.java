@@ -67,7 +67,7 @@ public abstract class Obstacle {
 	/** Whether the ant is sticking */
 	protected boolean sticking;
 	/** The amount of time that the ant should stick during rotations */
-	protected final float maxStickTime = 0.5f;
+	protected final float maxStickTime = 0.3f;
 	/** The amount of time that the ant has been sticking */
 	protected float stickTime;
 

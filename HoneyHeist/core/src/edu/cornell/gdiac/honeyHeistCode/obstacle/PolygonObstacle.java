@@ -276,7 +276,7 @@ public class PolygonObstacle extends SimpleObstacle {
 		initBounds();
 
 		rotationAngle = (float) Math.PI/3;
-		rotationSpeed = (float) Math.PI/3;
+		rotationSpeed = ((float) Math.PI/3)*1.3f;
 	}
 
 	public void update(float dt) {
