@@ -1,4 +1,8 @@
 # HoneyHeist
+
+## Download instructions:
+Download the jar by clicking on the latest release of our game on the right side of the screen.
+
 ## Controls:
 Move character using left and right arrow keys.
 Rotate the stage counter-clockwise using A.
