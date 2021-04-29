@@ -146,7 +146,7 @@ public class BoxObstacle extends SimpleObstacle {
 		resize(width, height);
 		//Probably replace the following code with json data
 		rotationAngle = (float) Math.PI/3;
-		rotationSpeed = (float) Math.PI/3;
+		rotationSpeed = ((float) Math.PI/3)*1.3f;
 	}
 	
 	/**

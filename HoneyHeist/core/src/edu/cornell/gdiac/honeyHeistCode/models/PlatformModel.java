@@ -90,7 +90,7 @@ public class PlatformModel extends Obstacle {
 
 		//Probably replace the following code with json data
 		rotationAngle = (float) Math.PI/3;
-		rotationSpeed = (float) Math.PI/3;
+		rotationSpeed = ((float) Math.PI/3)*1.3f;
     }
 
 	public PlatformModel(JsonValue data, Vector2 worldCenter) {
@@ -115,7 +115,7 @@ public class PlatformModel extends Obstacle {
 
 		//Probably replace the following code with json data
 		rotationAngle = (float) Math.PI/3;
-		rotationSpeed = (float) Math.PI/3;
+		rotationSpeed = ((float) Math.PI/3)*1.3f;
 	}
 	
 	public PlatformModel() {
@@ -125,7 +125,7 @@ public class PlatformModel extends Obstacle {
 
 		//Probably replace the following code with json data
 		rotationAngle = (float) Math.PI/3;
-		rotationSpeed = (float) Math.PI/3;
+		rotationSpeed = ((float) Math.PI/3)*1.3f;
 	}
 
 	public Iterable<PolygonObstacle> getBodies() { return bodies; }
