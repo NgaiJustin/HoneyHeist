@@ -421,21 +421,6 @@ public class LevelSelector implements Screen {
             }
         });
         table.add(rightArrow).right().height(Value.percentHeight(3f)).width(Value.percentWidth(3f)).top();
-        // scroll pane
-//        table.row();
-//        Table scrollTable = new Table();
-//        scrollTable.add(new Image(title));
-//        scrollTable.add(new Image(title));
-//        scrollTable.add(new Image(title));
-//        scrollTable.add(new Image(title));
-//        scrollTable.row();
-//        scrollTable.add(new Image(title));
-//        scrollTable.row();
-//        scrollTable.add(new Image(title));
-//
-//        scroller = new ScrollPane(scrollTable);
-//
-//        table.add(scroller).size(stage.getWidth()*0.6f, stage.getHeight()*0.5f);
     }
 
     /**
