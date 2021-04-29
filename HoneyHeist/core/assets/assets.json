@@ -104,7 +104,7 @@
     "levels:prototypeLevelRedux": "levels/prototypeLevelRedux.json",
     "levels:rotation": "levels/rotation.json",
     "levels:rotationInMidAir": "levels/rotationInMidAir.json",
-    "levels:secondLevel": "levels/secondLevel.json",
+    "levels:moreComplexMazeWithoutHazards": "levels/secondLevel.json",
     "levels:spikesEverywhereONEBee": "levels/spikesEverywhereONEBee.json",
     "levels:spikesEverywhereTWOBee": "levels/spikesEverywhereTWOBee.json",
     "levels:spikesIntro": "levels/spikesIntro.json",
