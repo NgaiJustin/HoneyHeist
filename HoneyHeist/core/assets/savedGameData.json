@@ -95,6 +95,11 @@
       "unlock": true,
       "complete": false,
       "file": "levels:yoloSkydiver"
+    },
+    {
+      "unlock": true,
+      "complete": false,
+      "file": "levels:toTheTopRight"
     }
   ]
 }

@@ -201,9 +201,10 @@ public class GDXRoot extends Game implements ScreenListener {
 //			current = (current+1) % controllers.length;
 //			controllers[current].reset();
 //			setScreen(controllers[current]);
-			controller.reset();
 			String nextLevel = levelSelector.nextLevelData();
 			System.out.println(nextLevel);
+			controller.gatherLevelData(directory, nextLevel);
+			controller.reset();
 			setScreen(controller);
 //		} else if (exitCode == WorldController.EXIT_PREV) {
 		} else if (exitCode == GameplayController.EXIT_PREV) {
