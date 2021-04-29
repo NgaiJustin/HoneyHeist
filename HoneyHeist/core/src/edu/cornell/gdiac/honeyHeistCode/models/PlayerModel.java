@@ -12,8 +12,11 @@ public class PlayerModel extends CharacterModel {
     // Walking animation fields
     /** The texture filmstrip for the left animation node */
     private FilmStrip walkingAnim;
+    private FilmStrip dyingAnim;
+
     /** The animation phase for the walking animation */
     private boolean walkCycle = true;
+    private boolean deathCycle = true;
     private final int FRAMES_PER_ANIM = 5;
     private int animFrames = 0;
 
@@ -23,6 +26,8 @@ public class PlayerModel extends CharacterModel {
     public enum AntAnimations {
         /** Walking animation */
         WALK,
+        /** Dying animation */
+        DEATH,
         // Future animations to be supported
     };
 
@@ -51,6 +56,9 @@ public class PlayerModel extends CharacterModel {
             case WALK:
                  walkingAnim= strip;
                  break;
+            case DEATH:
+                dyingAnim= strip;
+                break;
             default:
                 assert false : "Invalid ant animation enumeration";
         }
@@ -72,6 +80,10 @@ public class PlayerModel extends CharacterModel {
             case WALK:
                 node  = walkingAnim;
                 cycle = walkCycle;
+                break;
+            case DEATH:
+                node  = dyingAnim;
+                cycle = deathCycle;
                 break;
                 // Add more cases for future animations
             default:
@@ -102,6 +114,9 @@ public class PlayerModel extends CharacterModel {
         switch (anim) {
             case WALK:
                 walkCycle = cycle;
+                break;
+            case DEATH:
+                deathCycle = cycle;
                 break;
                 // Add more cases for future animations
             default:

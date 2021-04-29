@@ -434,7 +434,7 @@ public class EditorController extends WorldController implements InputProcessor 
         JsonValue groundedBeePositions = levelData.get("groundedBeePos");
         for (int i=0; i<groundedBeePositions.size; i++){
             float[] pos = groundedBeePositions.get(i).asFloatArray();
-            ChaserBeeModel chaserBee = new ChaserBeeModel(constants.get("GroundedBee"), pos[0], pos[1], dwidth, dheight);
+            LarvaeModel chaserBee = new LarvaeModel(constants.get("GroundedBee"), pos[0], pos[1], dwidth, dheight);
             chaserBee.setDrawScale(scale);
             chaserBee.setTexture(chaserBeeTexture);
             bees.add(chaserBee);
@@ -899,8 +899,8 @@ public class EditorController extends WorldController implements InputProcessor 
                                     ((PolygonObstacle)selector.getObstacle()).getTruePoints());
                             temp.setPosition(temp.getPosition().add(0,platWidth*2));
                         }
-                        if (selector.getObstacle().getClass() == ChaserBeeModel.class) {
-                            ChaserBeeModel temp = (ChaserBeeModel) selector.getObstacle();
+                        if (selector.getObstacle().getClass() == LarvaeModel.class) {
+                            LarvaeModel temp = (LarvaeModel) selector.getObstacle();
                             newChaserBee(temp.getX(),temp.getY()+temp.getHeight()*2);
                         }
                         if (selector.getObstacle().getClass() == FlyingBeeModel.class) {
@@ -1082,7 +1082,7 @@ public class EditorController extends WorldController implements InputProcessor 
         float dwidth = chaserBeeTexture.getRegionWidth() / scale.x;
         float dheight = chaserBeeTexture.getRegionHeight() / scale.y;
 
-        ChaserBeeModel chaserBee = new ChaserBeeModel(constants.get("GroundedBee"),
+        LarvaeModel chaserBee = new LarvaeModel(constants.get("GroundedBee"),
                 x, y, dwidth, dheight);
 
         chaserBee.setDrawScale(scale);
@@ -1522,7 +1522,7 @@ public class EditorController extends WorldController implements InputProcessor 
             Array<AbstractBeeModel> larva = new Array<>();
             Array<AbstractBeeModel> flyingBees = new Array<>();
             for (AbstractBeeModel bee : bees){
-                if (bee.getClass() == ChaserBeeModel.class){
+                if (bee.getClass() == LarvaeModel.class){
                     larva.add(bee);
                 } else {
                     flyingBees.add(bee);

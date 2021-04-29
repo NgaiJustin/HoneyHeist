@@ -5,6 +5,11 @@
       "wrapU": "repeated",
       "wrapV": "repeated"
     },
+    "shared:honeyPatch": {
+      "file": "shared/honeyPatch.png",
+      "wrapU": "repeated",
+      "wrapV": "repeated"
+    },
     "shared:poisonWall": {
       "file": "shared/poisonWall.png",
       "wrapU": "repeated",
@@ -34,6 +39,15 @@
         }
       }
     },
+    "platform:playerDeath": {
+      "file": "platform/deathStrip.png",
+      "sprites": {
+        "pacing": {
+          "rows": 1,
+          "cols": 3
+        }
+      }
+    },
     "platform:larvaeWalk": {
       "file": "platform/larvaeWalkstrip.png",
       "sprites": {
@@ -43,8 +57,26 @@
         }
       }
     },
+    "platform:larvaeChase": {
+      "file": "platform/larvaeChase.png",
+      "sprites": {
+        "pacing": {
+          "rows": 1,
+          "cols": 5
+        }
+      }
+    },
     "platform:beeFly": {
       "file": "platform/beeFlystrip.png",
+      "sprites": {
+        "pacing": {
+          "rows": 1,
+          "cols": 5
+        }
+      }
+    },
+    "platform:beeChase": {
+      "file": "platform/beeChasingStrip.png",
       "sprites": {
         "pacing": {
           "rows": 1,
