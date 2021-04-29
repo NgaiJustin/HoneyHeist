@@ -5,6 +5,11 @@
       "unlock": true,
       "complete": false,
       "file": "platform:prototypeLevel"
+    },
+    {
+      "unlock": true,
+      "complete": false,
+      "file": "platform:prototypeLevel"
     }
   ]
 }
