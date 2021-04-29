@@ -1,0 +1,10 @@
+{
+  "levels":
+  [
+    {
+      "unlock": true,
+      "complete": false,
+      "file": "platform:prototypeLevel"
+    },
+  ]
+}
