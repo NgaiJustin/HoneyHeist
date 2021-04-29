@@ -98,7 +98,7 @@
     "levels:honeypatchWithBees": "levels/honeypatchWithBees.json",
     "levels:killWithSpike": "levels/killWithSpike.json",
     "levels:larvaeAvoidMultiple": "levels/larvaeAvoidMultiple.json",
-    "levels:multipleEnemies": "multipleEnemies.json",
+    "levels:multipleEnemies": "levels/multipleEnemies.json",
     "levels:oneBee": "levels/oneBee.json",
     "levels:oneLarvae": "levels/oneLarvae.json",
     "levels:prototypeLevelRedux": "levels/prototypeLevelRedux.json",
