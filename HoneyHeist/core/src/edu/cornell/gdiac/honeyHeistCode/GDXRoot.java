@@ -166,8 +166,8 @@ public class GDXRoot extends Game implements ScreenListener {
 
 			setScreen(controller);
 
-			levelSelector.dispose();
-			levelSelector = null;
+//			levelSelector.dispose();
+//			levelSelector = null;
 		} else if(screen == levelSelector && exitCode == LevelSelector.EXIT_EDITOR) {
 			directory = levelSelector.getAssets();
 			editorController.gatherAssets(directory);
@@ -195,13 +195,15 @@ public class GDXRoot extends Game implements ScreenListener {
 		} else if (exitCode == GameplayController.EXIT_MENU) {
 			levelSelector = new LevelSelector(directory, canvas, 1);
 			levelSelector.setScreenListener(this);
-//			controller.reset();
 			setScreen(levelSelector);
-		} else if (exitCode == WorldController.EXIT_NEXT) {
+//			controller.dispose();
+		} else if (exitCode == GameplayController.EXIT_NEXT) {
 //			current = (current+1) % controllers.length;
 //			controllers[current].reset();
 //			setScreen(controllers[current]);
 			controller.reset();
+			String nextLevel = levelSelector.nextLevelData();
+			System.out.println(nextLevel);
 			setScreen(controller);
 //		} else if (exitCode == WorldController.EXIT_PREV) {
 		} else if (exitCode == GameplayController.EXIT_PREV) {
