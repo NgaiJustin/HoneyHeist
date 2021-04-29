@@ -113,6 +113,11 @@ public class LevelController implements ContactListener {
     /** Countdown active for winning or losing */
     private int countdown;
 
+    /** Whether additional rotations were queued or not */
+    private boolean didQueueClockwise = false;
+    private boolean didQueueCounterClockwise = false;
+    private boolean isRotating = false;
+
     /**
      * Returns true if debug mode is active.
      *
@@ -907,10 +912,24 @@ public class LevelController implements ContactListener {
             }
         }
 
+        isRotating = platforms.isRotating();
         if (didRotate) {
             rotateClockwise();
+            if (isRotating && !didQueueCounterClockwise){
+                didQueueClockwise = true;
+            }
         } else if (didAntiRotate) {
             rotateCounterClockwise();
+            if (isRotating && !didQueueClockwise){
+                didQueueCounterClockwise = true;
+            }
+        }
+        if (!isRotating && didQueueClockwise){
+            rotateClockwise();
+            didQueueClockwise = false;
+        } else if (!isRotating && didQueueCounterClockwise){
+            rotateCounterClockwise();
+            didQueueCounterClockwise = false;
         }
     }
     /**

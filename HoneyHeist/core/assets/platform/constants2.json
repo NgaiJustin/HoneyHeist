@@ -49,7 +49,7 @@
         "wander_speed_factor": 0.5,
         "chase_speed_factor": 0.5,
         "check_fall_off_platform": 1,
-        "ticksBeforeChangeInRandomDirection": 60
+        "ticksBeforeChangeInRandomDirection": 15
       }
     },
   "FlyingBee": {
