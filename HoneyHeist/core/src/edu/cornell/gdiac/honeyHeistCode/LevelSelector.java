@@ -209,11 +209,11 @@ public class LevelSelector implements Screen {
      * frame is ~16 milliseconds. So if the budget is 10, you have 6 milliseconds to
      * do something else.  This is how game companies animate their loading screens.
      *
-     * @param file  	The asset directory to load in the background
+     * @param directory  	The asset directory to load in the background
      * @param canvas 	The game canvas to draw to
      * @param millis The loading budget in milliseconds
      */
-    public LevelSelector(String file, GameCanvas canvas, int millis) {
+    public LevelSelector(AssetDirectory directory, GameCanvas canvas, int millis) {
         this.canvas  = canvas;
         budget = millis;
 
@@ -258,8 +258,7 @@ public class LevelSelector implements Screen {
 //        }
 
         // Start loading the real assets
-        assets = new AssetDirectory( file );
-        assets.loadAssets();
+        assets = directory;
         active = true;
 
         pressStates = new boolean[totalLevelNum];
@@ -273,7 +272,7 @@ public class LevelSelector implements Screen {
         table.setFillParent(true);
         stage.addActor(table);
         // turn on debug lines to visualize the layout
-        table.setDebug(true);
+//        table.setDebug(true);
         // add assets to skin
         skin = new Skin();
         skin.add("background", background);
@@ -538,14 +537,14 @@ public class LevelSelector implements Screen {
 //                listener.exitScreen(this, EXIT_QUIT);
 //            }
 //        }
-        assets.update(budget);
-        this.progress = assets.getProgress();
-        if (progress < 1.0f) {
-            active = false;
-        } else {
-            progress = 1.0f;
-            active = true;
-        }
+//        assets.update(budget);
+//        this.progress = assets.getProgress();
+//        if (progress < 1.0f) {
+//            active = false;
+//        } else {
+//            progress = 1.0f;
+//            active = true;
+//        }
         if (active) {
             Gdx.gl.glClearColor(1, 1, 1, 1);
             Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
