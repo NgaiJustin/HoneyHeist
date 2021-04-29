@@ -12,7 +12,7 @@
       "restitution": 0.0
     },
     "player": {
-      "shrink": [0.95, 0.7],
+      "shrink": [0.75, 0.65],
       "force": 20.0,
       "damping": 10.0,
       "density": 1.0,

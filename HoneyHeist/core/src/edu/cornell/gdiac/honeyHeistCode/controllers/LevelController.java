@@ -651,7 +651,7 @@ public class LevelController implements ContactListener {
                 SpikeBLeft, SpikeBMid, SpikeBRight
         );
         // spikedPlatforms.setAnimationStrip(PlatformModel.PlatformAnimations.SHUFFLE, spikeCenter);
-        addObject(spikedPlatforms);
+        //addObject(spikedPlatforms);
 
         // Create honeypatches
         HoneypatchModel honeyPatches = new HoneypatchModel(levelData.get("honeypatchPos"),0.4f, worldCenter);
@@ -707,8 +707,10 @@ public class LevelController implements ContactListener {
             aIController.createAIForSingleCharacter(flyingBee, constants.get("FlyingBee").get("ai_controller_options"));
         }
 
-        //add honeypatches last so that they cover other objects
+        //establish draw order:
+
         addObject(honeyPatches);
+        addObject(spikedPlatforms);
 
 
         /*
