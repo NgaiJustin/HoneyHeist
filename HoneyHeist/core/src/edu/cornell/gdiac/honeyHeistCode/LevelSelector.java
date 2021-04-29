@@ -226,8 +226,13 @@ public class LevelSelector implements Screen {
         internal.finishLoading();
 
         // get the level data
-        allLevelData = internal.getEntry("levelData", JsonValue.class);
+        allLevelData = internal.getEntry("levelData", JsonValue.class).get("levels");
+        System.out.println(allLevelData);
+//        allLevelData.get(finalI).get("unlock").asBoolean();
+//        totalLevelNum = allLevelData.size;
         totalLevelNum = allLevelData.size;
+        System.out.println(totalLevelNum);
+
 //        totalLevelNum = 20;
         final int totalLevelTest = 20;
 //        System.out.println(totalLevelNum);

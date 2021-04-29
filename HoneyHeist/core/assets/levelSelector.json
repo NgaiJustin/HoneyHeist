@@ -26,6 +26,6 @@
         }
     },
     "jsons": {
-        "levelData": "levelData.json"
+        "levelData": "savedGameData.json"
     }
 }
