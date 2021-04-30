@@ -1064,8 +1064,8 @@ public class LevelController implements ContactListener {
                     (bd1.getClass().getSuperclass() == AbstractBeeModel.class && bd2 == avatar))) {
                 setFailure(true);
             }
-            if ((bd1 == avatar && bd2 == goalDoor) ||
-                    (bd1 == goalDoor && bd2 == avatar)) {
+            if (((bd1 == avatar && bd2 == goalDoor) ||
+                    (bd1 == goalDoor && bd2 == avatar))&&!isComplete()) {
                 setComplete(true);
             }
         } catch (Exception e) {
