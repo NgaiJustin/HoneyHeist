@@ -441,7 +441,7 @@ public class LevelSelector implements Screen {
      * Called when this the current level is completed and go to the next level.
      */
     public String nextLevelData() {
-        if (currentLevelNum < totalLevelNum-1) {
+        if (currentLevelNum < totalLevelNum) {
             currentLevelNum ++;
         }
         return allLevelData.get(currentLevelNum - 1).get("file").asString();

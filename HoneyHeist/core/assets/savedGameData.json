@@ -24,11 +24,6 @@
     {
       "unlock": true,
       "complete": false,
-      "file": "levels:rotationInMidAir"
-    },
-    {
-      "unlock": true,
-      "complete": false,
       "file": "levels:oneLarvae"
     },
     {
@@ -40,6 +35,11 @@
       "unlock": true,
       "complete": false,
       "file": "levels:killWithSpike"
+    },
+    {
+      "unlock": true,
+      "complete": false,
+      "file": "levels:toTheTopRight"
     },
     {
       "unlock": true,
@@ -59,17 +59,17 @@
     {
       "unlock": true,
       "complete": false,
-      "file": "levels:honeypatchWithBees"
-    },
-    {
-      "unlock": true,
-      "complete": false,
       "file": "levels:honeyPatchAndTwoBees"
     },
     {
       "unlock": true,
       "complete": false,
-      "file": "levels:prototypeLevelRedux"
+      "file": "levels:honeypatchWithBees"
+    },
+    {
+      "unlock": true,
+      "complete": false,
+      "file": "levels:yoloLarvaeDrop"
     },
     {
       "unlock": true,
@@ -84,12 +84,7 @@
     {
       "unlock": true,
       "complete": false,
-      "file": "levels:threadTheNeedle"
-    },
-    {
-      "unlock": true,
-      "complete": false,
-      "file": "levels:yoloLarvaeDrop"
+      "file": "levels:prototypeLevelRedux"
     },
     {
       "unlock": true,
@@ -99,7 +94,12 @@
     {
       "unlock": true,
       "complete": false,
-      "file": "levels:toTheTopRight"
+      "file": "levels:rotationInMidAir"
+    },
+    {
+      "unlock": true,
+      "complete": false,
+      "file": "levels:threadTheNeedle"
     }
   ]
 }
