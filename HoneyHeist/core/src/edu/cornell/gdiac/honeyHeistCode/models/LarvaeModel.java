@@ -5,14 +5,19 @@ import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.honeyHeistCode.GameCanvas;
 import edu.cornell.gdiac.util.FilmStrip;
 
-public class ChaserBeeModel extends AbstractBeeModel{
+public class LarvaeModel extends AbstractBeeModel{
     // Moving animation fields
-    /** The texture filmstrip for the left animation node */
     private FilmStrip walkingAnim;
+    private FilmStrip chasingAnim;
+
     /** The animation phase for the walking animation */
     private boolean walkCycle = true;
+    private boolean chaseCycle = true;
     private final int FRAMES_PER_ANIM = 7;
     private int animFrames = 0;
+
+    /** True if the larvae is currently chasing the player */
+    private boolean isChasing;
 
     /**
      * Enumeration to identify the larvae animations
@@ -20,7 +25,8 @@ public class ChaserBeeModel extends AbstractBeeModel{
     public enum LarvaeAnimations {
         /** Walking animation */
         WALK,
-        // Future animations to be supported
+        /** Chasing animation */
+        CHASE,
     };
     /**
      * Creates a bee avatar with the given physics data
@@ -29,7 +35,7 @@ public class ChaserBeeModel extends AbstractBeeModel{
      * @param width  The object width in physics units
      * @param height The object width in physics units
      */
-    public ChaserBeeModel(JsonValue data, float x, float y, float width, float height)
+    public LarvaeModel(JsonValue data, float x, float y, float width, float height)
             {
         super(data, x, y, width, height);
     }
@@ -45,6 +51,9 @@ public class ChaserBeeModel extends AbstractBeeModel{
         switch (anim) {
             case WALK:
                 walkingAnim= strip;
+                break;
+            case CHASE:
+                chasingAnim= strip;
                 break;
             default:
                 assert false : "Invalid larvae animation enumeration";
@@ -67,7 +76,11 @@ public class ChaserBeeModel extends AbstractBeeModel{
                 node  = walkingAnim;
                 cycle = walkCycle;
                 break;
-            // Add more cases for future animations
+            case CHASE:
+                node = chasingAnim;
+                cycle = chaseCycle;
+                break;
+            // Add morecases for future animations
             default:
                 assert false : "Invalid burner enumeration";
         }
@@ -96,6 +109,9 @@ public class ChaserBeeModel extends AbstractBeeModel{
             case WALK:
                 walkCycle = cycle;
                 break;
+            case CHASE:
+                chaseCycle = cycle;
+                break;
             // Add more cases for future animations
             default:
                 assert false : "Invalid burner enumeration";
@@ -112,6 +128,24 @@ public class ChaserBeeModel extends AbstractBeeModel{
     public void setMovement(float value) {
         super.setMovement(value);
         animateLarvae(LarvaeAnimations.WALK, true);
+        animateLarvae(LarvaeAnimations.CHASE, true);
+    }
+
+    /**
+     * Set the status of this enemy as chasing. The chasing
+     * art will render when isChasing is true
+     * @param b
+     */
+    public void setIsChasing(boolean b) {
+        this.isChasing = b;
+    }
+
+    /**
+     * Returns if the enemy is currently chasing the player
+     * @return
+     */
+    public boolean getIsChasing() {
+        return this.isChasing;
     }
 
     /**
@@ -121,10 +155,10 @@ public class ChaserBeeModel extends AbstractBeeModel{
      */
     public void draw(GameCanvas canvas) {
         float effect = this.faceRight ? 1.0f : -1.0f;
-        // Walking Animation
-        if (walkingAnim != null) {
-            float offsety = walkingAnim.getRegionHeight()-origin.y;
-            canvas.draw(walkingAnim, Color.WHITE,
+        FilmStrip currAnim = this.isChasing ? chasingAnim : walkingAnim;
+        if (currAnim != null) {
+            float offsety = currAnim.getRegionHeight()-origin.y;
+            canvas.draw(currAnim, Color.WHITE,
                     origin.x,
                     offsety,
                     getX()*drawScale.x,
@@ -134,6 +168,7 @@ public class ChaserBeeModel extends AbstractBeeModel{
         }
         // Stationary larvae
         else {
+            System.out.println("MISSING LARVAE TEXTURE");
             canvas.draw(texture, Color.WHITE, origin.x, origin.y, getX() * drawScale.x, getY() * drawScale.y, getAngle(), effect, 1.0f);
         }
     }
