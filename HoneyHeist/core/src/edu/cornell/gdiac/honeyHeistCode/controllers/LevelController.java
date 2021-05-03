@@ -119,6 +119,7 @@ public class LevelController implements ContactListener {
     private boolean didQueueClockwise = false;
     private boolean didQueueCounterClockwise = false;
     private boolean isRotating = false;
+    private float angleLeft = 0f;
 
     /**
      * Returns true if debug mode is active.
@@ -927,14 +928,15 @@ public class LevelController implements ContactListener {
         }
 
         isRotating = platforms.isRotating();
+        angleLeft = platforms.getRemainingAngle();
         if (didRotate) {
             rotateClockwise();
-            if (isRotating && !didQueueCounterClockwise){
+            if (angleLeft <= 2*Math.PI/12 && isRotating && !didQueueCounterClockwise){
                 didQueueClockwise = true;
             }
         } else if (didAntiRotate) {
             rotateCounterClockwise();
-            if (isRotating && !didQueueClockwise){
+            if (angleLeft <= 2*Math.PI/12 && isRotating && !didQueueClockwise){
                 didQueueCounterClockwise = true;
             }
         }
