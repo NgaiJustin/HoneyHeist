@@ -331,6 +331,13 @@ public class LevelSelector implements Screen {
         buttonStyle.down = buttonDrawable.tint(Color.GRAY);
         buttonStyle.font = skin.getFont("font");
         levelButtons = new TextButton[totalLevelTest];
+
+        TextureRegion lockButtonImage = new TextureRegion(internal.getEntry("button", Texture.class));
+        TextureRegionDrawable lockButtonDrawable = new TextureRegionDrawable(lockButtonImage);
+        TextButtonStyle lockButtonStyle = new TextButtonStyle();
+        lockButtonStyle.up = lockButtonDrawable.tint(Color.GRAY);
+        lockButtonStyle.font = skin.getFont("font");
+
         int numberOfPage = totalLevelTest/LEVEL_PER_PAGE;
 //        System.out.println("total page number = " + numberOfPage);
         for (int idx=0; idx <= numberOfPage; idx++) {
@@ -338,6 +345,9 @@ public class LevelSelector implements Screen {
             Table levelTable = new Table();
             // implementation 1
             for (int i = 0; i < totalLevelTest; i++) {
+                Boolean isUnlock = allLevelData.get(i).get("unlock").asBoolean();
+                System.out.print(i);
+                System.out.println(": " + isUnlock);
                 // first line has one more level button than the second line
                 if (i % (LEVEL_PER_ROW * 2 - 1) == LEVEL_PER_ROW && i / LEVEL_PER_PAGE == idx) {
                     page.row();
@@ -350,7 +360,11 @@ public class LevelSelector implements Screen {
                 }
                 // create buttons for this specific page
                 if (i / LEVEL_PER_PAGE == idx) {
-                    levelButtons[i] = new TextButton(String.valueOf(i + 1), buttonStyle);
+                    if (isUnlock) {
+                        levelButtons[i] = new TextButton(String.valueOf(i + 1), buttonStyle);
+                    } else {
+                        levelButtons[i] = new TextButton(String.valueOf(i + 1), lockButtonStyle);
+                    }
                     // finalI is used for inner class
                     final int finalI = i;
                     levelButtons[i].addListener(new ChangeListener() {
