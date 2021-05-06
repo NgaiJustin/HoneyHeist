@@ -12,7 +12,7 @@
       "restitution": 0.0
     },
     "player": {
-      "shrink": [0.95, 0.7],
+      "shrink": [0.75, 0.65],
       "force": 20.0,
       "damping": 10.0,
       "density": 1.0,
@@ -49,7 +49,7 @@
         "wander_speed_factor": 0.5,
         "chase_speed_factor": 0.5,
         "check_fall_off_platform": 1,
-        "ticksBeforeChangeInRandomDirection": 60
+        "ticksBeforeChangeInRandomDirection": 15
       }
     },
   "FlyingBee": {
@@ -72,9 +72,9 @@
     "ai_controller_options": {
       "enemy_type": 0,
       "chase_distance": 3,
-      "wander_radius": 3.5,
+      "wander_radius": 0.7,
       "target": 0,
-      "wander_speed_factor": 0.5,
+      "wander_speed_factor": 0.001,
       "chase_speed_factor": 0.5,
       "check_fall_off_platform": 0,
       "ticksBeforeChangeInRandomDirection": 120

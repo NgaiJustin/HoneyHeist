@@ -14,10 +14,15 @@ public class FlyingBeeModel extends AbstractBeeModel{
     // Flying animation fields
     /** The texture filmstrip for the left animation node */
     private FilmStrip flyingAnim;
+    private FilmStrip chasingAnim;
     /** The animation phase for the walking animation */
     private boolean flyCycle = true;
+    private boolean chaseCycle = true;
     private final int FRAMES_PER_ANIM = 7;
     private int animFrames = 0;
+
+    /** True if the Bee is currently chasing the player */
+    private boolean isChasing;
 
     /**
      * Enumeration to identify the ant animations
@@ -25,6 +30,8 @@ public class FlyingBeeModel extends AbstractBeeModel{
     public enum BeeAnimations {
         /** Walking animation */
         FLY,
+        /** Chasing animation */
+        CHASE,
         // Future animations to be supported
     };
 
@@ -146,6 +153,9 @@ public class FlyingBeeModel extends AbstractBeeModel{
             case FLY:
                 flyingAnim= strip;
                 break;
+            case CHASE:
+                chasingAnim= strip;
+                break;
             default:
                 assert false : "Invalid Bee animation enumeration";
         }
@@ -167,6 +177,10 @@ public class FlyingBeeModel extends AbstractBeeModel{
             case FLY:
                 node  = flyingAnim;
                 cycle = flyCycle;
+                break;
+            case CHASE:
+                node = chasingAnim;
+                cycle = chaseCycle;
                 break;
             // Add more cases for future animations
             default:
@@ -197,6 +211,9 @@ public class FlyingBeeModel extends AbstractBeeModel{
             case FLY:
                 flyCycle = cycle;
                 break;
+            case CHASE:
+                chaseCycle = cycle;
+                break;
             // Add more cases for future animations
             default:
                 assert false : "Invalid burner enumeration";
@@ -212,7 +229,25 @@ public class FlyingBeeModel extends AbstractBeeModel{
      */
     public void setMovement(float value) {
         super.setMovement(value);
-        animateBee(BeeAnimations.FLY, value != 0f);
+        animateBee(BeeAnimations.FLY, true);
+        animateBee(BeeAnimations.CHASE, true);
+    }
+
+    /**
+     * Set the status of this enemy as chasing. The chasing
+     * art will render when isChasing is true
+     * @param b
+     */
+    public void setIsChasing(boolean b) {
+        this.isChasing = b;
+    }
+
+    /**
+     * Returns if the enemy is currently chasing the player
+     * @return
+     */
+    public boolean getIsChasing() {
+        return this.isChasing;
     }
 
     /**
@@ -222,13 +257,15 @@ public class FlyingBeeModel extends AbstractBeeModel{
      */
     public void draw(GameCanvas canvas) {
         float effect = this.faceRight ? -1.0f : 1.0f;
+        FilmStrip currAnim = this.isChasing ? chasingAnim : flyingAnim;
         // Walking Animation
-        if (flyingAnim != null) {
-            float offsety = flyingAnim.getRegionHeight()-origin.y;
-            canvas.draw(flyingAnim, Color.WHITE,origin.x,offsety,getX()*drawScale.x,getY()*drawScale.x,getAngle(),effect,1);
+        if (currAnim != null) {
+            float offsety = currAnim.getRegionHeight()-origin.y;
+            canvas.draw(currAnim, Color.WHITE,origin.x,offsety,getX()*drawScale.x,getY()*drawScale.x,getAngle(),effect,1);
         }
         // Stationary Bee
         else {
+            System.out.println("MISSING FILMSTRIP");
             canvas.draw(texture, Color.WHITE, origin.x, origin.y, getX() * drawScale.x, getY() * drawScale.y, getAngle(), effect, 1.0f);
         }
     }

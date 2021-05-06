@@ -47,6 +47,8 @@ import java.util.Iterator;
 public class LevelController implements ContactListener {
     /** The texture for walls and platforms */
     protected TextureRegion earthTile;
+    /** The texture for honeyPatches */
+    protected TextureRegion honeyPatchTexture;
     /** The texture for spiked platforms */
     protected TextureRegion poisonTile;
     /** The texture for the exit condition */
@@ -117,6 +119,7 @@ public class LevelController implements ContactListener {
     private boolean didQueueClockwise = false;
     private boolean didQueueCounterClockwise = false;
     private boolean isRotating = false;
+    private float angleLeft = 0f;
 
     /**
      * Returns true if debug mode is active.
@@ -294,14 +297,17 @@ public class LevelController implements ContactListener {
     /** Player texture and filmstrip */
     private TextureRegion avatarTexture;
     private FilmStrip walkingPlayer;
+    private FilmStrip dyingPlayer;
 
     /** Larvae texture and filmstrip */
     private TextureRegion chaserBeeTexture;
     private FilmStrip walkingLarvae;
+    private FilmStrip chasingLarvae;
 
     /** Bee texture and filmstrip */
     private TextureRegion flyingBeeTexture;
     private FilmStrip flyingBeeStrip;
+    private FilmStrip chasingBeeStrip;
 
     /** Platform texture */
     private TextureRegion ULeft;
@@ -417,9 +423,12 @@ public class LevelController implements ContactListener {
         chaserBeeTexture = new TextureRegion(directory.getEntry("platform:larvae", Texture.class));
         flyingBeeTexture = new TextureRegion(directory.getEntry("platform:flyingBee", Texture.class));
 
-        walkingPlayer  = directory.getEntry( "platform:playerWalk.pacing", FilmStrip.class );
-        walkingLarvae  = directory.getEntry( "platform:larvaeWalk.pacing", FilmStrip.class );
-        flyingBeeStrip = directory.getEntry( "platform:beeFly.pacing", FilmStrip.class );
+        walkingPlayer   = directory.getEntry( "platform:playerWalk.pacing", FilmStrip.class );
+        dyingPlayer     = directory.getEntry( "platform:playerDeath.pacing", FilmStrip.class );
+        walkingLarvae   = directory.getEntry( "platform:larvaeWalk.pacing", FilmStrip.class );
+        chasingLarvae   = directory.getEntry( "platform:larvaeChase.pacing", FilmStrip.class );
+        flyingBeeStrip  = directory.getEntry( "platform:beeFly.pacing", FilmStrip.class );
+        chasingBeeStrip = directory.getEntry( "platform:beeChase.pacing", FilmStrip.class );
 
         SpikeULeft  = new TextureRegion(directory.getEntry("platform:spikeULeft", Texture.class));
         SpikeUMid   = new TextureRegion(directory.getEntry("platform:spikeUMid", Texture.class));
@@ -456,12 +465,13 @@ public class LevelController implements ContactListener {
 //        super.gatherAssets(directory);
 
         // Allocate the world tiles
-        earthTile = new TextureRegion(directory.getEntry( "shared:earth", Texture.class ));
-        poisonTile = new TextureRegion(directory.getEntry( "shared:poisonWall", Texture.class));
-        goalTile  = new TextureRegion(directory.getEntry( "shared:goal", Texture.class ));
-        background = new TextureRegion(directory.getEntry( "shared:background",  Texture.class ));
-        tilesBackground = new TextureRegion(directory.getEntry("shared:tilesBackground", Texture.class));
-        displayFont = directory.getEntry( "shared:retro" ,BitmapFont.class);
+        earthTile         = new TextureRegion(directory.getEntry( "shared:earth", Texture.class ));
+        honeyPatchTexture = new TextureRegion(directory.getEntry( "shared:honeyPatch", Texture.class ));
+        poisonTile        = new TextureRegion(directory.getEntry( "shared:poisonWall", Texture.class));
+        goalTile          = new TextureRegion(directory.getEntry( "shared:goal", Texture.class ));
+        background        = new TextureRegion(directory.getEntry( "shared:background",  Texture.class ));
+        tilesBackground   = new TextureRegion(directory.getEntry("shared:tilesBackground", Texture.class));
+        displayFont       = directory.getEntry( "shared:retro" ,BitmapFont.class);
 
         // This is just for Debugging.
         whiteSquare = new TextureRegion(directory.getEntry( "shared:whiteSquare", Texture.class ));
@@ -633,7 +643,7 @@ public class LevelController implements ContactListener {
         PlatformModel platforms = new PlatformModel(levelData.get("platformPos"), worldCenter);
         platforms.setDrawScale(scale);
         platforms.setTexture(earthTile);
-        platforms.setNinePatch(platNinePatch); // TODO: To be removed when tenpatch is complete
+        platforms.setNinePatch(platNinePatch);
         platforms.setTenPatch(
                 ULeft, UMid, URight,
                 MLeft, MMid, MRight,
@@ -644,19 +654,19 @@ public class LevelController implements ContactListener {
         // Create spiked platforms
         SpikedPlatformModel spikedPlatforms = new SpikedPlatformModel(levelData.get("spikedPlatformPos"), worldCenter);
         spikedPlatforms.setDrawScale(scale);
-        spikedPlatforms.setNinePatch(spikeNinePatch);  // TODO: To be removed when tenpatch is complete
+        spikedPlatforms.setNinePatch(spikeNinePatch);
         spikedPlatforms.setTenPatch(
                 SpikeULeft, SpikeUMid, SpikeURight,
                 SpikeMLeft, SpikeMMid, SpikeMRight,
                 SpikeBLeft, SpikeBMid, SpikeBRight
         );
         // spikedPlatforms.setAnimationStrip(PlatformModel.PlatformAnimations.SHUFFLE, spikeCenter);
-        addObject(spikedPlatforms);
+        //addObject(spikedPlatforms);
 
         // Create honeypatches
         HoneypatchModel honeyPatches = new HoneypatchModel(levelData.get("honeypatchPos"),0.4f, worldCenter);
         honeyPatches.setDrawScale(scale);
-        honeyPatches.setTexture(earthTile); //TODO: Change honeyPatch texture
+        honeyPatches.setTexture(honeyPatchTexture);
         //dont add yet so that it can overlap
         //addObject(honeyPatches);
 
@@ -671,6 +681,7 @@ public class LevelController implements ContactListener {
         avatar.setDrawScale(scale);
         avatar.setTexture(avatarTexture);
         avatar.setAnimationStrip(PlayerModel.AntAnimations.WALK, walkingPlayer);
+        avatar.setAnimationStrip(PlayerModel.AntAnimations.DEATH, dyingPlayer);
         addObject(avatar);
 
         // Create chaser bees
@@ -686,10 +697,11 @@ public class LevelController implements ContactListener {
         JsonValue groundedBeePositions = levelData.get("groundedBeePos");
         for (int i=0; i<groundedBeePositions.size; i++){
             float[] pos = groundedBeePositions.get(i).asFloatArray();
-            ChaserBeeModel chaserBee = new ChaserBeeModel(constants.get("GroundedBee"), pos[0], pos[1], dwidth, dheight);
+            LarvaeModel chaserBee = new LarvaeModel(constants.get("GroundedBee"), pos[0], pos[1], dwidth, dheight);
             chaserBee.setDrawScale(scale);
             chaserBee.setTexture(chaserBeeTexture);
-            chaserBee.setAnimationStrip(ChaserBeeModel.LarvaeAnimations.WALK, walkingLarvae);
+            chaserBee.setAnimationStrip(LarvaeModel.LarvaeAnimations.WALK, walkingLarvae);
+            chaserBee.setAnimationStrip(LarvaeModel.LarvaeAnimations.CHASE, chasingLarvae);
             bees.add(chaserBee);
             addObject(chaserBee);
             aIController.createAIForSingleCharacter(chaserBee, constants.get("GroundedBee").get("ai_controller_options"));
@@ -702,13 +714,16 @@ public class LevelController implements ContactListener {
             flyingBee.setDrawScale(scale);
             flyingBee.setTexture(flyingBeeTexture);
             flyingBee.setAnimationStrip(FlyingBeeModel.BeeAnimations.FLY, flyingBeeStrip);
+            flyingBee.setAnimationStrip(FlyingBeeModel.BeeAnimations.CHASE, chasingBeeStrip);
             bees.add(flyingBee);
             addObject(flyingBee);
             aIController.createAIForSingleCharacter(flyingBee, constants.get("FlyingBee").get("ai_controller_options"));
         }
 
-        //add honeypatches last so that they cover other objects
+        //establish draw order:
+
         addObject(honeyPatches);
+        addObject(spikedPlatforms);
 
 
         /*
@@ -913,14 +928,15 @@ public class LevelController implements ContactListener {
         }
 
         isRotating = platforms.isRotating();
+        angleLeft = platforms.getRemainingAngle();
         if (didRotate) {
             rotateClockwise();
-            if (isRotating && !didQueueCounterClockwise){
+            if (angleLeft <= 2*Math.PI/12 && isRotating && !didQueueCounterClockwise){
                 didQueueClockwise = true;
             }
         } else if (didAntiRotate) {
             rotateCounterClockwise();
-            if (isRotating && !didQueueClockwise){
+            if (angleLeft <= 2*Math.PI/12 && isRotating && !didQueueClockwise){
                 didQueueCounterClockwise = true;
             }
         }
@@ -1027,7 +1043,7 @@ public class LevelController implements ContactListener {
                 if ((((bee.getSensorName().equals(fd2) && bee != bd1)&&(bd1.getName().contains("platform")) &&
                         !bee.getSensorFixtures().contains(fix1)) ||
                     ((bee.getSensorName().equals(fd1) && bee != bd2)&&(bd2.getName().contains("platform")) &&
-                        !bee.getSensorFixtures().contains(fix2)))&&bee.getClass()==ChaserBeeModel.class) {
+                        !bee.getSensorFixtures().contains(fix2)))&&bee.getClass()== LarvaeModel.class) {
                     bee.setGrounded(true);
                     bee.getSensorFixtures().add(bee == bd1 ? fix2 : fix1); // Could have more than one ground
                 }
@@ -1062,8 +1078,8 @@ public class LevelController implements ContactListener {
                     (bd1.getClass().getSuperclass() == AbstractBeeModel.class && bd2 == avatar))) {
                 setFailure(true);
             }
-            if ((bd1 == avatar && bd2 == goalDoor) ||
-                    (bd1 == goalDoor && bd2 == avatar)) {
+            if (((bd1 == avatar && bd2 == goalDoor) ||
+                    (bd1 == goalDoor && bd2 == avatar))&&!isComplete()) {
                 setComplete(true);
             }
         } catch (Exception e) {
