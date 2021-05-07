@@ -121,6 +121,40 @@ public class GameplayController implements Screen, InputProcessor {
     private JsonValue aiConstants;
     /** JsonValue constants for level Controller */
     private JsonValue levelConstants;
+
+	// ------------------------------- pause
+	/** Pause Menu scale */
+	private float menuScale = 1f;
+	/** Pause Menu Background texture */
+	private Texture pauseBackground;
+	/** Constants for the position of pauseBackground */
+	private final float PAUSE_BG_XPOS = Gdx.graphics.getWidth()*0.7f;
+	private final float PAUSE_BG_YPOS = Gdx.graphics.getHeight()*0.75f;
+	/** Pause Menu Quit texture */
+	private Texture pauseQuit;
+	/** If the quit button is pressed */
+	private boolean quitPressed;
+	/** If the game is ready to quit */
+	private boolean quitReady;
+	/** Constants for the position of pauseQuit */
+	private final float PAUSE_QUIT_XPOS = Gdx.graphics.getWidth()*0.63f;
+	private final float PAUSE_QUIT_YPOS = Gdx.graphics.getHeight()*0.7f;
+	/** Pause Menu Resume texture */
+	private Texture pauseResume;
+	/** If the resume button is pressed */
+	private boolean resumePressed;
+//	/** If the game is ready to resume */
+//	private boolean resumeReady;
+	/** Constants for the position of pauseResume */
+	private final float PAUSE_RESUME_XPOS = Gdx.graphics.getWidth()*0.63f;
+	private final float PAUSE_RESUME_YPOS = Gdx.graphics.getHeight()*0.55f;
+	/** Pause Menu MainMenu texture */
+	private Texture pauseMenu;
+//	/** If the main menu button is pressed */
+//	private boolean menuPressed;
+	/** Constants for the position of pauseMenu */
+	private final float PAUSE_MENU_XPOS = Gdx.graphics.getWidth()*0.63f;
+	private final float PAUSE_MENU_YPOS = Gdx.graphics.getHeight()*0.4f;
 	/** Pause button texture */
     private Texture pauseButton;
 	/** If the pause button is pressed */
@@ -366,6 +400,10 @@ public class GameplayController implements Screen, InputProcessor {
 		pauseButton = directory.getEntry("shared:pauseButton", Texture.class);
 		menuButton = directory.getEntry("shared:menuButton", Texture.class);
 		levelController.gatherAssets(directory, levelData);
+		pauseBackground = directory.getEntry("shared:pauseBackground", Texture.class);
+		pauseQuit = directory.getEntry("shared:pauseQuit", Texture.class);
+		pauseResume = directory.getEntry("shared:pauseResume", Texture.class);
+		pauseMenu = directory.getEntry("shared:pauseMainMenu", Texture.class);
 	}
 
 	public void gatherLevelData(AssetDirectory directory, String dataFilePath){
@@ -422,6 +460,10 @@ public class GameplayController implements Screen, InputProcessor {
 		pausePressed = false;
 		menuPressed = false;
 		menuReady = false;
+		quitPressed = false;
+		quitReady = false;
+		resumePressed = false;
+//		resumeReady = false;
 		isPaused = false;
         levelController.reset();
     }
@@ -471,7 +513,7 @@ public class GameplayController implements Screen, InputProcessor {
         }
 
         // Now it is time to maybe switch screens.
-        if (input.didExit()) {
+        if (input.didExit() || quitReady) {
             pause();
             listener.exitScreen(this, EXIT_QUIT);
             return false;
@@ -575,15 +617,39 @@ public class GameplayController implements Screen, InputProcessor {
 			canvas.draw(pauseButton, tint, pauseButton.getWidth()/2f, pauseButton.getHeight()/2f,
 					PAUSE_XPOS, PAUSE_YPOS, 0, PAUSE_SCALE*scaleFactor, PAUSE_SCALE*scaleFactor);
 		}
-		if (menuButton != null) {
-			tint = (menuPressed ? Color.GRAY: Color.WHITE);
-			canvas.draw(menuButton, tint, menuButton.getWidth()/2f, menuButton.getHeight()/2f,
-					MENU_XPOS, MENU_YPOS, 0, MENU_XSCALE*scaleFactor, MENU_YSCALE*scaleFactor);
-			// draw the letter
-			canvas.drawText("Menu", menuFont, MENU_XPOS-MENU_XOFFSET,
-					MENU_YPOS+MENU_YOFFSET);
-		}
+//		if (menuButton != null) {
+//			tint = (menuPressed ? Color.GRAY: Color.WHITE);
+//			canvas.draw(menuButton, tint, menuButton.getWidth()/2f, menuButton.getHeight()/2f,
+//					MENU_XPOS, MENU_YPOS, 0, MENU_XSCALE*scaleFactor, MENU_YSCALE*scaleFactor);
+//			// draw the letter
+//			canvas.drawText("Menu", menuFont, MENU_XPOS-MENU_XOFFSET,
+//					MENU_YPOS+MENU_YOFFSET);
+//		}
 		levelController.draw(dt);
+		canvas.begin();
+		if (isPaused) {
+			if (pauseBackground !=null) {
+				canvas.draw(pauseBackground, Color.WHITE, pauseBackground.getWidth(), pauseBackground.getHeight(),
+						PAUSE_BG_XPOS, PAUSE_BG_YPOS, 0, menuScale*scaleFactor, menuScale*scaleFactor);
+			}
+			if (pauseMenu != null) {
+				tint = (menuPressed ? Color.GRAY: Color.WHITE);
+				canvas.draw(pauseMenu, tint, pauseMenu.getWidth(), pauseMenu.getHeight(), PAUSE_MENU_XPOS,
+						PAUSE_MENU_YPOS, 0, menuScale*scaleFactor, menuScale*scaleFactor);
+			}
+			if (pauseResume != null) {
+				tint = (resumePressed ? Color.GRAY: Color.WHITE);
+				canvas.draw(pauseResume, tint, pauseResume.getWidth(), pauseResume.getHeight(),
+						PAUSE_RESUME_XPOS, PAUSE_RESUME_YPOS, 0, menuScale*scaleFactor,
+						menuScale*scaleFactor);
+			}
+			if (pauseQuit != null) {
+				tint = (quitPressed ? Color.GRAY: Color.WHITE);
+				canvas.draw(pauseQuit, tint, pauseQuit.getWidth(), pauseQuit.getHeight(), PAUSE_QUIT_XPOS,
+						PAUSE_QUIT_YPOS, 0, menuScale*scaleFactor, menuScale*scaleFactor);
+			}
+		}
+		canvas.end();
 //		canvas.clear();
 //
 //		canvas.begin();
@@ -670,6 +736,7 @@ public class GameplayController implements Screen, InputProcessor {
 		float sx = ((float)width)/STANDARD_WIDTH;
 		float sy = ((float)height)/STANDARD_HEIGHT;
 		scaleFactor = (sx < sy ? sx : sy);
+		menuScale = 1/scaleFactor;
 		heightY = height;
 		centerY = height/2;
 		centerX = width/2;
@@ -755,18 +822,46 @@ public class GameplayController implements Screen, InputProcessor {
 		screenY = heightY-screenY;
 
 		// MENU button has a higher priority then the PAUSE button
-		float width = MENU_XSCALE * scaleFactor * menuButton.getWidth() / 2.0f;
-		float height = MENU_YSCALE * scaleFactor * menuButton.getHeight() / 2.0f;
-		if (Math.abs(screenX - MENU_XPOS) < Math.abs(width) && Math.abs(screenY - MENU_YPOS) < Math.abs(height)) {
+		float width, height;
+		// MENU button
+//		width = MENU_XSCALE * scaleFactor * menuButton.getWidth() / 2.0f;
+//		height = MENU_YSCALE * scaleFactor * menuButton.getHeight() / 2.0f;
+//		if (Math.abs(screenX - MENU_XPOS) < Math.abs(width) && Math.abs(screenY - MENU_YPOS) < Math.abs(height)) {
+//			menuPressed = true;
+//		}
+		width = menuScale * scaleFactor * pauseMenu.getWidth() / 2.0f;
+		height = menuScale * scaleFactor * pauseMenu.getHeight() / 2.0f;
+		if (Math.abs(screenX - PAUSE_MENU_XPOS + width) < Math.abs(width) && Math.abs(screenY - PAUSE_MENU_YPOS +
+				height) < Math.abs(height)) {
 			menuPressed = true;
 		}
-
+		// QUIT button
+		width = menuScale * scaleFactor * pauseQuit.getWidth() / 2.0f;
+		height = menuScale * scaleFactor * pauseQuit.getHeight() / 2.0f;
+		if (Math.abs(screenX - PAUSE_QUIT_XPOS + width) < Math.abs(width) && Math.abs(screenY - PAUSE_QUIT_YPOS +
+				height) < Math.abs(height)) {
+			quitPressed = true;
+		}
+		// RESUME button
+		width = menuScale * scaleFactor * pauseResume.getWidth() / 2.0f;
+		height = menuScale * scaleFactor * pauseResume.getHeight() / 2.0f;
+		if (Math.abs(screenX - PAUSE_RESUME_XPOS + width) < Math.abs(width) && Math.abs(screenY - PAUSE_RESUME_YPOS +
+				height) < Math.abs(height)) {
+			resumePressed = true;
+		}
+		// PAUSE button
 		float radius, dist;
 		radius = PAUSE_SCALE * scaleFactor * pauseButton.getWidth() / 2.0f;
 		dist = (screenX - PAUSE_XPOS) * (screenX - PAUSE_XPOS) + (screenY - PAUSE_YPOS) * (screenY - PAUSE_YPOS);
 		if (dist < radius * radius) {
 			pausePressed = true;
 		}
+//		width = menuScale * scaleFactor * pauseResume.getWidth() / 2.0f;
+//		height = menuScale * scaleFactor * pauseResume.getHeight() / 2.0f;
+//		dist = (screenX - PAUSE_RESUME_XPOS) * (screenX - PAUSE_RESUME_XPOS) + (screenY - PAUSE_RESUME_YPOS) * (screenY - PAUSE_RESUME_YPOS);
+//		if (dist < width * height) {
+//			resumePressed = true;
+//		}
 		return false;
 	}
 
@@ -789,7 +884,18 @@ public class GameplayController implements Screen, InputProcessor {
 		}
 		if (pausePressed) {
 			pausePressed = false;
-			isPaused = !isPaused;
+//			isPaused = !isPaused;
+			isPaused = true;
+			return false;
+		}
+		if (resumePressed) {
+			resumePressed = false;
+			isPaused = false;
+			return false;
+		}
+		if (quitPressed) {
+			quitPressed = false;
+			quitReady = true;
 			return false;
 		}
 		return true;
