@@ -650,7 +650,6 @@ public class GameCanvas {
 			Gdx.app.error("GameCanvas", "Cannot draw without active begin()", new IllegalStateException());
 			return;
 		}
-
 		// BUG: The draw command for texture regions does not work properly.
 		// There is a workaround, but it will break if the bug is fixed.
 		// For now, it is better to set the affine transform directly.

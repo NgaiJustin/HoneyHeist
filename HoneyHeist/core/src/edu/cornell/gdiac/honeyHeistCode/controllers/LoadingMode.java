@@ -73,7 +73,10 @@ public class LoadingMode implements Screen, InputProcessor, ControllerListener {
 	/** Middle portion of the status forground (colored region) */
 	private TextureRegion statusFrgMiddle;
 	/** Right cap to the status forground (colored region) */
-	private TextureRegion statusFrgRight;	
+	private TextureRegion statusFrgRight;
+
+	// Loading Tree animation
+	private FilmStrip loadingTree;
 
 	/** Default budget for asset loader (do nothing but load 60 fps) */
 	private static int DEFAULT_BUDGET = 15;
@@ -204,6 +207,13 @@ public class LoadingMode implements Screen, InputProcessor, ControllerListener {
 		background.setFilter( TextureFilter.Linear, TextureFilter.Linear );
 		statusBar = internal.getEntry( "progress", Texture.class );
 
+		// Put in the Loading animation gif
+		System.out.println("attempting");
+		loadingTree = internal.getEntry("tree.pacing", FilmStrip.class);
+		loadingTree.setFrame(1);
+		System.out.println("ok");
+
+
 		// Break up the status bar texture into regions
 		statusBkgLeft = internal.getEntry( "progress.backleft", TextureRegion.class );
 		statusBkgRight = internal.getEntry( "progress.backright", TextureRegion.class );
@@ -267,7 +277,20 @@ public class LoadingMode implements Screen, InputProcessor, ControllerListener {
 	 */
 	private void draw() {
 		canvas.begin();
+
 		canvas.draw(background, 0, 0);
+
+		if(loadingTree != null){
+			System.out.println("success!");
+			float offsety = loadingTree.getRegionHeight();
+			float originx = loadingTree.getRegionX();
+			float originy = loadingTree.getRegionY();
+			canvas.draw(loadingTree,Color.WHITE, 0,0, 10,10,0,1,1);
+			canvas.draw(loadingTree,Color.WHITE, 0,0, 10,10,0,1,1);
+			canvas.draw(loadingTree,Color.WHITE, 0,0, 10,10,0,1,1);
+			canvas.draw(loadingTree,Color.WHITE, 0,0, 10,10,0,1,1);
+			canvas.draw(loadingTree,Color.WHITE, 0,0, 10,10,0,1,1);
+		}
 		if (playButton == null) {
 			drawProgress(canvas);
 		} else {
@@ -275,6 +298,7 @@ public class LoadingMode implements Screen, InputProcessor, ControllerListener {
 			canvas.draw(playButton, tint, playButton.getWidth()/2, playButton.getHeight()/2, 
 						centerX, centerY, 0, BUTTON_SCALE*scale, BUTTON_SCALE*scale);
 		}
+
 		canvas.end();
 	}
 	
@@ -287,7 +311,8 @@ public class LoadingMode implements Screen, InputProcessor, ControllerListener {
 	 *
 	 * @param canvas The drawing context
 	 */	
-	private void drawProgress(GameCanvas canvas) {	
+	private void drawProgress(GameCanvas canvas) {
+
 		canvas.draw(statusBkgLeft,   Color.WHITE, centerX-width/2, centerY,
 				scale*statusBkgLeft.getRegionWidth(), scale*statusBkgLeft.getRegionHeight());
 		canvas.draw(statusBkgRight,  Color.WHITE,centerX+width/2-scale*statusBkgRight.getRegionWidth(), centerY,
