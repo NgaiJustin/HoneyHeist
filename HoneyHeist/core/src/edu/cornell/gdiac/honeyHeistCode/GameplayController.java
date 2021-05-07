@@ -17,6 +17,7 @@
 package edu.cornell.gdiac.honeyHeistCode;
 
 import com.badlogic.gdx.*;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.utils.*;
 import com.badlogic.gdx.graphics.*;
@@ -24,12 +25,17 @@ import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.physics.box2d.*;
 import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.audio.SoundBuffer;
+import edu.cornell.gdiac.honeyHeistCode.controllers.EditorController;
 import edu.cornell.gdiac.honeyHeistCode.controllers.aiControllers.AISingleCharacterController;
 import edu.cornell.gdiac.honeyHeistCode.controllers.InputController;
 import edu.cornell.gdiac.honeyHeistCode.obstacle.Obstacle;
 import edu.cornell.gdiac.util.PooledList;
 import edu.cornell.gdiac.util.ScreenListener;
 import edu.cornell.gdiac.honeyHeistCode.controllers.LevelController;
+import edu.cornell.gdiac.honeyHeistCode.controllers.EditorController.Level;
+
+import javax.swing.*;
+import java.io.File;
 
 /**
  * Base class for a world-specific controller.
@@ -164,7 +170,7 @@ public class GameplayController implements Screen, InputProcessor {
 	/** Constants for the position of pause button */
 	private final float PAUSE_XPOS = Gdx.graphics.getWidth()*0.85f;
 	private final float PAUSE_YPOS = Gdx.graphics.getHeight()*0.85f;
-	private final float PAUSE_SCALE = 0.5f;
+	private final float PAUSE_SCALE = 4f;
 	/** Menu button texture */
 	private Texture menuButton;
 	/** Offset for the menu word on the button */
@@ -899,6 +905,38 @@ public class GameplayController implements Screen, InputProcessor {
 			return false;
 		}
 		return true;
+	}
+
+	public void saveData() {
+//		JsonValue = .getEntry("levelData", JsonValue.class).get("levels");
+//		for (JsonValue entry = map.child; entry != null; entry = entry.next)
+//			System.out.println(entry.name + " = " + entry.asString());
+//		EditorController.Level level = convertToJsonLevel();
+//
+//		JFileChooser jfc = new JFileChooser();
+//		jfc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+//		jfc.setFileFilter(new EditorController.JsonFileFilter());
+//		jfc.setSelectedFile(new File("untitled.json"));
+//		int r = jfc.showSaveDialog(null);
+//		jfc.setVisible(true);
+//		if (r == JFileChooser.CANCEL_OPTION)
+//			return;
+//		String path = jfc.getSelectedFile().getName();
+//		if (!path.endsWith(".json")){
+//			path = path + ".json";
+//		}
+//
+//		if(System.getProperty("os.name").contains("Windows")) {
+//			path = jfc.getCurrentDirectory() + "\\" + path;
+//		} else {
+//			path = jfc.getCurrentDirectory() + "/" + path;
+//		}
+//
+//		FileHandle file = Gdx.files.absolute(path);
+//		Json json = new Json();
+//		json.setOutputType(JsonWriter.OutputType.json);
+//		file.writeString(json.prettyPrint(jsonLevel), false);
+//		System.out.println("saved");
 	}
 
 	/**
