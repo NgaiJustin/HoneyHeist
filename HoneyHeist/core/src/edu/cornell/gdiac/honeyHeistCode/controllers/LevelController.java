@@ -1042,25 +1042,31 @@ public class LevelController implements ContactListener {
                     avatar.setIsDead(true);
                     setFailure(true);
                 }
-                if (bd1isCharacterModel){
-                    System.out.println(fd1);
-                    for (AbstractBeeModel bee : bees) {
+                else if (bd1isCharacterModel){
+                    //System.out.println(fd1);
+                    /*for (AbstractBeeModel bee : bees) {
                         if (bee.getSensorName().equals(fd1)){
                             // Find the bee that collided and flag it as dead
                             System.out.println("ENEMY DIED");
                             bee.setIsDead(true);
                         }
-                    }
+                    }*/
+                    AbstractBeeModel bee = (AbstractBeeModel) bd1;
+                    System.out.println("ENEMY DIED: "+bee.getSensorName());
+                    bee.setIsDead(true);
                     bd1.markRemoved(true);
                 } else {
-                    System.out.println(fd2);
+                    /*System.out.println(fd2);
                     for (AbstractBeeModel bee : bees) {
                         if (bee.getSensorName().equals(fd2)){
                             // Find the bee that collided and flag it as dead
                             System.out.println("ENEMY DIED");
                             bee.setIsDead(true);
                         }
-                    }
+                    }*/
+                    AbstractBeeModel bee = (AbstractBeeModel) bd2;
+                    System.out.println("ENEMY DIED: "+bee.getSensorName());
+                    bee.setIsDead(true);
                     bd2.markRemoved(true);
                 }
             }
