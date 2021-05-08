@@ -21,8 +21,6 @@ public class FlyingBeeModel extends AbstractBeeModel{
     private final int FRAMES_PER_ANIM = 7;
     private int animFrames = 0;
 
-    /** True if the Bee is currently chasing the player */
-    private boolean isChasing;
 
     /**
      * Enumeration to identify the ant animations
@@ -83,14 +81,6 @@ public class FlyingBeeModel extends AbstractBeeModel{
 
     public float getVMovement () {
         return vMovement;
-    }
-
-    /**
-     * Remove all forces on the bee - Halts movement
-     */
-    public void haltMovement(){
-        body.setAngularVelocity(0);
-        body.setLinearVelocity(0,0);
     }
 
     @Override
@@ -233,22 +223,7 @@ public class FlyingBeeModel extends AbstractBeeModel{
         animateBee(BeeAnimations.CHASE, true);
     }
 
-    /**
-     * Set the status of this enemy as chasing. The chasing
-     * art will render when isChasing is true
-     * @param b
-     */
-    public void setIsChasing(boolean b) {
-        this.isChasing = b;
-    }
 
-    /**
-     * Returns if the enemy is currently chasing the player
-     * @return
-     */
-    public boolean getIsChasing() {
-        return this.isChasing;
-    }
 
     /**
      * Draws the physics object.

@@ -5,6 +5,7 @@ import java.util.HashMap;
 import edu.cornell.gdiac.honeyHeistCode.GameCanvas;
 import com.badlogic.gdx.math.Vector2;
 import edu.cornell.gdiac.honeyHeistCode.models.FlyingBeeModel;
+import edu.cornell.gdiac.honeyHeistCode.models.LarvaeModel;
 import edu.cornell.gdiac.honeyHeistCode.models.LevelModel;
 import edu.cornell.gdiac.honeyHeistCode.models.CharacterModel;
 import com.badlogic.gdx.utils.JsonValue;

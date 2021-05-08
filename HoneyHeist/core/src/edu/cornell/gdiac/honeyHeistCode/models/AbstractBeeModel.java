@@ -14,6 +14,9 @@ import edu.cornell.gdiac.honeyHeistCode.obstacle.CapsuleObstacle;
  */
 public abstract class AbstractBeeModel extends CharacterModel {
 
+    /** True if the Bee is currently chasing the player */
+    protected boolean isChasing;
+
     public AbstractBeeModel(JsonValue data, float x, float y, float width, float height) {
         super(data, x, y, width, height);
         setName("bee");
@@ -30,5 +33,22 @@ public abstract class AbstractBeeModel extends CharacterModel {
     public void draw(GameCanvas canvas) {
         float effect = faceRight ? 1.0f : -1.0f;
         canvas.draw(texture, Color.WHITE, origin.x, origin.y, getX() * drawScale.x, getY() * drawScale.y, getAngle(), effect, 1.0f);
+    }
+
+    /**
+     * Set the status of this enemy as chasing. The chasing
+     * art will render when isChasing is true
+     * @param b
+     */
+    public void setIsChasing(boolean b) {
+        this.isChasing = b;
+    }
+
+    /**
+     * Returns if the enemy is currently chasing the player
+     * @return
+     */
+    public boolean getIsChasing() {
+        return this.isChasing;
     }
 }

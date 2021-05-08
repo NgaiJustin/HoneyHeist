@@ -145,6 +145,14 @@ public class CharacterModel extends CapsuleObstacle {
     public float getHoneyTime() { return honeyTime; }
 
     /**
+     * Remove all forces on the bee - Halts movement
+     */
+    public void haltMovement(){
+        body.setAngularVelocity(0);
+        body.setLinearVelocity(0,0);
+    }
+
+    /**
      * Returns how much force to apply to get the ant moving
      * <p>
      * Multiply this by the input to get the movement value.

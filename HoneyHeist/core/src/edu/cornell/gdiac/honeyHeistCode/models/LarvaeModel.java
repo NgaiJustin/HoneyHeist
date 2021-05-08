@@ -16,8 +16,6 @@ public class LarvaeModel extends AbstractBeeModel{
     private final int FRAMES_PER_ANIM = 7;
     private int animFrames = 0;
 
-    /** True if the larvae is currently chasing the player */
-    private boolean isChasing;
 
     /**
      * Enumeration to identify the larvae animations
@@ -129,23 +127,6 @@ public class LarvaeModel extends AbstractBeeModel{
         super.setMovement(value);
         animateLarvae(LarvaeAnimations.WALK, true);
         animateLarvae(LarvaeAnimations.CHASE, true);
-    }
-
-    /**
-     * Set the status of this enemy as chasing. The chasing
-     * art will render when isChasing is true
-     * @param b
-     */
-    public void setIsChasing(boolean b) {
-        this.isChasing = b;
-    }
-
-    /**
-     * Returns if the enemy is currently chasing the player
-     * @return
-     */
-    public boolean getIsChasing() {
-        return this.isChasing;
     }
 
     /**

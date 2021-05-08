@@ -11,6 +11,7 @@ package edu.cornell.gdiac.honeyHeistCode.controllers.aiControllers;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector2;
 import edu.cornell.gdiac.honeyHeistCode.GameCanvas;
+import edu.cornell.gdiac.honeyHeistCode.models.AbstractBeeModel;
 import edu.cornell.gdiac.honeyHeistCode.models.CharacterModel;
 import edu.cornell.gdiac.honeyHeistCode.models.LevelModel;
 import edu.cornell.gdiac.honeyHeistCode.models.PlatformModel;
@@ -76,8 +77,8 @@ public class AISingleCharacterController {
 
     private FSMState state;
     private long ticks;
+    private long ticksSinceLastChangeInDirection;
     private int ticksBeforeChangeInRandomDirection;
-	private static final int ticksBeforeChangeInChaseDirection = 5;
 	private static final float checkLength = 1.5f;
     private Vector2 target;
     private DirectedLineSegment lineToTarget;
@@ -88,7 +89,7 @@ public class AISingleCharacterController {
     private Vector2 positionAtLastWander;
     private Vector2 currentDirection;
     private Vector2 temp;
-    private float directionChangeCoolDown;
+	private int ticksUntilChangeMustOccur;
 
     Random random = new Random();
 
@@ -123,6 +124,7 @@ public class AISingleCharacterController {
 		this.checkIfItWillFallOffPlatform = data.getInt("check_fall_off_platform") == 1 ? true : false;
 		this.wanderRadius = data.getFloat("wander_radius");
 		this.ticksBeforeChangeInRandomDirection = data.getInt("ticksBeforeChangeInRandomDirection");
+		this.ticksUntilChangeMustOccur = data.getInt("ticksUntilChangeMustOccur");
 
 		state = FSMState.WANDER;
 		lineToTarget = new DirectedLineSegment(controlledCharacter.getPosition(), target);
@@ -134,7 +136,7 @@ public class AISingleCharacterController {
 		currentDirection = new Vector2();
 		positionAtLastWander = new Vector2();
 		positionAtLastWander.set(controlledCharacter.getPosition());
-		directionChangeCoolDown = 0;
+		ticksSinceLastChangeInDirection = 0;
 		ticks = 0;
 		initDirection();
 	}
@@ -146,7 +148,7 @@ public class AISingleCharacterController {
 		updateLineToTarget();
 		updateFSMState();
 		updateDirectionBasedOnState();
-		directionChangeCoolDown ++;
+		ticksSinceLastChangeInDirection ++;
 		ticks ++;
 	}
 
@@ -158,6 +160,9 @@ public class AISingleCharacterController {
 	public Vector2 getMovementDirection() {
 		currentDirection.set(direction.getDirection());
 		currentDirection.nor();
+		if (characterType == CharacterType.GROUNDED_CHARACTER) {
+			currentDirection.set(setVectorToLeftOrRight(currentDirection));
+		}
 		if (state == FSMState.WANDER) {
 			return currentDirection.scl(wanderSpeedFactor);
 		}
@@ -166,38 +171,24 @@ public class AISingleCharacterController {
 		}
 	}
 
-//	/**
-//	 * Returns the horizontal direction which the controlled enemy should move.
-//	 *
-//	 * @return The direction that the enemy should move.
-//	 */
-//	public float getMovementHorizontalDirection() {
-//		return direction.x;
-//	}
-//
-//	/**
-//	 * Returns the horizontal direction which the controlled enemy should move.
-//	 *
-//	 * @return The direction that the enemy should move.
-//	 */
-//	public float getMovementHorizontalDirection1orNeg1() {
-//		if (direction.x > 0) {
-//			return 1;
-//		} else if (direction.x == 0) {
-//			return 0;
-//		} else {
-//			return -1;
-//		}
-//	}
 
-//	/**
-//	 * Returns the vertical direction which the controlled enemy should move.
-//	 *
-//	 * @return The direction that the enemy should move.
-//	 */
-//	public float getMovementVerticalDirection() {
-//		return direction.y;
-//	}
+	/**
+	 * Returns the horizontal direction which the controlled enemy should move.
+	 *
+	 * @return The direction that the enemy should move.
+	 */
+	private Vector2 setVectorToLeftOrRight(Vector2 direction) {
+		temp.set(direction);
+		if (temp.x > 0) {
+			return temp.setAngleDeg(0);
+		} else if (temp.x == 0) {
+			return Vector2.Zero;
+		} else {
+			return temp.setAngleDeg(180);
+		}
+	}
+
+
 
 
 	/**
@@ -245,8 +236,7 @@ public class AISingleCharacterController {
 				if (distanceToPlayer < chaseRadius && !isLineCollidingWithAPlatform(lineToTarget)) {
 					if (characterType == CharacterType.FLYING_CHARACTER) {
 						this.state = FSMState.CHASE;
-					}
-					else {
+					} else {
 						if (Math.abs(lineToTarget.getDirection().y) < .75f) {
 							this.state = FSMState.CHASE;
 						}
@@ -256,8 +246,13 @@ public class AISingleCharacterController {
 			case CHASE:
 				if (distanceToPlayer > chaseRadius || isLineCollidingWithAPlatform(lineToTarget)) {
 					this.state = FSMState.WANDER;
+					controlledCharacter.haltMovement();
 					updatePositionAtLastWander();
 				}
+		}
+		if (controlledCharacter.getClass() == AbstractBeeModel.class) {
+			boolean isChasing = this.state == FSMState.CHASE ? true : false;
+			((AbstractBeeModel) controlledCharacter).setIsChasing(isChasing);
 		}
 	}
 
@@ -304,17 +299,25 @@ public class AISingleCharacterController {
 
 	private void wanderDirectionForGroundedEnemy() {
 		direction.setByVector(controlledCharacter.getPosition(), direction.getDirection());
-		if (directionChangeCoolDown >= ticksBeforeChangeInRandomDirection) {
+		if (ticksSinceLastChangeInDirection >= ticksBeforeChangeInRandomDirection && isCharacterGroundedOnSlantedPlatform()) {
 			if (isLineCollidingWithAPlatform(direction)) {
 				changeToOppositeDirection();
-				directionChangeCoolDown = 0;
+				ticksSinceLastChangeInDirection = 0;
 			}
 			if (checkIfItWillFallOffPlatform && willCharacterFallOffPlatform()) {
 				changeToOppositeDirection();
-				directionChangeCoolDown = 0;
+				ticksSinceLastChangeInDirection = 0;
+			}
+			if (ticksSinceLastChangeInDirection >= ticksUntilChangeMustOccur && !controlledCharacter.isInHoney()) {
+				changeToOppositeDirection();
+				ticksSinceLastChangeInDirection = 0;
 			}
 		}
 
+	}
+
+	private boolean isCharacterGroundedOnSlantedPlatform() {
+		return controlledCharacter.isGrounded() && (Math.toDegrees(controlledCharacter.getAngle()) != 0 || Math.toDegrees(controlledCharacter.getAngle()) != 180);
 	}
 
 	private boolean isExitingWanderRadius() {
@@ -338,9 +341,14 @@ public class AISingleCharacterController {
 		else if (isLineCollidingWithAPlatform(direction)) {
 			getViableDirection12();
 		}
-		else if (isExitingWanderRadius()) {
+		else if (isExitingWanderRadius() && !controlledCharacter.isInHoney()) {
 			direction.set(controlledCharacter.getPosition(), positionAtLastWander);
+			controlledCharacter.haltMovement();
 		}
+		else if (controlledCharacter.isInHoney()) {
+			updatePositionAtLastWander();
+		}
+
 	}
 
 	/**
@@ -448,6 +456,8 @@ public class AISingleCharacterController {
 		}
 		return false;
 	}
+
+
 
 	/**
 	 * Checks if the given path to target is blocked by a platform.
