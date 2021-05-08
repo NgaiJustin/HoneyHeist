@@ -250,10 +250,8 @@ public class AISingleCharacterController {
 					updatePositionAtLastWander();
 				}
 		}
-		if (controlledCharacter.getClass() == AbstractBeeModel.class) {
-			boolean isChasing = this.state == FSMState.CHASE ? true : false;
-			((AbstractBeeModel) controlledCharacter).setIsChasing(isChasing);
-		}
+		boolean isChasing = this.state == FSMState.CHASE;
+		((AbstractBeeModel) controlledCharacter).setIsChasing(isChasing);
 	}
 
 	private void updatePositionAtLastWander() {

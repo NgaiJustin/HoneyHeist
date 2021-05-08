@@ -231,6 +231,7 @@ public class FlyingBeeModel extends AbstractBeeModel{
      * @param canvas Drawing context
      */
     public void draw(GameCanvas canvas) {
+        System.out.println("Chasing status: " + this.isChasing);
         float effect = this.faceRight ? -1.0f : 1.0f;
         FilmStrip currAnim = this.isChasing ? chasingAnim : flyingAnim;
         // Walking Animation
