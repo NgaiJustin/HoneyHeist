@@ -35,11 +35,20 @@
     "platform:flyingBee": "platform/chaserBee.png",
 
     "platform:playerWalk": {
-      "file": "platform/beeWalkstrip.png",
+      "file": "platform/walkstrip.png",
       "sprites": {
         "pacing": {
           "rows": 1,
           "cols": 6
+        }
+      }
+    },
+    "platform:playerFlail": {
+      "file": "platform/flailStrip.png",
+      "sprites": {
+        "pacing": {
+          "rows": 1,
+          "cols": 5
         }
       }
     },
@@ -52,12 +61,31 @@
         }
       }
     },
+
     "platform:larvaeWalk": {
       "file": "platform/larvaeWalkstrip.png",
       "sprites": {
         "pacing": {
           "rows": 1,
           "cols": 4
+        }
+      }
+    },
+    "platform:larvaeFlail": {
+      "file": "platform/larvaeFlailStrip.png",
+      "sprites": {
+        "pacing": {
+          "rows": 1,
+          "cols": 2
+        }
+      }
+    },
+    "platform:larvaeDeath": {
+      "file": "platform/larvaeDeathStrip.png",
+      "sprites": {
+        "pacing": {
+          "rows": 1,
+          "cols": 6
         }
       }
     },
@@ -70,12 +98,31 @@
         }
       }
     },
+
     "platform:beeFly": {
       "file": "platform/beeFlystrip.png",
       "sprites": {
         "pacing": {
           "rows": 1,
           "cols": 5
+        }
+      }
+    },
+    "platform:beeFlail": {
+      "file": "platform/beeFlailStrip.png",
+      "sprites": {
+        "pacing": {
+          "rows": 1,
+          "cols": 6
+        }
+      }
+    },
+    "platform:beeDeath": {
+      "file": "platform/beeDeathStrip.png",
+      "sprites": {
+        "pacing": {
+          "rows": 1,
+          "cols": 6
         }
       }
     },
@@ -88,6 +135,7 @@
         }
       }
     },
+
     "platform:spikeULeft": "platform/upLeftSpike.png",
     "platform:spikeUMid": "platform/upMidSpike.png",
     "platform:spikeURight": "platform/upRightSpike.png",

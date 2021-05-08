@@ -12,10 +12,12 @@ public class PlayerModel extends CharacterModel {
     // Walking animation fields
     /** The texture filmstrip for the left animation node */
     private FilmStrip walkingAnim;
+    private FilmStrip flailingAnim;
     private FilmStrip dyingAnim;
 
     /** The animation phase for the walking animation */
     private boolean walkCycle = true;
+    private boolean flailCycle = true;
     private boolean deathCycle = true;
     private final int FRAMES_PER_ANIM = 5;
     private int animFrames = 0;
@@ -26,6 +28,8 @@ public class PlayerModel extends CharacterModel {
     public enum AntAnimations {
         /** Walking animation */
         WALK,
+        /** Flailing animation */
+        FLAIL,
         /** Dying animation */
         DEATH,
         // Future animations to be supported
@@ -54,10 +58,13 @@ public class PlayerModel extends CharacterModel {
     public void setAnimationStrip(AntAnimations anim, FilmStrip strip) {
         switch (anim) {
             case WALK:
-                 walkingAnim= strip;
+                 walkingAnim= strip.copy();
                  break;
+            case FLAIL:
+                flailingAnim= strip.copy();
+                break;
             case DEATH:
-                dyingAnim= strip;
+                dyingAnim= strip.copy();
                 break;
             default:
                 assert false : "Invalid ant animation enumeration";
@@ -80,6 +87,10 @@ public class PlayerModel extends CharacterModel {
             case WALK:
                 node  = walkingAnim;
                 cycle = walkCycle;
+                break;
+            case FLAIL:
+                node = flailingAnim;
+                cycle = flailCycle;
                 break;
             case DEATH:
                 node  = dyingAnim;
@@ -114,6 +125,9 @@ public class PlayerModel extends CharacterModel {
         switch (anim) {
             case WALK:
                 walkCycle = cycle;
+                break;
+            case FLAIL:
+                flailCycle = cycle;
                 break;
             case DEATH:
                 deathCycle = cycle;

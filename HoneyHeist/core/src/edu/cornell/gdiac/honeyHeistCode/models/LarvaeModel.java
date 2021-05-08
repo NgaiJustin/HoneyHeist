@@ -8,10 +8,14 @@ import edu.cornell.gdiac.util.FilmStrip;
 public class LarvaeModel extends AbstractBeeModel{
     // Moving animation fields
     private FilmStrip walkingAnim;
+    private FilmStrip flailingAnim;
+    private FilmStrip dyingAnim;
     private FilmStrip chasingAnim;
 
     /** The animation phase for the walking animation */
     private boolean walkCycle = true;
+    private boolean flailCycle = true;
+    private boolean deathCycle = true;
     private boolean chaseCycle = true;
     private final int FRAMES_PER_ANIM = 7;
     private int animFrames = 0;
@@ -23,6 +27,10 @@ public class LarvaeModel extends AbstractBeeModel{
     public enum LarvaeAnimations {
         /** Walking animation */
         WALK,
+        /** Flailing animation */
+        FLAIL,
+        /** Death animation */
+        DEATH,
         /** Chasing animation */
         CHASE,
     };
@@ -48,10 +56,16 @@ public class LarvaeModel extends AbstractBeeModel{
     public void setAnimationStrip(LarvaeAnimations anim, FilmStrip strip) {
         switch (anim) {
             case WALK:
-                walkingAnim= strip;
+                walkingAnim= strip.copy();
+                break;
+            case FLAIL:
+                flailingAnim= strip.copy();
+                break;
+            case DEATH:
+                dyingAnim= strip.copy();
                 break;
             case CHASE:
-                chasingAnim= strip;
+                chasingAnim= strip.copy();
                 break;
             default:
                 assert false : "Invalid larvae animation enumeration";
@@ -63,9 +77,8 @@ public class LarvaeModel extends AbstractBeeModel{
      * If the animation is not active, it will reset to the initial animation frame.
      *
      * @param  anim   The reference to the type of animation
-     * @param  on       Whether the animation is active
      */
-    public void animateLarvae(LarvaeAnimations anim, boolean on) {
+    public void animateLarvae(LarvaeAnimations anim) {
         FilmStrip node = null;
         boolean  cycle = true;
 
@@ -73,6 +86,14 @@ public class LarvaeModel extends AbstractBeeModel{
             case WALK:
                 node  = walkingAnim;
                 cycle = walkCycle;
+                break;
+            case FLAIL:
+                node = flailingAnim;
+                cycle = flailCycle;
+                break;
+            case DEATH:
+                node = dyingAnim;
+                cycle = deathCycle;
                 break;
             case CHASE:
                 node = chasingAnim;
@@ -83,23 +104,19 @@ public class LarvaeModel extends AbstractBeeModel{
                 assert false : "Invalid burner enumeration";
         }
         if (animFrames % FRAMES_PER_ANIM == 0) {
-            if (on) {
-                // Turn on the flames and go back and forth
-                if (node.getFrame() == 0 || node.getFrame() == 1) {
-                    cycle = true;
-                } else if (node.getFrame() == node.getSize() - 1) {
-                    cycle = false;
-                }
-
-                // Increment
-                if (cycle) {
-                    node.setFrame(node.getFrame() + 1);
-                } else {
-                    node.setFrame(0);
-                }
-            } else {
-                node.setFrame(0);
-            }
+            int nextFrame = (node.getFrame() + 1) % node.getSize();
+            node.setFrame(nextFrame);
+//                if (node.getFrame() == 0) {
+//                    cycle = true;
+//                } else if (node.getFrame() == node.getSize() - 1) {
+//                    cycle = false;
+//                }
+//                // Increment
+//                if (cycle) {
+//                    node.setFrame(node.getFrame() + 1);
+//                } else {
+//                    node.setFrame(0);
+//                }
         }
         animFrames++;
 
@@ -107,12 +124,18 @@ public class LarvaeModel extends AbstractBeeModel{
             case WALK:
                 walkCycle = cycle;
                 break;
+            case FLAIL:
+                flailCycle = cycle;
+                break;
+            case DEATH:
+                deathCycle = cycle;
+                break;
             case CHASE:
                 chaseCycle = cycle;
                 break;
             // Add more cases for future animations
             default:
-                assert false : "Invalid burner enumeration";
+                assert false : "Invalid larvae animation enumeration";
         }
     }
 
@@ -125,8 +148,10 @@ public class LarvaeModel extends AbstractBeeModel{
      */
     public void setMovement(float value) {
         super.setMovement(value);
-        animateLarvae(LarvaeAnimations.WALK, true);
-        animateLarvae(LarvaeAnimations.CHASE, true);
+        animateLarvae(LarvaeAnimations.WALK);
+        animateLarvae(LarvaeAnimations.FLAIL);
+        animateLarvae(LarvaeAnimations.DEATH);
+        animateLarvae(LarvaeAnimations.CHASE);
     }
 
     /**
@@ -136,7 +161,15 @@ public class LarvaeModel extends AbstractBeeModel{
      */
     public void draw(GameCanvas canvas) {
         float effect = this.faceRight ? 1.0f : -1.0f;
-        FilmStrip currAnim = this.isChasing ? chasingAnim : walkingAnim;
+        // FilmStrip currAnim = this.isChasing ? chasingAnim : walkingAnim;
+        FilmStrip currAnim = walkingAnim;
+        if (this.isChasing){
+            currAnim = chasingAnim;
+        }
+        else if (this.isInHoney){
+            // Can change this if it looks weird
+            currAnim = flailingAnim;
+        }
         if (currAnim != null) {
             float offsety = currAnim.getRegionHeight()-origin.y;
             canvas.draw(currAnim, Color.WHITE,

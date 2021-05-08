@@ -14,9 +14,14 @@ public class FlyingBeeModel extends AbstractBeeModel{
     // Flying animation fields
     /** The texture filmstrip for the left animation node */
     private FilmStrip flyingAnim;
+    private FilmStrip flailingAnim;
+    private FilmStrip dyingAnim;
     private FilmStrip chasingAnim;
+
     /** The animation phase for the walking animation */
     private boolean flyCycle = true;
+    private boolean flailCycle = true;
+    private boolean deathCycle = true;
     private boolean chaseCycle = true;
     private final int FRAMES_PER_ANIM = 7;
     private int animFrames = 0;
@@ -28,6 +33,10 @@ public class FlyingBeeModel extends AbstractBeeModel{
     public enum BeeAnimations {
         /** Walking animation */
         FLY,
+        /** Flailing animation */
+        FLAIL,
+        /** Death animation */
+        DEATH,
         /** Chasing animation */
         CHASE,
         // Future animations to be supported
@@ -141,10 +150,16 @@ public class FlyingBeeModel extends AbstractBeeModel{
     public void setAnimationStrip(BeeAnimations anim, FilmStrip strip) {
         switch (anim) {
             case FLY:
-                flyingAnim= strip;
+                flyingAnim= strip.copy();
+                break;
+            case FLAIL:
+                flailingAnim= strip.copy();
+                break;
+            case DEATH:
+                dyingAnim= strip.copy();
                 break;
             case CHASE:
-                chasingAnim= strip;
+                chasingAnim= strip.copy();
                 break;
             default:
                 assert false : "Invalid Bee animation enumeration";
@@ -168,6 +183,14 @@ public class FlyingBeeModel extends AbstractBeeModel{
                 node  = flyingAnim;
                 cycle = flyCycle;
                 break;
+            case FLAIL:
+                node = flailingAnim;
+                cycle = flailCycle;
+                break;
+            case DEATH:
+                node = dyingAnim;
+                cycle = deathCycle;
+                break;
             case CHASE:
                 node = chasingAnim;
                 cycle = chaseCycle;
@@ -179,7 +202,7 @@ public class FlyingBeeModel extends AbstractBeeModel{
         if (animFrames % FRAMES_PER_ANIM == 0) {
             if (on) {
                 // Turn on the flames and go back and forth
-                if (node.getFrame() == 0 || node.getFrame() == 1) {
+                if (node.getFrame() == 0) {
                     cycle = true;
                 } else if (node.getFrame() == node.getSize() - 1) {
                     cycle = false;
@@ -201,12 +224,18 @@ public class FlyingBeeModel extends AbstractBeeModel{
             case FLY:
                 flyCycle = cycle;
                 break;
+            case FLAIL:
+                flailCycle = cycle;
+                break;
+            case DEATH:
+                deathCycle = cycle;
+                break;
             case CHASE:
                 chaseCycle = cycle;
                 break;
             // Add more cases for future animations
             default:
-                assert false : "Invalid burner enumeration";
+                assert false : "Invalid bee animation enumeration";
         }
     }
 
@@ -220,6 +249,8 @@ public class FlyingBeeModel extends AbstractBeeModel{
     public void setMovement(float value) {
         super.setMovement(value);
         animateBee(BeeAnimations.FLY, true);
+        animateBee(BeeAnimations.FLAIL, true);
+        animateBee(BeeAnimations.DEATH, true);
         animateBee(BeeAnimations.CHASE, true);
     }
 
@@ -231,9 +262,16 @@ public class FlyingBeeModel extends AbstractBeeModel{
      * @param canvas Drawing context
      */
     public void draw(GameCanvas canvas) {
-        System.out.println("Chasing status: " + this.isChasing);
         float effect = this.faceRight ? -1.0f : 1.0f;
-        FilmStrip currAnim = this.isChasing ? chasingAnim : flyingAnim;
+        // FilmStrip currAnim = this.isChasing ? chasingAnim : flyingAnim;
+        FilmStrip currAnim = flyingAnim;
+        if (this.isChasing){
+            currAnim = chasingAnim;
+        }
+        else if (this.isInHoney){
+            // Can change this if it looks weird
+            currAnim = flailingAnim;
+        }
         // Walking Animation
         if (currAnim != null) {
             float offsety = currAnim.getRegionHeight()-origin.y;

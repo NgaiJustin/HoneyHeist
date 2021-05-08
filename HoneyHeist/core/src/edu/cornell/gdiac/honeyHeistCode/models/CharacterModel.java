@@ -49,6 +49,10 @@ public class CharacterModel extends CapsuleObstacle {
      */
     protected boolean isInHoney;
     /**
+     * Whether the character has died, used to trigger death animation
+     */
+    protected boolean isDead;
+    /**
      * Sensor fixtures for isGrounded detection
      */
     protected ObjectSet<Fixture> sensorFixtures;
@@ -136,6 +140,11 @@ public class CharacterModel extends CapsuleObstacle {
      */
     public void setInHoney(boolean value) { isInHoney = value; }
 
+    /**
+     * Sets whether the character is dead
+     */
+    public void setIsDead (boolean value) {isDead = value;}
+
     public void setMaxspeed(float speed){ maxspeed = speed; }
 
     public void setDefaultMaxspeed(){ maxspeed = defaultMaxspeed; }
@@ -148,8 +157,10 @@ public class CharacterModel extends CapsuleObstacle {
      * Remove all forces on the bee - Halts movement
      */
     public void haltMovement(){
-        body.setAngularVelocity(0);
-        body.setLinearVelocity(0,0);
+        if (body != null) {
+            body.setAngularVelocity(0);
+            body.setLinearVelocity(0, 0);
+        }
     }
 
     /**

@@ -297,16 +297,21 @@ public class LevelController implements ContactListener {
     /** Player texture and filmstrip */
     private TextureRegion avatarTexture;
     private FilmStrip walkingPlayer;
+    private FilmStrip flailingPlayer;
     private FilmStrip dyingPlayer;
 
     /** Larvae texture and filmstrip */
-    private TextureRegion chaserBeeTexture;
+    private TextureRegion larvaeTexture;
     private FilmStrip walkingLarvae;
+    private FilmStrip flailingLarvae;
+    private FilmStrip dyingLarvae;
     private FilmStrip chasingLarvae;
 
     /** Bee texture and filmstrip */
     private TextureRegion flyingBeeTexture;
     private FilmStrip flyingBeeStrip;
+    private FilmStrip flailingBeestrip;
+    private FilmStrip dyingBeestrip;
     private FilmStrip chasingBeeStrip;
 
     /** Platform texture */
@@ -420,15 +425,22 @@ public class LevelController implements ContactListener {
      */
     public void gatherAssets(AssetDirectory directory, String dataFilePath) {
         avatarTexture    = new TextureRegion(directory.getEntry("platform:ant", Texture.class));
-        chaserBeeTexture = new TextureRegion(directory.getEntry("platform:larvae", Texture.class));
+        larvaeTexture = new TextureRegion(directory.getEntry("platform:larvae", Texture.class));
         flyingBeeTexture = new TextureRegion(directory.getEntry("platform:flyingBee", Texture.class));
 
         walkingPlayer   = directory.getEntry( "platform:playerWalk.pacing", FilmStrip.class );
+        flailingPlayer  = directory.getEntry("platform:playerFlail.pacing", FilmStrip.class);
         dyingPlayer     = directory.getEntry( "platform:playerDeath.pacing", FilmStrip.class );
+
         walkingLarvae   = directory.getEntry( "platform:larvaeWalk.pacing", FilmStrip.class );
+        flailingLarvae  = directory.getEntry("platform:larvaeFlail.pacing", FilmStrip.class);
+        dyingLarvae     = directory.getEntry("platform:larvaeDeath.pacing", FilmStrip.class);
         chasingLarvae   = directory.getEntry( "platform:larvaeChase.pacing", FilmStrip.class );
-        flyingBeeStrip  = directory.getEntry( "platform:beeFly.pacing", FilmStrip.class );
-        chasingBeeStrip = directory.getEntry( "platform:beeChase.pacing", FilmStrip.class );
+
+        flyingBeeStrip   = directory.getEntry( "platform:beeFly.pacing", FilmStrip.class );
+        flailingBeestrip = directory.getEntry("platform:beeFlail.pacing", FilmStrip.class);
+        dyingBeestrip    = directory.getEntry("platform:beeDeath.pacing", FilmStrip.class);
+        chasingBeeStrip  = directory.getEntry( "platform:beeChase.pacing", FilmStrip.class );
 
         SpikeULeft  = new TextureRegion(directory.getEntry("platform:spikeULeft", Texture.class));
         SpikeUMid   = new TextureRegion(directory.getEntry("platform:spikeUMid", Texture.class));
@@ -681,6 +693,7 @@ public class LevelController implements ContactListener {
         avatar.setDrawScale(scale);
         avatar.setTexture(avatarTexture);
         avatar.setAnimationStrip(PlayerModel.AntAnimations.WALK, walkingPlayer);
+        avatar.setAnimationStrip(PlayerModel.AntAnimations.FLAIL, flailingPlayer);
         avatar.setAnimationStrip(PlayerModel.AntAnimations.DEATH, dyingPlayer);
         addObject(avatar);
 
@@ -691,20 +704,22 @@ public class LevelController implements ContactListener {
       
         aIController = new AIController(level);
 
-        dwidth = chaserBeeTexture.getRegionWidth() / scale.x;
-        dheight = chaserBeeTexture.getRegionHeight() / scale.y;
+        dwidth = larvaeTexture.getRegionWidth() / scale.x;
+        dheight = larvaeTexture.getRegionHeight() / scale.y;
         //JsonValue.JsonIterator groundedBeeIterator = constants.get("groundedBees").iterator();
         JsonValue groundedBeePositions = levelData.get("groundedBeePos");
         for (int i=0; i<groundedBeePositions.size; i++){
             float[] pos = groundedBeePositions.get(i).asFloatArray();
-            LarvaeModel chaserBee = new LarvaeModel(constants.get("GroundedBee"), pos[0], pos[1], dwidth, dheight);
-            chaserBee.setDrawScale(scale);
-            chaserBee.setTexture(chaserBeeTexture);
-            chaserBee.setAnimationStrip(LarvaeModel.LarvaeAnimations.WALK, walkingLarvae);
-            chaserBee.setAnimationStrip(LarvaeModel.LarvaeAnimations.CHASE, chasingLarvae);
-            bees.add(chaserBee);
-            addObject(chaserBee);
-            aIController.createAIForSingleCharacter(chaserBee, constants.get("GroundedBee").get("ai_controller_options"));
+            LarvaeModel larvae = new LarvaeModel(constants.get("GroundedBee"), pos[0], pos[1], dwidth, dheight);
+            larvae.setDrawScale(scale);
+            larvae.setTexture(larvaeTexture);
+            larvae.setAnimationStrip(LarvaeModel.LarvaeAnimations.WALK, walkingLarvae);
+            larvae.setAnimationStrip(LarvaeModel.LarvaeAnimations.FLAIL, flailingLarvae);
+            larvae.setAnimationStrip(LarvaeModel.LarvaeAnimations.DEATH, dyingLarvae);
+            larvae.setAnimationStrip(LarvaeModel.LarvaeAnimations.CHASE, chasingLarvae);
+            bees.add(larvae);
+            addObject(larvae);
+            aIController.createAIForSingleCharacter(larvae, constants.get("GroundedBee").get("ai_controller_options"));
         }
 
         JsonValue flyingBeePositions = levelData.get("flyingBeePos");
@@ -714,6 +729,8 @@ public class LevelController implements ContactListener {
             flyingBee.setDrawScale(scale);
             flyingBee.setTexture(flyingBeeTexture);
             flyingBee.setAnimationStrip(FlyingBeeModel.BeeAnimations.FLY, flyingBeeStrip);
+            flyingBee.setAnimationStrip(FlyingBeeModel.BeeAnimations.FLAIL, flailingBeestrip);
+            flyingBee.setAnimationStrip(FlyingBeeModel.BeeAnimations.DEATH, dyingBeestrip);
             flyingBee.setAnimationStrip(FlyingBeeModel.BeeAnimations.CHASE, chasingBeeStrip);
             bees.add(flyingBee);
             addObject(flyingBee);
@@ -1019,13 +1036,31 @@ public class LevelController implements ContactListener {
 
             if (((bd1.getName().contains("spiked")) && bd2isCharacterModel) ||
             bd2.getName().contains("spiked") && bd1isCharacterModel){
-                if ((avatar == bd1 || avatar == bd2)&&!isComplete()){
+                if ((avatar == bd1 || avatar == bd2) && !isComplete()){
+                    // Player is dead
+                    System.out.println("PLAYER DIED");
+                    avatar.setIsDead(true);
                     setFailure(true);
                 }
-
                 if (bd1isCharacterModel){
+                    System.out.println(fd1);
+                    for (AbstractBeeModel bee : bees) {
+                        if (bee.getSensorName().equals(fd1)){
+                            // Find the bee that collided and flag it as dead
+                            System.out.println("ENEMY DIED");
+                            bee.setIsDead(true);
+                        }
+                    }
                     bd1.markRemoved(true);
                 } else {
+                    System.out.println(fd2);
+                    for (AbstractBeeModel bee : bees) {
+                        if (bee.getSensorName().equals(fd2)){
+                            // Find the bee that collided and flag it as dead
+                            System.out.println("ENEMY DIED");
+                            bee.setIsDead(true);
+                        }
+                    }
                     bd2.markRemoved(true);
                 }
             }
@@ -1072,12 +1107,15 @@ public class LevelController implements ContactListener {
                 avatar.setMaxspeed(level.getHoneyPatches().getSlowSpeed());
             }
 
-            // Check for win condition
+            // Check for contact with enemy
             if (!isFailure() && !isComplete() &&
                     ((bd1 == avatar && bd2.getClass().getSuperclass() == AbstractBeeModel.class) ||
                     (bd1.getClass().getSuperclass() == AbstractBeeModel.class && bd2 == avatar))) {
+                avatar.setIsDead(true);
                 setFailure(true);
             }
+
+            // Check for win condition
             if (((bd1 == avatar && bd2 == goalDoor) ||
                     (bd1 == goalDoor && bd2 == avatar))&&!isComplete()) {
                 setComplete(true);
