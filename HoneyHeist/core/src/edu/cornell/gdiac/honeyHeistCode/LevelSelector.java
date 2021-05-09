@@ -220,7 +220,7 @@ public class LevelSelector implements Screen {
      * @param canvas 	The game canvas to draw to
      * @param millis The loading budget in milliseconds
      */
-    public LevelSelector(AssetDirectory directory, GameCanvas canvas, int millis) {
+    public LevelSelector(AssetDirectory directory, GameCanvas canvas, int millis, int currentLevelNum) {
         this.canvas  = canvas;
         budget = millis;
 
@@ -234,12 +234,9 @@ public class LevelSelector implements Screen {
 
         // get the level data
         allLevelData = internal.getEntry("levelData", JsonValue.class).get("levels");
-//        allLevelData.get(finalI).get("unlock").asBoolean();
-//        totalLevelNum = allLevelData.size;
         totalLevelNum = allLevelData.size;
 
-        final int totalLevelTest = 20;
-        buttons = new Texture[totalLevelTest];
+        buttons = new Texture[totalLevelNum];
         // initailize the buttons to null
         Arrays.fill(buttons, null);
 
@@ -253,19 +250,12 @@ public class LevelSelector implements Screen {
 
         // No progress so far.
         progress = 0;
-//        pressState = -1;
         pressState = 0;
         isPressLevelEditor = false;
         isQuit = false;
-        currentPage = 0;
-        currentLevelNum = 0;
-
-//        Gdx.input.setInputProcessor( this );
-
-//        // Let ANY connected controller start the game.
-//        for (XBoxController controller : Controllers.get().getXBoxControllers()) {
-//            controller.addListener( this );
-//        }
+        this.currentLevelNum = currentLevelNum;
+        currentPage = this.currentLevelNum == 0? 0 : currentLevelNum/LEVEL_PER_PAGE;
+        System.out.println("currentPage: " + currentPage);
 
         // Start loading the real assets
         assets = directory;
@@ -352,7 +342,7 @@ public class LevelSelector implements Screen {
         buttonStyle.up = buttonDrawable;
         buttonStyle.down = buttonDrawable.tint(Color.GRAY);
         buttonStyle.font = skin.getFont("font");
-        levelButtons = new TextButton[totalLevelTest];
+        levelButtons = new TextButton[totalLevelNum];
 
         TextureRegion lockButtonImage = new TextureRegion(internal.getEntry("button", Texture.class));
         TextureRegionDrawable lockButtonDrawable = new TextureRegionDrawable(lockButtonImage);
@@ -360,13 +350,13 @@ public class LevelSelector implements Screen {
         lockButtonStyle.up = lockButtonDrawable.tint(Color.LIGHT_GRAY);
         lockButtonStyle.font = skin.getFont("font");
 
-        int numberOfPage = totalLevelTest/LEVEL_PER_PAGE;
+        int numberOfPage = totalLevelNum/LEVEL_PER_PAGE;
 //        System.out.println("total page number = " + numberOfPage);
         for (int idx=0; idx <= numberOfPage; idx++) {
             Table page = new Table();
             Table levelTable = new Table();
             // implementation 1
-            for (int i = 0; i < totalLevelTest; i++) {
+            for (int i = 0; i < totalLevelNum; i++) {
                 boolean isUnlock = allLevelData.get(i).get("unlock").asBoolean();
                 // first line has one more level button than the second line
                 if (i % (LEVEL_PER_ROW * 2 - 1) == LEVEL_PER_ROW && i / LEVEL_PER_PAGE == idx) {
@@ -392,7 +382,6 @@ public class LevelSelector implements Screen {
                             // "the button can only be pressed if the level is unlocked"
                             if (finalI < totalLevelNum && allLevelData.get(finalI).get("unlock").asBoolean()) {
                                 pressState = finalI + 1;
-                                currentLevelNum = pressState;
                                 selectedLevelData = allLevelData.get(pressState - 1).get("file").asString();
                             }
                         }
@@ -438,11 +427,11 @@ public class LevelSelector implements Screen {
         rightArrowStyle.down = rightArrowDrawable.tint(Color.GRAY);
         rightArrowStyle.font = skin.getFont("font");
         leftArrow = new Button(leftArrowStyle);
+        final float pageWidth = stage.getWidth()*0.6f;
+        scroller.scrollTo(pageWidth*currentPage, scroller.getHeight(), pageWidth, scroller.getHeight());
         leftArrow.addListener(new ChangeListener() {
             public void changed(ChangeEvent event, Actor actor) {
                 if (currentPage > 0) currentPage --;
-//                System.out.println(currentPage);
-                float pageWidth = stage.getWidth()*0.6f;
                 scroller.scrollTo(pageWidth*currentPage, scroller.getHeight(), pageWidth, scroller.getHeight());
             }
         });
@@ -450,9 +439,7 @@ public class LevelSelector implements Screen {
         rightArrow = new Button(rightArrowStyle);
         rightArrow.addListener(new ChangeListener() {
             public void changed(ChangeEvent event, Actor actor) {
-                if (currentPage < totalLevelTest/LEVEL_PER_PAGE) currentPage ++;
-//                System.out.println(currentPage);
-                float pageWidth = stage.getWidth()*0.6f;
+                if (currentPage < totalLevelNum/LEVEL_PER_PAGE) currentPage ++;
                 scroller.scrollTo(pageWidth*currentPage, scroller.getHeight(), pageWidth, scroller.getHeight());
             }
         });
@@ -554,6 +541,7 @@ public class LevelSelector implements Screen {
                 return;
             }
             if (pressState != 0) {
+                currentLevelNum = pressState;
                 listener.exitScreen(this, EXIT_PLAY);
                 return;
             }
