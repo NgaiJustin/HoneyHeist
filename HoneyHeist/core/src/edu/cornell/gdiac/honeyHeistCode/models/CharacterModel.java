@@ -224,6 +224,7 @@ public class CharacterModel extends CapsuleObstacle {
 
     public void startRotation(boolean isClockwise, Vector2 point){
         if (isRotating) return;
+        currentSpeed = 0f;
         if(isGrounded) {
             setBodyType(BodyDef.BodyType.StaticBody);
             sticking = true;
@@ -235,6 +236,7 @@ public class CharacterModel extends CapsuleObstacle {
     }
     public void startRotation(float rotationAmount, boolean isClockwise, Vector2 point){
         if (isRotating) return;
+        currentSpeed = 0f;
         if(isGrounded) {
             setBodyType(BodyDef.BodyType.StaticBody);
             sticking = true;
@@ -265,8 +267,8 @@ public class CharacterModel extends CapsuleObstacle {
         faceRight = true;
 
         //Probably replace the following code with json data
-        rotationAngle = (float) Math.PI/3;
-        rotationSpeed = ((float) Math.PI/3)*1.3f;
+        //rotationAngle = (float) Math.PI/3;
+        //rotationSpeed = ((float) Math.PI/3)*1.3f;
 
     }
 
@@ -338,7 +340,8 @@ public class CharacterModel extends CapsuleObstacle {
             return;
         }
 
-        float rotationAmount = rotationSpeed * dt;
+        getRotSpeed(dt);
+        float rotationAmount = currentSpeed * dt;
         if (rotationAmount > remainingAngle){
             rotationAmount = remainingAngle;
             isRotating = false;

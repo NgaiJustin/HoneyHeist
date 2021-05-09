@@ -145,8 +145,8 @@ public class BoxObstacle extends SimpleObstacle {
 		// Initialize
 		resize(width, height);
 		//Probably replace the following code with json data
-		rotationAngle = (float) Math.PI/3;
-		rotationSpeed = ((float) Math.PI/3)*1.3f;
+		//rotationAngle = (float) Math.PI/3;
+		//rotationSpeed = ((float) Math.PI/3)*1.3f;
 	}
 	
 	/**
@@ -178,7 +178,9 @@ public class BoxObstacle extends SimpleObstacle {
 	public void update(float dt) {
 		if (!isRotating) return;
 
-		float rotationAmount = rotationSpeed * dt;
+		getRotSpeed(dt);
+		System.out.print(currentSpeed+"\n");
+		float rotationAmount = currentSpeed * dt;
 		if (rotationAmount > remainingAngle){
 			rotationAmount = remainingAngle;
 			isRotating = false;

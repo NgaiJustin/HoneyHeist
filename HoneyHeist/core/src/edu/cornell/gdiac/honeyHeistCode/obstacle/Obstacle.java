@@ -55,13 +55,17 @@ public abstract class Obstacle {
 	/** Origin of the stage */
 	protected Vector2 stageCenter;
 	/** total radians for a single rotation */
-	protected float rotationAngle;
+	protected float rotationAngle = (float) Math.PI/3;
+	/** Proportion of rotation spent accelerating/decelerating*/
+	protected float rotationStartUp = 0.4f;
 	/** Amount of radians remaining to be rotated */
 	protected float remainingAngle;
 	/** Whether the platforms are rotating or not */
 	protected boolean isRotating = false;
 	/** Speed at which the platforms rotate in radians/second */
-	protected float rotationSpeed;
+	protected float rotationSpeed = ((float) Math.PI/3)*3f;
+	/** Speed at which the platform is currently rotating in radians/second */
+	protected float currentSpeed;
 	/** Whether the rotation is clockwise or not */
 	protected boolean isClockwise;
 	/** Whether the ant is sticking */
@@ -1005,6 +1009,10 @@ public abstract class Obstacle {
 	 */
 	public float getRemainingAngle() { return remainingAngle; }
 
+	public float getCurrentSpeed() { return currentSpeed; }
+
+	public void setCurrentSpeed(float speed) { currentSpeed = speed; }
+
 	/**
 	 * returns a flag indicating whether or not the obstacle is currently rotating
 	 *
@@ -1060,6 +1068,7 @@ public abstract class Obstacle {
 	 */
 	public void startRotation(boolean isClockwise, Vector2 point){
 		if (isRotating) return;
+		currentSpeed = 0f;
 		setBodyType(BodyDef.BodyType.StaticBody);
 		stageCenter = point;
 		isRotating = true;
@@ -1069,12 +1078,30 @@ public abstract class Obstacle {
 	}
 	public void startRotation(float rotationAmount, boolean isClockwise, Vector2 point){
 		if (isRotating) return;
+		currentSpeed = 0f;
 		setBodyType(BodyDef.BodyType.StaticBody);
 		stageCenter = point;
 		isRotating = true;
 		sticking = true;
 		this.isClockwise = isClockwise;
 		addRotation(rotationAmount);
+	}
+
+	protected void getRotSpeed(float dt){
+		if (remainingAngle > (rotationAngle*(1-rotationStartUp))){
+			float a = (float)(Math.pow(rotationSpeed,2f)-Math.pow(currentSpeed,2f))/
+					(2*(rotationAngle-(rotationAngle*(1-rotationStartUp))));
+			currentSpeed = currentSpeed+a*dt;
+			if(currentSpeed>rotationSpeed) currentSpeed = rotationSpeed;
+		}
+		else if (remainingAngle < rotationAngle*rotationStartUp){
+			float a = (float)(Math.pow(rotationSpeed*0.05f,2f)-Math.pow(currentSpeed,2f))/
+			//float a = (float)(Math.pow(0f,2f)-Math.pow(currentSpeed,2f))/
+					(2*remainingAngle);
+			currentSpeed = currentSpeed+a*dt;
+			if(currentSpeed<(rotationSpeed*0.05f)) currentSpeed = rotationSpeed*0.05f;
+			//if(currentSpeed<(0)) currentSpeed = rotationSpeed*0.001f;
+		}
 	}
 
 	/**

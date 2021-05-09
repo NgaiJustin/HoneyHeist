@@ -913,6 +913,7 @@ public class LevelController implements ContactListener {
         if((platforms.isRotating() && !avatar.isRotating()) && (avatar.isGrounded() || avatar.isInHoney())){
                 //&&((avatar.isGrounded() && !avatar.isInHoney())||(avatar.isInHoney() && avatar.getHoneyTime()==0))){
             avatar.startRotation(platforms.getRemainingAngle(), platforms.isClockwise(), level.getOrigin());
+            avatar.setCurrentSpeed(platforms.getCurrentSpeed());
         }
 
         if(!avatar.isGrounded()){
@@ -935,6 +936,7 @@ public class LevelController implements ContactListener {
             if((platforms.isRotating() && !bee.isRotating()) && (bee.isGrounded()|| bee.isInHoney())){
                     //&&((bee.isGrounded() && !bee.isInHoney())||(bee.isInHoney() && bee.getHoneyTime()==0))){
                 bee.startRotation(platforms.getRemainingAngle(), platforms.isClockwise(), level.getOrigin());
+                bee.setCurrentSpeed(platforms.getCurrentSpeed());
             }
             if(!bee.isGrounded()){
                 bee.getSensorFixtures().clear();
@@ -948,12 +950,16 @@ public class LevelController implements ContactListener {
         angleLeft = platforms.getRemainingAngle();
         if (didRotate) {
             rotateClockwise();
-            if (angleLeft <= 2*Math.PI/12 && isRotating && !didQueueCounterClockwise){
+            //if (angleLeft <= 2*Math.PI/24 && isRotating && !didQueueCounterClockwise){
+            if (isRotating && !didQueueCounterClockwise){
+                System.out.print("Queue Clockwise\n");
                 didQueueClockwise = true;
             }
         } else if (didAntiRotate) {
             rotateCounterClockwise();
-            if (angleLeft <= 2*Math.PI/12 && isRotating && !didQueueClockwise){
+            //if (angleLeft <= 2*Math.PI/24 && isRotating && !didQueueClockwise){
+            if (isRotating && !didQueueClockwise){
+                System.out.print("Queue Counter Clockwise\n");
                 didQueueCounterClockwise = true;
             }
         }
