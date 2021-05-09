@@ -200,7 +200,11 @@
   "sounds": {
     "platform:jump": "platform/jump.mp3",
     "platform:pew": "platform/pew.mp3",
-    "platform:plop": "platform/plop.mp3"
+    "platform:plop": "platform/plop.mp3",
+    "audio:soundeffect_death": "audio/soundeffect_death.mp3",
+    "audio:soundeffect_death_pixel": "audio/soundeffect_death_pixel.mp3",
+    "audio:soundeffect_tracking": "audio/soundeffect_tracking.mp3",
+    "audio:soundeffect_win": "audio/soundeffect_win.mp3"
   },
   "fonts": {
     "menuFont": {

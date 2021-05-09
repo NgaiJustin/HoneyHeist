@@ -345,16 +345,16 @@ public class LevelController implements ContactListener {
     private long bgmId = 10;
 
     /** The jump sound.  We only want to play once */
-    private SoundBuffer jumpSound;
-    private long jumpId = -1;
+    private SoundBuffer deathSound;
+    private long deathId = -1;
 
     /** The weapon fire sound.  We only want to play once. */
-    private SoundBuffer fireSound;
-    private long fireId = -1;
+    private SoundBuffer trackingSound;
+    private long trackingId = -1;
 
     /** The weapon pop sound.  We only want to play once. */
-    private SoundBuffer plopSound;
-    private long plopId = -1;
+    private SoundBuffer winSound;
+    private long winId = -1;
 
     /** The default sound volume */
     private float volume;
@@ -465,9 +465,9 @@ public class LevelController implements ContactListener {
         platNinePatch  = new NinePatch(directory.getEntry("platform:platNinePatch", Texture.class),  16, 16 ,16 ,16 );
         spikeNinePatch = new NinePatch(directory.getEntry("platform:spikeNinePatch", Texture.class),  16, 16 ,16 ,16 );
 
-        jumpSound = directory.getEntry("platform:jump", SoundBuffer.class);
-        fireSound = directory.getEntry("platform:pew", SoundBuffer.class);
-        plopSound = directory.getEntry("platform:plop", SoundBuffer.class);
+        deathSound = directory.getEntry("audio:soundeffect_death_pixel", SoundBuffer.class);
+        trackingSound = directory.getEntry("audio:soundeffect_tracking", SoundBuffer.class);
+        winSound = directory.getEntry("audio:soundeffect_win", SoundBuffer.class);
         //bgm = directory.getEntry("platform:bgm", SoundBuffer.class);
 
         constants = directory.getEntry("platform:constants2", JsonValue.class);
@@ -1369,14 +1369,14 @@ public class LevelController implements ContactListener {
      * Pausing happens when we switch game modes.
      */
     public void pause() {
-        if (jumpSound.isPlaying(jumpId)) {
-            jumpSound.stop(jumpId);
+        if (deathSound.isPlaying(deathId)) {
+            deathSound.stop(deathId);
         }
-        if (plopSound.isPlaying(plopId)) {
-            plopSound.stop(plopId);
+        if (winSound.isPlaying(winId)) {
+            winSound.stop(winId);
         }
-        if (fireSound.isPlaying(fireId)) {
-            fireSound.stop(fireId);
+        if (trackingSound.isPlaying(trackingId)) {
+            trackingSound.stop(trackingId);
         }
         if (bgm.isPlaying(bgmId)){
             bgm.stop(bgmId);
