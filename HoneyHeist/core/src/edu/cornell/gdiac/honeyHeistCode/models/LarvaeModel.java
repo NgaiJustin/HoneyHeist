@@ -15,7 +15,7 @@ public class LarvaeModel extends AbstractBeeModel{
     /** The animation phase for the walking animation */
     private boolean walkCycle = true;
     private boolean flailCycle = true;
-    private boolean deathCycle = true;
+    private boolean deathCycle = false;
     private boolean chaseCycle = true;
     private final int FRAMES_PER_ANIM = 7;
     private int animFrames = 0;
@@ -103,6 +103,16 @@ public class LarvaeModel extends AbstractBeeModel{
             default:
                 assert false : "Invalid burner enumeration";
         }
+
+        // If do not wish to cycle, only play animation once
+        if (!cycle && node.getFrame() == node.getSize() - 1) {
+            // Finished playing death animation, larvae can be removed
+            if (node == dyingAnim) {
+                this.setIsTrulyDead(true);
+            }
+            return;
+        }
+
         if (animFrames % FRAMES_PER_ANIM == 0) {
             int nextFrame = (node.getFrame() + 1) % node.getSize();
             node.setFrame(nextFrame);
@@ -139,6 +149,12 @@ public class LarvaeModel extends AbstractBeeModel{
         }
     }
 
+    @Override
+    public void animateDeath(){
+        System.out.println("Larvae Dying");
+        this.animateLarvae(LarvaeAnimations.DEATH);
+    }
+
     /**
      * Sets left/right movement of this character.
      * <p>
@@ -150,7 +166,6 @@ public class LarvaeModel extends AbstractBeeModel{
         super.setMovement(value);
         animateLarvae(LarvaeAnimations.WALK);
         animateLarvae(LarvaeAnimations.FLAIL);
-        animateLarvae(LarvaeAnimations.DEATH);
         animateLarvae(LarvaeAnimations.CHASE);
     }
 
@@ -163,7 +178,10 @@ public class LarvaeModel extends AbstractBeeModel{
         float effect = this.faceRight ? 1.0f : -1.0f;
         // FilmStrip currAnim = this.isChasing ? chasingAnim : walkingAnim;
         FilmStrip currAnim = walkingAnim;
-        if (this.isChasing){
+        if (this.isDead){
+            currAnim = dyingAnim;
+        }
+        else if (this.isChasing){
             currAnim = chasingAnim;
         }
         else if (this.isInHoney){

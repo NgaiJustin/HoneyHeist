@@ -145,6 +145,11 @@ public class CharacterModel extends CapsuleObstacle {
      */
     public void setIsDead (boolean value) {isDead = value;}
 
+    /**
+     * Get whether the character is dead
+     */
+    public boolean getIsDead () {return isDead;}
+
     public void setMaxspeed(float speed){ maxspeed = speed; }
 
     public void setDefaultMaxspeed(){ maxspeed = defaultMaxspeed; }
@@ -409,7 +414,6 @@ public class CharacterModel extends CapsuleObstacle {
             setVY(Math.min(-0.145f,getVY()));
         }*/
     }
-
 
     /**
      * Draws the outline of the physics body.

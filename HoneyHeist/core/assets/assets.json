@@ -57,7 +57,7 @@
       "sprites": {
         "pacing": {
           "rows": 1,
-          "cols": 3
+          "cols": 7
         }
       }
     },
@@ -76,7 +76,7 @@
       "sprites": {
         "pacing": {
           "rows": 1,
-          "cols": 2
+          "cols": 4
         }
       }
     },

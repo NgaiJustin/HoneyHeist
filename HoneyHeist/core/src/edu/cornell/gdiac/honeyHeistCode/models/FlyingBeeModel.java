@@ -21,7 +21,7 @@ public class FlyingBeeModel extends AbstractBeeModel{
     /** The animation phase for the walking animation */
     private boolean flyCycle = true;
     private boolean flailCycle = true;
-    private boolean deathCycle = true;
+    private boolean deathCycle = false;
     private boolean chaseCycle = true;
     private final int FRAMES_PER_ANIM = 7;
     private int animFrames = 0;
@@ -199,23 +199,39 @@ public class FlyingBeeModel extends AbstractBeeModel{
             default:
                 assert false : "Invalid burner enumeration";
         }
-        if (animFrames % FRAMES_PER_ANIM == 0) {
-            if (on) {
-                // Turn on the flames and go back and forth
-                if (node.getFrame() == 0) {
-                    cycle = true;
-                } else if (node.getFrame() == node.getSize() - 1) {
-                    cycle = false;
-                }
 
-                // Increment
-                if (cycle) {
-                    node.setFrame(node.getFrame() + 1);
+        // If do not wish to cycle, only play animation once
+        if (!cycle && node.getFrame() == node.getSize() - 1) {
+            // Finished playing death animation, bee can be removed
+            if (node == dyingAnim) {
+                this.setIsTrulyDead(true);
+            }
+            return;
+        }
+
+        if (animFrames % FRAMES_PER_ANIM == 0) {
+            if (node == dyingAnim){
+                int nextFrame = (node.getFrame() + 1) % node.getSize();
+                node.setFrame(nextFrame);
+            }
+            else {
+                if (on) {
+                    // Turn on the flames and go back and forth
+                    if (node.getFrame() == 0) {
+                        cycle = true;
+                    } else if (node.getFrame() == node.getSize() - 1) {
+                        cycle = false;
+                    }
+
+                    // Increment
+                    if (cycle) {
+                        node.setFrame(node.getFrame() + 1);
+                    } else {
+                        node.setFrame(0);
+                    }
                 } else {
                     node.setFrame(0);
                 }
-            } else {
-                node.setFrame(0);
             }
         }
         animFrames++;
@@ -239,6 +255,12 @@ public class FlyingBeeModel extends AbstractBeeModel{
         }
     }
 
+    @Override
+    public void animateDeath(){
+        System.out.println("Flying Bee Dying");
+        this.animateBee(BeeAnimations.DEATH, true);
+    }
+
     /**
      * Sets left/right movement of this character.
      * <p>
@@ -250,7 +272,6 @@ public class FlyingBeeModel extends AbstractBeeModel{
         super.setMovement(value);
         animateBee(BeeAnimations.FLY, true);
         animateBee(BeeAnimations.FLAIL, true);
-        animateBee(BeeAnimations.DEATH, true);
         animateBee(BeeAnimations.CHASE, true);
     }
 
@@ -265,7 +286,10 @@ public class FlyingBeeModel extends AbstractBeeModel{
         float effect = this.faceRight ? -1.0f : 1.0f;
         // FilmStrip currAnim = this.isChasing ? chasingAnim : flyingAnim;
         FilmStrip currAnim = flyingAnim;
-        if (this.isChasing){
+        if (this.isDead){
+            currAnim = dyingAnim;
+        }
+        else if (this.isChasing){
             currAnim = chasingAnim;
         }
         else if (this.isInHoney){
