@@ -7,16 +7,16 @@
 	},
 	{
 		"unlock": true,
-		"complete": false,
+		"complete": true,
 		"file": "levels:moreComplexMazeWithoutHazards"
 	},
 	{
-		"unlock": false,
-		"complete": false,
+		"unlock": true,
+		"complete": true,
 		"file": "levels:spikesIntro"
 	},
 	{
-		"unlock": false,
+		"unlock": true,
 		"complete": false,
 		"file": "levels:complicatedSpikes"
 	},

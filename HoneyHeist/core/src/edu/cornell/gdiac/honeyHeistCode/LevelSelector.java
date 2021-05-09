@@ -231,15 +231,11 @@ public class LevelSelector implements Screen {
 
         // get the level data
         allLevelData = internal.getEntry("levelData", JsonValue.class).get("levels");
-//        System.out.println(allLevelData);
 //        allLevelData.get(finalI).get("unlock").asBoolean();
 //        totalLevelNum = allLevelData.size;
         totalLevelNum = allLevelData.size;
-//        System.out.println(totalLevelNum);
 
-//        totalLevelNum = 20;
         final int totalLevelTest = 20;
-//        System.out.println(totalLevelNum);
         buttons = new Texture[totalLevelTest];
         // initailize the buttons to null
         Arrays.fill(buttons, null);
@@ -350,8 +346,6 @@ public class LevelSelector implements Screen {
             // implementation 1
             for (int i = 0; i < totalLevelTest; i++) {
                 Boolean isUnlock = allLevelData.get(i).get("unlock").asBoolean();
-                System.out.print(i);
-                System.out.println(": " + isUnlock);
                 // first line has one more level button than the second line
                 if (i % (LEVEL_PER_ROW * 2 - 1) == LEVEL_PER_ROW && i / LEVEL_PER_PAGE == idx) {
                     page.row();

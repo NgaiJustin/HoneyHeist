@@ -557,6 +557,8 @@ public class GameplayController implements Screen, InputProcessor {
 			} else if (levelController.isComplete()) {
 				pause();
 				saveData();
+				currentLevelNum ++;
+				System.out.println("current level: " + currentLevelNum);
 				listener.exitScreen(this, EXIT_NEXT);
 				return false;
 //				reset();
