@@ -150,6 +150,10 @@ public class LevelSelector implements Screen {
         return selectedLevelData;
     }
 
+    public JsonValue getAllLevelData() {
+        return allLevelData;
+    }
+
 
     /**
      * Returns the budget for the asset loader.
