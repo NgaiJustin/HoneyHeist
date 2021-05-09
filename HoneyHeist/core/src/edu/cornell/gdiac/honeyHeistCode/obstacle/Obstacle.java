@@ -56,8 +56,10 @@ public abstract class Obstacle {
 	protected Vector2 stageCenter;
 	/** total radians for a single rotation */
 	protected float rotationAngle = (float) Math.PI/3;
-	/** Proportion of rotation spent accelerating/decelerating*/
-	protected float rotationStartUp = 0.4f;
+	/** Proportion of rotation spent accelerating*/
+	protected float rotationStartUp = 0.5f;
+	/** Proportion of rotation spent decelerating*/
+	protected float rotationSlowDown = 0.2f;
 	/** Amount of radians remaining to be rotated */
 	protected float remainingAngle;
 	/** Whether the platforms are rotating or not */
@@ -1094,7 +1096,7 @@ public abstract class Obstacle {
 			currentSpeed = currentSpeed+a*dt;
 			if(currentSpeed>rotationSpeed) currentSpeed = rotationSpeed;
 		}
-		else if (remainingAngle < rotationAngle*rotationStartUp){
+		else if (remainingAngle < rotationAngle*rotationSlowDown){
 			float a = (float)(Math.pow(rotationSpeed*0.05f,2f)-Math.pow(currentSpeed,2f))/
 			//float a = (float)(Math.pow(0f,2f)-Math.pow(currentSpeed,2f))/
 					(2*remainingAngle);
