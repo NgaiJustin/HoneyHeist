@@ -89,8 +89,8 @@ public class PlatformModel extends Obstacle {
 		}
 
 		//Probably replace the following code with json data
-		rotationAngle = (float) Math.PI/3;
-		rotationSpeed = ((float) Math.PI/3)*1.3f;
+		//rotationAngle = (float) Math.PI/3;
+		//rotationSpeed = ((float) Math.PI/3)*1.3f;
     }
 
 	public PlatformModel(JsonValue data, Vector2 worldCenter) {
@@ -114,8 +114,8 @@ public class PlatformModel extends Obstacle {
 		}
 
 		//Probably replace the following code with json data
-		rotationAngle = (float) Math.PI/3;
-		rotationSpeed = ((float) Math.PI/3)*1.3f;
+		//rotationAngle = (float) Math.PI/3;
+		//rotationSpeed = ((float) Math.PI/3)*1.3f;
 	}
 	
 	public PlatformModel() {
@@ -124,8 +124,8 @@ public class PlatformModel extends Obstacle {
 		data = null;
 
 		//Probably replace the following code with json data
-		rotationAngle = (float) Math.PI/3;
-		rotationSpeed = ((float) Math.PI/3)*1.3f;
+		//rotationAngle = (float) Math.PI/3;
+		//rotationSpeed = ((float) Math.PI/3)*1.3f;
 	}
 
 	public Iterable<PolygonObstacle> getBodies() { return bodies; }
@@ -160,7 +160,8 @@ public class PlatformModel extends Obstacle {
 	public void update(float dt) {
 		if (!isRotating) return;
 
-		float rotationAmount = rotationSpeed * dt;
+		getRotSpeed(dt);
+		float rotationAmount = currentSpeed * dt;
 		if (rotationAmount > remainingAngle){
 			rotationAmount = remainingAngle;
 			isRotating = false;

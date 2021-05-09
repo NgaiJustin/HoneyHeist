@@ -297,16 +297,21 @@ public class LevelController implements ContactListener {
     /** Player texture and filmstrip */
     private TextureRegion avatarTexture;
     private FilmStrip walkingPlayer;
+    private FilmStrip flailingPlayer;
     private FilmStrip dyingPlayer;
 
     /** Larvae texture and filmstrip */
-    private TextureRegion chaserBeeTexture;
+    private TextureRegion larvaeTexture;
     private FilmStrip walkingLarvae;
+    private FilmStrip flailingLarvae;
+    private FilmStrip dyingLarvae;
     private FilmStrip chasingLarvae;
 
     /** Bee texture and filmstrip */
     private TextureRegion flyingBeeTexture;
     private FilmStrip flyingBeeStrip;
+    private FilmStrip flailingBeestrip;
+    private FilmStrip dyingBeestrip;
     private FilmStrip chasingBeeStrip;
 
     /** Platform texture */
@@ -420,15 +425,22 @@ public class LevelController implements ContactListener {
      */
     public void gatherAssets(AssetDirectory directory, String dataFilePath) {
         avatarTexture    = new TextureRegion(directory.getEntry("platform:ant", Texture.class));
-        chaserBeeTexture = new TextureRegion(directory.getEntry("platform:larvae", Texture.class));
+        larvaeTexture = new TextureRegion(directory.getEntry("platform:larvae", Texture.class));
         flyingBeeTexture = new TextureRegion(directory.getEntry("platform:flyingBee", Texture.class));
 
         walkingPlayer   = directory.getEntry( "platform:playerWalk.pacing", FilmStrip.class );
+        flailingPlayer  = directory.getEntry("platform:playerFlail.pacing", FilmStrip.class);
         dyingPlayer     = directory.getEntry( "platform:playerDeath.pacing", FilmStrip.class );
+
         walkingLarvae   = directory.getEntry( "platform:larvaeWalk.pacing", FilmStrip.class );
+        flailingLarvae  = directory.getEntry("platform:larvaeFlail.pacing", FilmStrip.class);
+        dyingLarvae     = directory.getEntry("platform:larvaeDeath.pacing", FilmStrip.class);
         chasingLarvae   = directory.getEntry( "platform:larvaeChase.pacing", FilmStrip.class );
-        flyingBeeStrip  = directory.getEntry( "platform:beeFly.pacing", FilmStrip.class );
-        chasingBeeStrip = directory.getEntry( "platform:beeChase.pacing", FilmStrip.class );
+
+        flyingBeeStrip   = directory.getEntry( "platform:beeFly.pacing", FilmStrip.class );
+        flailingBeestrip = directory.getEntry("platform:beeFlail.pacing", FilmStrip.class);
+        dyingBeestrip    = directory.getEntry("platform:beeDeath.pacing", FilmStrip.class);
+        chasingBeeStrip  = directory.getEntry( "platform:beeChase.pacing", FilmStrip.class );
 
         SpikeULeft  = new TextureRegion(directory.getEntry("platform:spikeULeft", Texture.class));
         SpikeUMid   = new TextureRegion(directory.getEntry("platform:spikeUMid", Texture.class));
@@ -681,30 +693,35 @@ public class LevelController implements ContactListener {
         avatar.setDrawScale(scale);
         avatar.setTexture(avatarTexture);
         avatar.setAnimationStrip(PlayerModel.AntAnimations.WALK, walkingPlayer);
+        avatar.setAnimationStrip(PlayerModel.AntAnimations.FLAIL, flailingPlayer);
         avatar.setAnimationStrip(PlayerModel.AntAnimations.DEATH, dyingPlayer);
+        avatar.setIsDead(false);
         addObject(avatar);
 
         // Create chaser bees
-
         Array<AbstractBeeModel> bees = new Array<AbstractBeeModel>();
         level = new LevelModel(avatar,bees,goalDoor,platforms, spikedPlatforms, honeyPatches, levelBackground, new Rectangle(bounds));
       
         aIController = new AIController(level);
 
-        dwidth = chaserBeeTexture.getRegionWidth() / scale.x;
-        dheight = chaserBeeTexture.getRegionHeight() / scale.y;
+        dwidth = larvaeTexture.getRegionWidth() / scale.x;
+        dheight = larvaeTexture.getRegionHeight() / scale.y;
         //JsonValue.JsonIterator groundedBeeIterator = constants.get("groundedBees").iterator();
         JsonValue groundedBeePositions = levelData.get("groundedBeePos");
         for (int i=0; i<groundedBeePositions.size; i++){
             float[] pos = groundedBeePositions.get(i).asFloatArray();
-            LarvaeModel chaserBee = new LarvaeModel(constants.get("GroundedBee"), pos[0], pos[1], dwidth, dheight);
-            chaserBee.setDrawScale(scale);
-            chaserBee.setTexture(chaserBeeTexture);
-            chaserBee.setAnimationStrip(LarvaeModel.LarvaeAnimations.WALK, walkingLarvae);
-            chaserBee.setAnimationStrip(LarvaeModel.LarvaeAnimations.CHASE, chasingLarvae);
-            bees.add(chaserBee);
-            addObject(chaserBee);
-            aIController.createAIForSingleCharacter(chaserBee, constants.get("GroundedBee").get("ai_controller_options"));
+            LarvaeModel larvae = new LarvaeModel(constants.get("GroundedBee"), pos[0], pos[1], dwidth, dheight);
+            larvae.setDrawScale(scale);
+            larvae.setTexture(larvaeTexture);
+            larvae.setAnimationStrip(LarvaeModel.LarvaeAnimations.WALK, walkingLarvae);
+            larvae.setAnimationStrip(LarvaeModel.LarvaeAnimations.FLAIL, flailingLarvae);
+            larvae.setAnimationStrip(LarvaeModel.LarvaeAnimations.DEATH, dyingLarvae);
+            larvae.setAnimationStrip(LarvaeModel.LarvaeAnimations.CHASE, chasingLarvae);
+            larvae.setIsDead(false);
+            larvae.setIsTrulyDead(false);
+            bees.add(larvae);
+            addObject(larvae);
+            aIController.createAIForSingleCharacter(larvae, constants.get("GroundedBee").get("ai_controller_options"));
         }
 
         JsonValue flyingBeePositions = levelData.get("flyingBeePos");
@@ -714,7 +731,11 @@ public class LevelController implements ContactListener {
             flyingBee.setDrawScale(scale);
             flyingBee.setTexture(flyingBeeTexture);
             flyingBee.setAnimationStrip(FlyingBeeModel.BeeAnimations.FLY, flyingBeeStrip);
+            flyingBee.setAnimationStrip(FlyingBeeModel.BeeAnimations.FLAIL, flailingBeestrip);
+            flyingBee.setAnimationStrip(FlyingBeeModel.BeeAnimations.DEATH, dyingBeestrip);
             flyingBee.setAnimationStrip(FlyingBeeModel.BeeAnimations.CHASE, chasingBeeStrip);
+            flyingBee.setIsDead(false);
+            flyingBee.setIsTrulyDead(false);
             bees.add(flyingBee);
             addObject(flyingBee);
             aIController.createAIForSingleCharacter(flyingBee, constants.get("FlyingBee").get("ai_controller_options"));
@@ -886,16 +907,21 @@ public class LevelController implements ContactListener {
 //    }
     public void update(float horizontal, boolean didRotate, boolean didAntiRotate) {
         // Process actions in object model
-        moveAnt(horizontal);
         PlayerModel avatar  = level.getPlayer();
         PlatformModel platforms = level.getPlatforms();
-        avatar.applyForce();
+
+        // Only move if player is not dead
+        if (!avatar.getIsDead()) {
+            moveAnt(horizontal);
+            avatar.applyForce();
+        }
 
         platforms.animatePlatform(PlatformModel.PlatformAnimations.SHUFFLE, true);
 
         if((platforms.isRotating() && !avatar.isRotating()) && (avatar.isGrounded() || avatar.isInHoney())){
                 //&&((avatar.isGrounded() && !avatar.isInHoney())||(avatar.isInHoney() && avatar.getHoneyTime()==0))){
             avatar.startRotation(platforms.getRemainingAngle(), platforms.isClockwise(), level.getOrigin());
+            avatar.setCurrentSpeed(platforms.getCurrentSpeed());
         }
 
         if(!avatar.isGrounded()){
@@ -903,6 +929,10 @@ public class LevelController implements ContactListener {
         }
         if(!avatar.isInHoney()){
             honeyFixtures.clear();
+        }
+        if(avatar.getIsDead()){
+            avatar.animateAnt(PlayerModel.AntAnimations.DEATH, true);
+            avatar.haltMovement();
         }
 
         // Process AI action
@@ -914,16 +944,29 @@ public class LevelController implements ContactListener {
 //        aIController.updateAccessibility();
 
         for(AbstractBeeModel bee : level.getBees()){
-            bee.applyForce();
-            if((platforms.isRotating() && !bee.isRotating()) && (bee.isGrounded()|| bee.isInHoney())){
+            // Only move enemy if not dead
+            if (!bee.getIsDead()) {
+                bee.applyForce();
+
+                if ((platforms.isRotating() && !bee.isRotating()) && (bee.isGrounded() || bee.isInHoney())) {
                     //&&((bee.isGrounded() && !bee.isInHoney())||(bee.isInHoney() && bee.getHoneyTime()==0))){
-                bee.startRotation(platforms.getRemainingAngle(), platforms.isClockwise(), level.getOrigin());
+                    bee.startRotation(platforms.getRemainingAngle(), platforms.isClockwise(), level.getOrigin());
+                    bee.setCurrentSpeed(platforms.getCurrentSpeed());
+                }
+                if(!bee.isGrounded()){
+                    bee.getSensorFixtures().clear();
+                }
+                if (!bee.isInHoney()) {
+                    bee.getHoneyFixtures().clear();
+                }
             }
-            if(!bee.isGrounded()){
-                bee.getSensorFixtures().clear();
-            }
-            if(!bee.isInHoney()){
-                bee.getHoneyFixtures().clear();
+            if (bee.getIsDead()) {
+              if (bee.getIsTrulyDead()){
+                  bee.markRemoved(true);
+              }
+              else {
+                  bee.animateDeath();
+              }
             }
         }
 
@@ -931,12 +974,16 @@ public class LevelController implements ContactListener {
         angleLeft = platforms.getRemainingAngle();
         if (didRotate) {
             rotateClockwise();
-            if (angleLeft <= 2*Math.PI/12 && isRotating && !didQueueCounterClockwise){
+            //if (angleLeft <= 2*Math.PI/24 && isRotating && !didQueueCounterClockwise){
+            if (isRotating && !didQueueCounterClockwise){
+                System.out.print("Queue Clockwise\n");
                 didQueueClockwise = true;
             }
         } else if (didAntiRotate) {
             rotateCounterClockwise();
-            if (angleLeft <= 2*Math.PI/12 && isRotating && !didQueueClockwise){
+            //if (angleLeft <= 2*Math.PI/24 && isRotating && !didQueueClockwise){
+            if (isRotating && !didQueueClockwise){
+                System.out.print("Queue Counter Clockwise\n");
                 didQueueCounterClockwise = true;
             }
         }
@@ -1019,14 +1066,26 @@ public class LevelController implements ContactListener {
 
             if (((bd1.getName().contains("spiked")) && bd2isCharacterModel) ||
             bd2.getName().contains("spiked") && bd1isCharacterModel){
-                if ((avatar == bd1 || avatar == bd2)&&!isComplete()){
+                if ((avatar == bd1 || avatar == bd2) && !isComplete()){
+                    // Player is dead
+                    // System.out.println("PLAYER DIED");
+                    avatar.setIsDead(true);
                     setFailure(true);
                 }
-
-                if (bd1isCharacterModel){
-                    bd1.markRemoved(true);
+                else if (bd1isCharacterModel){
+                    AbstractBeeModel bee = (AbstractBeeModel) bd1;
+                    // System.out.println("ENEMY DIED: "+bee.getSensorName());
+                    bee.setIsDead(true);
+                    // Marked for removed, moved to the update loop
+                    // enemy is only removed when the death animation finishes playing
+                    // bd1.markRemoved(true);
                 } else {
-                    bd2.markRemoved(true);
+                    AbstractBeeModel bee = (AbstractBeeModel) bd2;
+                    System.out.println("ENEMY DIED: "+bee.getSensorName());
+                    bee.setIsDead(true);
+                    // Marked for removed, moved to the update loop
+                    // enemy is only removed when the death animation finishes playing
+                    // bd2.markRemoved(true);
                 }
             }
 
@@ -1072,12 +1131,15 @@ public class LevelController implements ContactListener {
                 avatar.setMaxspeed(level.getHoneyPatches().getSlowSpeed());
             }
 
-            // Check for win condition
+            // Check for contact with enemy
             if (!isFailure() && !isComplete() &&
                     ((bd1 == avatar && bd2.getClass().getSuperclass() == AbstractBeeModel.class) ||
                     (bd1.getClass().getSuperclass() == AbstractBeeModel.class && bd2 == avatar))) {
+                avatar.setIsDead(true);
                 setFailure(true);
             }
+
+            // Check for win condition
             if (((bd1 == avatar && bd2 == goalDoor) ||
                     (bd1 == goalDoor && bd2 == avatar))&&!isComplete()) {
                 setComplete(true);
