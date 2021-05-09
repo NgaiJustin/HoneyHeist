@@ -152,10 +152,12 @@ public class GDXRoot extends Game implements ScreenListener {
 			setScreen(levelSelector);
 			loading.dispose();
 			loading = null;
-		} else if (screen == levelSelector && exitCode == LevelSelector.EXIT_QUIT) {
+		} else if (screen == levelSelector && exitCode == LevelSelector.EXIT_PLAY) {
 //			directory = levelSelector.getAssets();
 			String levelData = levelSelector.getLevelData();
-			controller.gatherAssets(directory, levelData);
+			JsonValue allLevelData = levelSelector.getAllLevelData();
+			int currentLevelNum = levelSelector.getCurrentLevelNum();
+			controller.gatherAssets(directory, levelData, allLevelData, currentLevelNum);
 			editorController.gatherAssets(directory);
 			controller.setScreenListener(this);
 			editorController.setScreenListener(this);
@@ -170,8 +172,10 @@ public class GDXRoot extends Game implements ScreenListener {
 //			levelSelector = null;
 		} else if(screen == levelSelector && exitCode == LevelSelector.EXIT_EDITOR) {
 			directory = levelSelector.getAssets();
+			JsonValue allLevelData = levelSelector.getAllLevelData();
 			editorController.gatherAssets(directory);
-			controller.gatherAssets(directory,"platform:defaultLevel");
+//			int currentLevelNum =
+			controller.gatherAssets(directory, "platform:defaultLevel", allLevelData, 1);
 			editorController.setScreenListener(this);
 			controller.setScreenListener(this);
 			editorController.setCanvas(canvas);
@@ -179,7 +183,9 @@ public class GDXRoot extends Game implements ScreenListener {
 			editorController.reset();
 			editorController.populateLevel();
 			setScreen(editorController);
-//		} else if (exitCode == WorldController.EXIT_NEXT) {
+		} else if (screen == levelSelector && exitCode == LevelSelector.EXIT_QUIT) {
+			// We quit the main application
+			Gdx.app.exit();
 		} else if (screen == editorController && exitCode == WorldController.EXIT_NEXT) {
 //			current = (current+1) % controllers.length;
 //			controllers[current].reset();
@@ -195,7 +201,6 @@ public class GDXRoot extends Game implements ScreenListener {
 			controller.reset();
 			setScreen(controller);
 		} else if (exitCode == GameplayController.EXIT_MENU) {
-
 			levelSelector = new LevelSelector(directory, canvas, 1);
 			levelSelector.setScreenListener(this);
 			editorController = new EditorController();

@@ -60,9 +60,11 @@ public class LevelSelector implements Screen {
     private Texture[] buttons;
     private TextButton[] levelButtons;
     /** Exit code for going to the playing level */
-    public static final int EXIT_QUIT = 0;
+    public static final int EXIT_PLAY = 0;
     /** Exit code for going to the editor */
     public static final int EXIT_EDITOR = 1;
+    /** Exit code for exit the game */
+    public static final int EXIT_QUIT = 2;
     private static final float Y_OFFSET = 50.0f;
     private static final float TITLE_OFFSET = 100.0f;
 
@@ -114,6 +116,7 @@ public class LevelSelector implements Screen {
     // Whether the level buttons are pressed.
     private boolean[] pressStates;
     private boolean isPressLevelEditor;
+    private boolean isQuit;
     // magic numbers for widgets
     private int EDITOR_WIDTH = 150;
     private int EDITOR_HEIGHT = 70;
@@ -148,6 +151,10 @@ public class LevelSelector implements Screen {
      */
     public String getLevelData() {
         return selectedLevelData;
+    }
+
+    public JsonValue getAllLevelData() {
+        return allLevelData;
     }
 
 
@@ -227,15 +234,11 @@ public class LevelSelector implements Screen {
 
         // get the level data
         allLevelData = internal.getEntry("levelData", JsonValue.class).get("levels");
-//        System.out.println(allLevelData);
 //        allLevelData.get(finalI).get("unlock").asBoolean();
 //        totalLevelNum = allLevelData.size;
         totalLevelNum = allLevelData.size;
-//        System.out.println(totalLevelNum);
 
-//        totalLevelNum = 20;
         final int totalLevelTest = 20;
-//        System.out.println(totalLevelNum);
         buttons = new Texture[totalLevelTest];
         // initailize the buttons to null
         Arrays.fill(buttons, null);
@@ -253,6 +256,7 @@ public class LevelSelector implements Screen {
 //        pressState = -1;
         pressState = 0;
         isPressLevelEditor = false;
+        isQuit = false;
         currentPage = 0;
         currentLevelNum = 0;
 
@@ -286,6 +290,7 @@ public class LevelSelector implements Screen {
         skin.add("levelButton", internal.getEntry("button", Texture.class));
         skin.add("font", internal.getEntry("times", BitmapFont.class));
         skin.add("levelEditor", internal.getEntry("levelEditor", Texture.class));
+        skin.add("lockedLevelButton", internal.getEntry("lockbutton", Texture.class));
         // set background
         table.setBackground(skin.getDrawable("background"));
 
@@ -297,8 +302,6 @@ public class LevelSelector implements Screen {
         levelEditorStyle.down = levelEditorDrawable.tint(Color.GRAY);
         levelEditorStyle.font = skin.getFont("font");
         TextButton levelEditor = new TextButton("Edit", levelEditorStyle);
-//        Cell editorCell = table.add(levelEditor).width(Value.percentWidth(0.15f)).height(
-//                Value.percentHeight(0.2f)).left();
         // change the size
         levelEditor.invalidate();
         levelEditor.setSize(EDITOR_WIDTH, EDITOR_HEIGHT);
@@ -311,6 +314,25 @@ public class LevelSelector implements Screen {
             }
         });
         stage.addActor(levelEditor);
+
+        // *** quit button *** //
+        TextButtonStyle quitStyle = new TextButtonStyle();
+        quitStyle.up = levelEditorDrawable;
+        quitStyle.down = levelEditorDrawable.tint(Color.GRAY);
+        quitStyle.font = skin.getFont("font");
+        TextButton quitButton = new TextButton("Quit", levelEditorStyle);
+        // change the size
+        quitButton.invalidate();
+        quitButton.setSize(EDITOR_WIDTH, EDITOR_HEIGHT);
+        quitButton.setPosition(stage.getWidth()*0.8f, stage.getHeight()*0.8f);
+        quitButton.validate();
+        // add listen to pressing event
+        quitButton.addListener(new ChangeListener() {
+            public void changed(ChangeEvent event, Actor actor) {
+                isQuit = true;
+            }
+        });
+        stage.addActor(quitButton);
 
         // *** title *** //
         Image titleImage = new Image(title);
@@ -335,7 +357,7 @@ public class LevelSelector implements Screen {
         TextureRegion lockButtonImage = new TextureRegion(internal.getEntry("button", Texture.class));
         TextureRegionDrawable lockButtonDrawable = new TextureRegionDrawable(lockButtonImage);
         TextButtonStyle lockButtonStyle = new TextButtonStyle();
-        lockButtonStyle.up = lockButtonDrawable.tint(Color.GRAY);
+        lockButtonStyle.up = lockButtonDrawable.tint(Color.LIGHT_GRAY);
         lockButtonStyle.font = skin.getFont("font");
 
         int numberOfPage = totalLevelTest/LEVEL_PER_PAGE;
@@ -345,9 +367,7 @@ public class LevelSelector implements Screen {
             Table levelTable = new Table();
             // implementation 1
             for (int i = 0; i < totalLevelTest; i++) {
-                Boolean isUnlock = allLevelData.get(i).get("unlock").asBoolean();
-                System.out.print(i);
-                System.out.println(": " + isUnlock);
+                boolean isUnlock = allLevelData.get(i).get("unlock").asBoolean();
                 // first line has one more level button than the second line
                 if (i % (LEVEL_PER_ROW * 2 - 1) == LEVEL_PER_ROW && i / LEVEL_PER_PAGE == idx) {
                     page.row();
@@ -511,22 +531,6 @@ public class LevelSelector implements Screen {
 //                    centerX/3f, canvas.getHeight()-TITLE_OFFSET, 0, LEVELSELECT_SCALE*scale,
 //                    LEVELSELECT_SCALE*scale);
 //        }
-//        for (int i=0; i<buttons.length; i++) {
-//            if (buttons[i] != null) {
-//                // pressState is one bigger than the button index
-//                tint = (pressState == i+1 ? Color.GRAY: Color.WHITE);
-//                // draw the button
-//                Texture button = buttons[i];
-//                // pos_offset helps to decide the position of the button
-//                float pos_offset = (i+1)/(float)totalLevelNum;
-//                canvas.draw(button, tint, button.getWidth()/2f, button.getHeight()/2f,
-//                    centerX*pos_offset, centerY+Y_OFFSET, 0, BUTTON_SCALE*scale,
-//                        BUTTON_SCALE*scale);
-//                // draw the letter
-//                canvas.drawText(Integer.toString(i+1), displayFont, centerX*pos_offset-COUNTER_OFFSET,
-//                        centerY+Y_OFFSET+COUNTER_OFFSET);
-//            }
-//        }
         canvas.end();
     }
 
@@ -540,27 +544,6 @@ public class LevelSelector implements Screen {
      * @param delta Number of seconds since last animation frame
      */
     public void render(float delta) {
-//        if (active) {
-//            update(delta);
-//            draw();
-//
-//            if (isReady() && listener != null && pressLevelEditor) {
-//                listener.exitScreen(this, EXIT_EDITOR);
-//            }
-//
-//            // We are are ready, notify our listener
-//            else if (isReady() && listener != null) {
-//                listener.exitScreen(this, EXIT_QUIT);
-//            }
-//        }
-//        assets.update(budget);
-//        this.progress = assets.getProgress();
-//        if (progress < 1.0f) {
-//            active = false;
-//        } else {
-//            progress = 1.0f;
-//            active = true;
-//        }
         if (active) {
             Gdx.gl.glClearColor(1, 1, 1, 1);
             Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
@@ -571,7 +554,12 @@ public class LevelSelector implements Screen {
                 return;
             }
             if (pressState != 0) {
+                listener.exitScreen(this, EXIT_PLAY);
+                return;
+            }
+            if (isQuit) {
                 listener.exitScreen(this, EXIT_QUIT);
+                return;
             }
         }
     }
