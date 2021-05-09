@@ -179,7 +179,7 @@ public class BoxObstacle extends SimpleObstacle {
 		if (!isRotating) return;
 
 		getRotSpeed(dt);
-		System.out.print(currentSpeed+"\n");
+		//System.out.print(currentSpeed+"\n");
 		float rotationAmount = currentSpeed * dt;
 		if (rotationAmount > remainingAngle){
 			rotationAmount = remainingAngle;
