@@ -147,7 +147,7 @@ public class GDXRoot extends Game implements ScreenListener {
 //			controller.reset();
 //			setScreen(controller);
 			directory = loading.getAssets();
-			levelSelector = new LevelSelector(directory, canvas, 1);
+			levelSelector = new LevelSelector(directory, canvas, 1, 0);
 			levelSelector.setScreenListener(this);
 			setScreen(levelSelector);
 			loading.dispose();
@@ -201,7 +201,9 @@ public class GDXRoot extends Game implements ScreenListener {
 			controller.reset();
 			setScreen(controller);
 		} else if (exitCode == GameplayController.EXIT_MENU) {
-			levelSelector = new LevelSelector(directory, canvas, 1);
+			int currentLevelNum = controller.getCurrentLevelNum();
+			System.out.println("current level number: "+currentLevelNum);
+			levelSelector = new LevelSelector(directory, canvas, 1, currentLevelNum);
 			levelSelector.setScreenListener(this);
 			editorController = new EditorController();
 			setScreen(levelSelector);
