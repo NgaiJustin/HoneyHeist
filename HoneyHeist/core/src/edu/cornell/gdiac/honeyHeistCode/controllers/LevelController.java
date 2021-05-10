@@ -1330,6 +1330,16 @@ public class LevelController implements ContactListener {
     }
 
     /**
+     * Stops all sounds that are playing
+     */
+    public void stopAllSounds(){
+        bgm.stop(bgmId);
+        deathSound.stop(deathId);
+        trackingSound.stop(trackingId);
+        winSound.stop(winId);
+    }
+
+    /**
      * Called when the Screen is resized.
      *
      * This can happen at any point during a non-paused state but will never happen
