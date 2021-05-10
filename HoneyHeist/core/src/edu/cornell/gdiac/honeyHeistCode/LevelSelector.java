@@ -221,7 +221,8 @@ public class LevelSelector implements Screen {
         // change the size
         levelEditor.invalidate();
         levelEditor.setSize(EDITOR_WIDTH, EDITOR_HEIGHT);
-        levelEditor.setPosition(stage.getWidth()*0.1f, stage.getHeight()*0.6f);
+//        levelEditor.setPosition(stage.getWidth()*0.1f, stage.getHeight()*0.6f);
+        levelEditor.setPosition(stage.getWidth()*0.05f, stage.getHeight()*0.8f);
         levelEditor.validate();
         // add listen to pressing event
         levelEditor.addListener(new ChangeListener() {
@@ -240,7 +241,8 @@ public class LevelSelector implements Screen {
         // change the size
         quitButton.invalidate();
         quitButton.setSize(EDITOR_WIDTH, EDITOR_HEIGHT);
-        quitButton.setPosition(stage.getWidth()*0.9f-EDITOR_WIDTH, stage.getHeight()*0.6f);
+//        quitButton.setPosition(stage.getWidth()*0.9f-EDITOR_WIDTH, stage.getHeight()*0.6f);
+        quitButton.setPosition(stage.getWidth()*0.95f-EDITOR_WIDTH, stage.getHeight()*0.8f);
         quitButton.validate();
         // add listen to pressing event
         quitButton.addListener(new ChangeListener() {

@@ -4,7 +4,7 @@
 		"play": "shared/play.png",
         "levelEditor": "shared/button.png",
         "unlock_button": "shared/level_unlocked_large.png",
-        "complete_button": "shared/level_complete_large.png",
+        "complete_button": "shared/level_complete_thick.png",
         "lock_button": "shared/level_locked_large.png"
         "title": "shared/levelselectlabel.png",
         "left": "shared/left_arrow.png",
