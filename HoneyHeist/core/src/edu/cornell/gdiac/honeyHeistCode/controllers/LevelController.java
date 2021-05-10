@@ -982,15 +982,15 @@ public class LevelController implements ContactListener {
         angleLeft = platforms.getRemainingAngle();
         if (didRotate) {
             rotateClockwise();
-            //if (angleLeft <= 2*Math.PI/24 && isRotating && !didQueueCounterClockwise){
-            if (isRotating && !didQueueCounterClockwise){
+            if (angleLeft <= 2*Math.PI/24 && isRotating && !didQueueCounterClockwise){
+            //if (isRotating && !didQueueCounterClockwise){
                 System.out.print("Queue Clockwise\n");
                 didQueueClockwise = true;
             }
         } else if (didAntiRotate) {
             rotateCounterClockwise();
-            //if (angleLeft <= 2*Math.PI/24 && isRotating && !didQueueClockwise){
-            if (isRotating && !didQueueClockwise){
+            if (angleLeft <= 2*Math.PI/24 && isRotating && !didQueueClockwise){
+            //if (isRotating && !didQueueClockwise){
                 System.out.print("Queue Counter Clockwise\n");
                 didQueueCounterClockwise = true;
             }
