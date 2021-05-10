@@ -79,7 +79,7 @@ public class LevelSelector implements Screen {
 //    /** Ration of the bar height to the screen */
     private static float BAR_HEIGHT_RATIO = 0.25f;
     /** Height of the progress bar */
-    private static float BUTTON_SCALE  = 2.5f;
+    private static float BUTTON_SCALE  = 1f;
 
     private static float LEVELSELECT_SCALE  = 0.5f;
     private static float TITLE_SCALE  = 2.5f;
@@ -277,10 +277,11 @@ public class LevelSelector implements Screen {
         skin = new Skin();
         skin.add("background", background);
         skin.add("title", title);
-        skin.add("levelButton", internal.getEntry("button", Texture.class));
+//        skin.add("levelButton", internal.getEntry("button", Texture.class));
         skin.add("font", internal.getEntry("times", BitmapFont.class));
         skin.add("levelEditor", internal.getEntry("levelEditor", Texture.class));
-        skin.add("lockedLevelButton", internal.getEntry("lockbutton", Texture.class));
+//        skin.add("lockedLevelButton", internal.getEntry("lockbutton", Texture.class));
+//        skin.add
         // set background
         table.setBackground(skin.getDrawable("background"));
 
@@ -314,7 +315,7 @@ public class LevelSelector implements Screen {
         // change the size
         quitButton.invalidate();
         quitButton.setSize(EDITOR_WIDTH, EDITOR_HEIGHT);
-        quitButton.setPosition(stage.getWidth()*0.8f, stage.getHeight()*0.8f);
+        quitButton.setPosition(stage.getWidth()*0.9f-EDITOR_WIDTH, stage.getHeight()*0.6f);
         quitButton.validate();
         // add listen to pressing event
         quitButton.addListener(new ChangeListener() {
@@ -336,19 +337,36 @@ public class LevelSelector implements Screen {
         Table scrollTable = new Table();
 
         // level buttons
-        TextureRegion buttonImage = new TextureRegion(internal.getEntry("button", Texture.class));
+        TextureRegion buttonImage = new TextureRegion(internal.getEntry("unlock_button", Texture.class));
         TextureRegionDrawable buttonDrawable = new TextureRegionDrawable(buttonImage);
         TextButtonStyle buttonStyle = new TextButtonStyle();
+        buttonStyle.unpressedOffsetY=-10.0f;
+        buttonStyle.pressedOffsetY=-10.0f;
+        buttonStyle.checkedOffsetY=-10.0f;
         buttonStyle.up = buttonDrawable;
         buttonStyle.down = buttonDrawable.tint(Color.GRAY);
         buttonStyle.font = skin.getFont("font");
         levelButtons = new TextButton[totalLevelNum];
 
-        TextureRegion lockButtonImage = new TextureRegion(internal.getEntry("button", Texture.class));
+        TextureRegion lockButtonImage = new TextureRegion(internal.getEntry("lock_button", Texture.class));
         TextureRegionDrawable lockButtonDrawable = new TextureRegionDrawable(lockButtonImage);
         TextButtonStyle lockButtonStyle = new TextButtonStyle();
-        lockButtonStyle.up = lockButtonDrawable.tint(Color.LIGHT_GRAY);
+        lockButtonStyle.unpressedOffsetY=-10.0f;
+        lockButtonStyle.pressedOffsetY=-10.0f;
+        lockButtonStyle.checkedOffsetY=-10.0f;
+        lockButtonStyle.up = lockButtonDrawable;
+        lockButtonStyle.down = lockButtonDrawable.tint(Color.GRAY);
         lockButtonStyle.font = skin.getFont("font");
+
+        TextureRegion completeButtonImage = new TextureRegion(internal.getEntry("complete_button", Texture.class));
+        TextureRegionDrawable completeButtonDrawable = new TextureRegionDrawable(completeButtonImage);
+        TextButtonStyle completeButtonStyle = new TextButtonStyle();
+        completeButtonStyle.unpressedOffsetY=-10.0f;
+        completeButtonStyle.pressedOffsetY=-10.0f;
+        completeButtonStyle.checkedOffsetY=-10.0f;
+        completeButtonStyle.up = completeButtonDrawable;
+        completeButtonStyle.down = completeButtonDrawable.tint(Color.GRAY);
+        completeButtonStyle.font = skin.getFont("font");
 
         int numberOfPage = totalLevelNum/LEVEL_PER_PAGE;
 //        System.out.println("total page number = " + numberOfPage);
@@ -356,8 +374,11 @@ public class LevelSelector implements Screen {
             Table page = new Table();
             Table levelTable = new Table();
             // implementation 1
+            boolean isUnlock;
+            boolean isComplete;
             for (int i = 0; i < totalLevelNum; i++) {
-                boolean isUnlock = allLevelData.get(i).get("unlock").asBoolean();
+                isUnlock = allLevelData.get(i).get("unlock").asBoolean();
+                isComplete = allLevelData.get(i).get("complete").asBoolean();
                 // first line has one more level button than the second line
                 if (i % (LEVEL_PER_ROW * 2 - 1) == LEVEL_PER_ROW && i / LEVEL_PER_PAGE == idx) {
                     page.row();
@@ -370,7 +391,9 @@ public class LevelSelector implements Screen {
                 }
                 // create buttons for this specific page
                 if (i / LEVEL_PER_PAGE == idx) {
-                    if (isUnlock) {
+                    if (isComplete) {
+                        levelButtons[i] = new TextButton(String.valueOf(i+1), completeButtonStyle);
+                    } else if (isUnlock) {
                         levelButtons[i] = new TextButton(String.valueOf(i + 1), buttonStyle);
                     } else {
                         levelButtons[i] = new TextButton(String.valueOf(i + 1), lockButtonStyle);
