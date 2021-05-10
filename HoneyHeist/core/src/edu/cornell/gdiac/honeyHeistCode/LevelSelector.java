@@ -267,9 +267,9 @@ public class LevelSelector implements Screen {
         TextureRegion buttonImage = new TextureRegion(internal.getEntry("unlock_button", Texture.class));
         TextureRegionDrawable buttonDrawable = new TextureRegionDrawable(buttonImage);
         TextButtonStyle buttonStyle = new TextButtonStyle();
-        buttonStyle.unpressedOffsetY=-10.0f;
-        buttonStyle.pressedOffsetY=-10.0f;
-        buttonStyle.checkedOffsetY=-10.0f;
+//        buttonStyle.unpressedOffsetY=-10.0f;
+//        buttonStyle.pressedOffsetY=-10.0f;
+//        buttonStyle.checkedOffsetY=-10.0f;
         buttonStyle.up = buttonDrawable;
         buttonStyle.down = buttonDrawable.tint(Color.GRAY);
         buttonStyle.font = skin.getFont("font");
@@ -285,15 +285,15 @@ public class LevelSelector implements Screen {
         lockButtonStyle.down = lockButtonDrawable.tint(Color.GRAY);
         lockButtonStyle.font = skin.getFont("font");
 
-        TextureRegion completeButtonImage = new TextureRegion(internal.getEntry("complete_button", Texture.class));
-        TextureRegionDrawable completeButtonDrawable = new TextureRegionDrawable(completeButtonImage);
-        TextButtonStyle completeButtonStyle = new TextButtonStyle();
-        completeButtonStyle.unpressedOffsetY=-10.0f;
-        completeButtonStyle.pressedOffsetY=-10.0f;
-        completeButtonStyle.checkedOffsetY=-10.0f;
-        completeButtonStyle.up = completeButtonDrawable;
-        completeButtonStyle.down = completeButtonDrawable.tint(Color.GRAY);
-        completeButtonStyle.font = skin.getFont("font");
+//        TextureRegion completeButtonImage = new TextureRegion(internal.getEntry("complete_button", Texture.class));
+//        TextureRegionDrawable completeButtonDrawable = new TextureRegionDrawable(completeButtonImage);
+//        TextButtonStyle completeButtonStyle = new TextButtonStyle();
+//        completeButtonStyle.unpressedOffsetY=-10.0f;
+//        completeButtonStyle.pressedOffsetY=-10.0f;
+//        completeButtonStyle.checkedOffsetY=-10.0f;
+//        completeButtonStyle.up = completeButtonDrawable;
+//        completeButtonStyle.down = completeButtonDrawable.tint(Color.GRAY);
+//        completeButtonStyle.font = skin.getFont("font");
 
         // create the button and scroll page
         int numberOfPage = totalLevelNum/LEVEL_PER_PAGE;
@@ -318,9 +318,10 @@ public class LevelSelector implements Screen {
                 }
                 // create buttons for this specific page
                 if (i / LEVEL_PER_PAGE == idx) {
-                    if (isComplete) {
-                        levelButtons[i] = new TextButton(String.valueOf(i+1), completeButtonStyle);
-                    } else if (isUnlock) {
+//                    if (isComplete) {
+//                        levelButtons[i] = new TextButton(String.valueOf(i+1), completeButtonStyle);
+//                    } else
+                        if (isUnlock) {
                         levelButtons[i] = new TextButton(String.valueOf(i + 1), buttonStyle);
                     } else {
                         levelButtons[i] = new TextButton(String.valueOf(i + 1), lockButtonStyle);
