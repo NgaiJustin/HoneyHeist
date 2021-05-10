@@ -4,20 +4,15 @@ import com.badlogic.gdx.*;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.Texture.TextureFilter;
 import com.badlogic.gdx.graphics.g2d.*;
-import com.badlogic.gdx.controllers.Controller;
-import com.badlogic.gdx.controllers.ControllerListener;
-import com.badlogic.gdx.controllers.ControllerMapping;
 
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
-import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.JsonValue;
-import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import edu.cornell.gdiac.assets.*;
 import edu.cornell.gdiac.util.*;
 
@@ -32,10 +27,6 @@ public class LevelSelector implements Screen {
     /** Background texture for start-up */
     private Texture background;
     private TextureRegion backgroundRegion;
-    /** levelEditor button */
-    private Texture levelEditor;
-    /** is levelEditor button pressed */
-    private boolean pressLevelEditor;
     /** Title texture */
     private Texture title;
     /** selected level number */
@@ -48,16 +39,11 @@ public class LevelSelector implements Screen {
     private int LEVEL_PER_ROW = 4;
     /** current page. Initially it's 0. */
     private int currentPage;
-    /** The font for numbers of level displayed */
-    private BitmapFont displayFont;
-    /** Offset for the number message on the screen */
-    private static final float COUNTER_OFFSET   = 10.0f;
     /** JsonValue data for all level data */
     private JsonValue allLevelData;
     /** The String that tells the file path of selected level data */
     private String selectedLevelData;
     /** level buttons, should have the size specified by allLevelData */
-    private Texture[] buttons;
     private TextButton[] levelButtons;
     /** Exit code for going to the playing level */
     public static final int EXIT_PLAY = 0;
@@ -65,24 +51,11 @@ public class LevelSelector implements Screen {
     public static final int EXIT_EDITOR = 1;
     /** Exit code for exit the game */
     public static final int EXIT_QUIT = 2;
-    private static final float Y_OFFSET = 50.0f;
-    private static final float TITLE_OFFSET = 100.0f;
 
-    /** Default budget for asset loader (do nothing but load 60 fps) */
-    private static int DEFAULT_BUDGET = 15;
     /** Standard window size (for scaling) */
     private static int STANDARD_WIDTH  = 800;
     /** Standard window height (for scaling) */
     private static int STANDARD_HEIGHT = 700;
-//    /** Ratio of the bar width to the screen */
-    private static float BAR_WIDTH_RATIO  = 0.66f;
-//    /** Ration of the bar height to the screen */
-    private static float BAR_HEIGHT_RATIO = 0.25f;
-    /** Height of the progress bar */
-    private static float BUTTON_SCALE  = 1f;
-
-    private static float LEVELSELECT_SCALE  = 0.5f;
-    private static float TITLE_SCALE  = 2.5f;
 
     /** Reference to GameCanvas created by the root */
     private GameCanvas canvas;
@@ -98,12 +71,8 @@ public class LevelSelector implements Screen {
     /** Scaling factor for when the student changes the resolution. */
     private float scale;
 
-    /** Current progress (0 to 1) of the asset manager */
-    private float progress;
     /** The current state of the play button; it should be one bigger than the button index. */
     private int   pressState;
-    /** The amount of time to devote to loading assets (as opposed to on screen hints, etc.) */
-    private int   budget;
 
     /** Whether or not this player mode is still active */
     private boolean active;
@@ -112,7 +81,6 @@ public class LevelSelector implements Screen {
     private Stage stage;
     private Skin skin;
     private Table table;
-//    private int LEVEL_PER_ROW = 6;
     // Whether the level buttons are pressed.
     private boolean[] pressStates;
     private boolean isPressLevelEditor;
@@ -157,35 +125,6 @@ public class LevelSelector implements Screen {
         return allLevelData;
     }
 
-
-    /**
-     * Returns the budget for the asset loader.
-     *
-     * The budget is the number of milliseconds to spend loading assets each animation
-     * frame.  This allows you to do something other than load assets.  An animation
-     * frame is ~16 milliseconds. So if the budget is 10, you have 6 milliseconds to
-     * do something else.  This is how game companies animate their loading screens.
-     *
-     * @return the budget in milliseconds
-     */
-    public int getBudget() {
-        return budget;
-    }
-
-    /**
-     * Sets the budget for the asset loader.
-     *
-     * The budget is the number of milliseconds to spend loading assets each animation
-     * frame.  This allows you to do something other than load assets.  An animation
-     * frame is ~16 milliseconds. So if the budget is 10, you have 6 milliseconds to
-     * do something else.  This is how game companies animate their loading screens.
-     *
-     * @param millis the budget in milliseconds
-     */
-    public void setBudget(int millis) {
-        budget = millis;
-    }
-
     /**
      * Returns true if all assets are loaded and the player is ready to go.
      *
@@ -218,11 +157,9 @@ public class LevelSelector implements Screen {
      *
      * @param directory  	The asset directory to load in the background
      * @param canvas 	The game canvas to draw to
-     * @param millis The loading budget in milliseconds
      */
-    public LevelSelector(AssetDirectory directory, GameCanvas canvas, int millis, int currentLevelNum) {
+    public LevelSelector(AssetDirectory directory, GameCanvas canvas, int currentLevelNum) {
         this.canvas  = canvas;
-        budget = millis;
 
         // Compute the dimensions from the canvas
         resize(canvas.getWidth(),canvas.getHeight());
@@ -236,25 +173,16 @@ public class LevelSelector implements Screen {
         allLevelData = internal.getEntry("levelData", JsonValue.class).get("levels");
         totalLevelNum = allLevelData.size;
 
-        buttons = new Texture[totalLevelNum];
-        // initailize the buttons to null
-        Arrays.fill(buttons, null);
-
         background = internal.getEntry( "background", Texture.class );
         background.setFilter( TextureFilter.Linear, TextureFilter.Linear );
         title = internal.getEntry("title", Texture.class);
-        displayFont = internal.getEntry("times",BitmapFont.class);
-        // new
-        levelEditor = internal.getEntry("levelEditor", Texture.class);
-        pressLevelEditor = false;
 
         // No progress so far.
-        progress = 0;
         pressState = 0;
         isPressLevelEditor = false;
         isQuit = false;
         this.currentLevelNum = currentLevelNum;
-        currentPage = this.currentLevelNum == 0? 0 : currentLevelNum/LEVEL_PER_PAGE;
+        currentPage = this.currentLevelNum == 0? 0 : (currentLevelNum-1)/LEVEL_PER_PAGE;
         System.out.println("currentPage: " + currentPage);
 
         // Start loading the real assets
@@ -293,7 +221,8 @@ public class LevelSelector implements Screen {
         // change the size
         levelEditor.invalidate();
         levelEditor.setSize(EDITOR_WIDTH, EDITOR_HEIGHT);
-        levelEditor.setPosition(stage.getWidth()*0.1f, stage.getHeight()*0.6f);
+//        levelEditor.setPosition(stage.getWidth()*0.1f, stage.getHeight()*0.6f);
+        levelEditor.setPosition(stage.getWidth()*0.05f, stage.getHeight()*0.8f);
         levelEditor.validate();
         // add listen to pressing event
         levelEditor.addListener(new ChangeListener() {
@@ -312,7 +241,8 @@ public class LevelSelector implements Screen {
         // change the size
         quitButton.invalidate();
         quitButton.setSize(EDITOR_WIDTH, EDITOR_HEIGHT);
-        quitButton.setPosition(stage.getWidth()*0.9f-EDITOR_WIDTH, stage.getHeight()*0.6f);
+//        quitButton.setPosition(stage.getWidth()*0.9f-EDITOR_WIDTH, stage.getHeight()*0.6f);
+        quitButton.setPosition(stage.getWidth()*0.95f-EDITOR_WIDTH, stage.getHeight()*0.8f);
         quitButton.validate();
         // add listen to pressing event
         quitButton.addListener(new ChangeListener() {
@@ -337,9 +267,9 @@ public class LevelSelector implements Screen {
         TextureRegion buttonImage = new TextureRegion(internal.getEntry("unlock_button", Texture.class));
         TextureRegionDrawable buttonDrawable = new TextureRegionDrawable(buttonImage);
         TextButtonStyle buttonStyle = new TextButtonStyle();
-        buttonStyle.unpressedOffsetY=-10.0f;
-        buttonStyle.pressedOffsetY=-10.0f;
-        buttonStyle.checkedOffsetY=-10.0f;
+//        buttonStyle.unpressedOffsetY=-10.0f;
+//        buttonStyle.pressedOffsetY=-10.0f;
+//        buttonStyle.checkedOffsetY=-10.0f;
         buttonStyle.up = buttonDrawable;
         buttonStyle.down = buttonDrawable.tint(Color.GRAY);
         buttonStyle.font = skin.getFont("font");
@@ -355,18 +285,18 @@ public class LevelSelector implements Screen {
         lockButtonStyle.down = lockButtonDrawable.tint(Color.GRAY);
         lockButtonStyle.font = skin.getFont("font");
 
-        TextureRegion completeButtonImage = new TextureRegion(internal.getEntry("complete_button", Texture.class));
-        TextureRegionDrawable completeButtonDrawable = new TextureRegionDrawable(completeButtonImage);
-        TextButtonStyle completeButtonStyle = new TextButtonStyle();
-        completeButtonStyle.unpressedOffsetY=-10.0f;
-        completeButtonStyle.pressedOffsetY=-10.0f;
-        completeButtonStyle.checkedOffsetY=-10.0f;
-        completeButtonStyle.up = completeButtonDrawable;
-        completeButtonStyle.down = completeButtonDrawable.tint(Color.GRAY);
-        completeButtonStyle.font = skin.getFont("font");
+//        TextureRegion completeButtonImage = new TextureRegion(internal.getEntry("complete_button", Texture.class));
+//        TextureRegionDrawable completeButtonDrawable = new TextureRegionDrawable(completeButtonImage);
+//        TextButtonStyle completeButtonStyle = new TextButtonStyle();
+//        completeButtonStyle.unpressedOffsetY=-10.0f;
+//        completeButtonStyle.pressedOffsetY=-10.0f;
+//        completeButtonStyle.checkedOffsetY=-10.0f;
+//        completeButtonStyle.up = completeButtonDrawable;
+//        completeButtonStyle.down = completeButtonDrawable.tint(Color.GRAY);
+//        completeButtonStyle.font = skin.getFont("font");
 
+        // create the button and scroll page
         int numberOfPage = totalLevelNum/LEVEL_PER_PAGE;
-//        System.out.println("total page number = " + numberOfPage);
         for (int idx=0; idx <= numberOfPage; idx++) {
             Table page = new Table();
             Table levelTable = new Table();
@@ -388,9 +318,10 @@ public class LevelSelector implements Screen {
                 }
                 // create buttons for this specific page
                 if (i / LEVEL_PER_PAGE == idx) {
-                    if (isComplete) {
-                        levelButtons[i] = new TextButton(String.valueOf(i+1), completeButtonStyle);
-                    } else if (isUnlock) {
+//                    if (isComplete) {
+//                        levelButtons[i] = new TextButton(String.valueOf(i+1), completeButtonStyle);
+//                    } else
+                        if (isUnlock) {
                         levelButtons[i] = new TextButton(String.valueOf(i + 1), buttonStyle);
                     } else {
                         levelButtons[i] = new TextButton(String.valueOf(i + 1), lockButtonStyle);
