@@ -27,7 +27,7 @@ public class TransitionModel extends BoxObstacle {
     public void update(float dt) {
         super.update(dt);
 
-        if (animFrames % FRAMES_PER_ANIM == 0) {
+        if (animFrames % FRAMES_PER_ANIM == 0 && animFrames != 0) {
             if(reversed){
                 if(transitionAnim.getFrame() != 0) {
                     transitionAnim.setFrame(transitionAnim.getFrame() - 1);
