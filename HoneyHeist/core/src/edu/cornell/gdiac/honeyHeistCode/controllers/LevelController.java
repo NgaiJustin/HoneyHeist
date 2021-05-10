@@ -121,6 +121,8 @@ public class LevelController implements ContactListener {
     private boolean isRotating = false;
     private float angleLeft = 0f;
 
+    private TransitionModel transition = null;
+
     /**
      * Returns true if debug mode is active.
      *
@@ -340,6 +342,9 @@ public class LevelController implements ContactListener {
     private NinePatch platNinePatch;
     private NinePatch spikeNinePatch;
 
+    /** Transition Animation */
+    private FilmStrip levelTransition;
+
     /** The jump sound.  We only want to play once. */
     private SoundBuffer bgm;
     private long bgmId = 1;
@@ -441,6 +446,8 @@ public class LevelController implements ContactListener {
         flailingBeestrip = directory.getEntry("platform:beeFlail.pacing", FilmStrip.class);
         dyingBeestrip    = directory.getEntry("platform:beeDeath.pacing", FilmStrip.class);
         chasingBeeStrip  = directory.getEntry( "platform:beeChase.pacing", FilmStrip.class );
+
+        levelTransition = directory.getEntry("platform:levelTransition.pacing", FilmStrip.class);
 
         SpikeULeft  = new TextureRegion(directory.getEntry("platform:spikeULeft", Texture.class));
         SpikeUMid   = new TextureRegion(directory.getEntry("platform:spikeUMid", Texture.class));
@@ -747,6 +754,13 @@ public class LevelController implements ContactListener {
         addObject(honeyPatches);
         addObject(spikedPlatforms);
 
+        transition = new TransitionModel(level.getOrigin().x,level.getOrigin().y,true);
+        transition.setSensor(true);
+        transition.setGravityScale(0);
+        transition.setDrawScale(scale);
+        transition.setAnimationStrip(levelTransition);
+        addObject(transition);
+
 
         /*
         while (groundedBeeIterator.hasNext()){
@@ -793,6 +807,11 @@ public class LevelController implements ContactListener {
         level.getLevelBackground().startRotation(isClockwise,origin);
 
         level.getGoalDoor().startRotation(isClockwise,origin);
+
+        if(transition != null){
+            transition.startRotation(isClockwise,origin);
+        }
+
         if ((avatar.isGrounded()||avatar.isInHoney())&&platformNotRotating){
             avatar.startRotation(isClockwise, origin);
         }
@@ -1006,6 +1025,24 @@ public class LevelController implements ContactListener {
         } else if (!isRotating && didQueueCounterClockwise){
             rotateCounterClockwise();
             didQueueCounterClockwise = false;
+        }
+
+        if(transition != null && transition.isFinished()){
+            transition.markRemoved(true);
+            transition = null;
+        }
+
+        if(isComplete()&&transition==null&&countdown<EXIT_COUNT-40){
+            transition = new TransitionModel(level.getOrigin().x,level.getOrigin().y,false);
+            transition.setSensor(true);
+            transition.setGravityScale(0);
+            transition.setDrawScale(scale);
+            transition.setAnimationStrip(levelTransition);
+            addObject(transition);
+            if(platforms.isRotating()) {
+                transition.startRotation(platforms.getRemainingAngle(), platforms.isClockwise(), level.getOrigin());
+                transition.setCurrentSpeed(platforms.getCurrentSpeed());
+            }
         }
     }
     /**

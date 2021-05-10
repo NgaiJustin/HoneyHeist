@@ -135,6 +135,15 @@
         }
       }
     },
+    "platform:levelTransition":{
+      "file": "platform/leveltransitionstrip.png",
+      "sprites": {
+        "pacing": {
+          "rows": 1,
+          "cols": 12
+        }
+      }
+    },
 
     "platform:spikeULeft": "platform/upLeftSpike.png",
     "platform:spikeUMid": "platform/upMidSpike.png",
