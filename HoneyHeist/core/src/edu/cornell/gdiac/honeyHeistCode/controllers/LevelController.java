@@ -342,7 +342,7 @@ public class LevelController implements ContactListener {
 
     /** The jump sound.  We only want to play once. */
     private SoundBuffer bgm;
-    private long bgmId = 10;
+    private long bgmId = 1;
 
     /** The jump sound.  We only want to play once */
     private SoundBuffer deathSound;
@@ -468,7 +468,7 @@ public class LevelController implements ContactListener {
         deathSound = directory.getEntry("audio:soundeffect_death_pixel", SoundBuffer.class);
         trackingSound = directory.getEntry("audio:soundeffect_tracking", SoundBuffer.class);
         winSound = directory.getEntry("audio:soundeffect_win", SoundBuffer.class);
-        //bgm = directory.getEntry("platform:bgm", SoundBuffer.class);
+        bgm = directory.getEntry("audio:bgm", SoundBuffer.class);
 
         constants = directory.getEntry("platform:constants2", JsonValue.class);
         System.out.println("DatafilePath = " + dataFilePath);
@@ -533,7 +533,7 @@ public class LevelController implements ContactListener {
         setComplete(false);
         setFailure(false);
         populateLevel();
-        //playSound(bgm, 1);
+        bgmId = loopSound(bgm, bgmId);
     }
 
     /**
@@ -1314,6 +1314,19 @@ public class LevelController implements ContactListener {
             sound.stop( soundId );
         }
         return sound.play(volume);
+    }
+
+    /**
+     * Same as playSound but it loops
+     * @param sound     Sound asset to play
+     * @param soundId   Sound instance
+     * @return  the new sound instance
+     */
+    public long loopSound(SoundBuffer sound, long soundId){
+        if (soundId != -1 && sound.isPlaying (soundId)){
+            sound.stop(soundId);
+        }
+        return sound.loop(1f);
     }
 
     /**

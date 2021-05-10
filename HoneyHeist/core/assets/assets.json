@@ -204,7 +204,8 @@
     "audio:soundeffect_death": "audio/soundeffect_death.mp3",
     "audio:soundeffect_death_pixel": "audio/soundeffect_death_pixel.mp3",
     "audio:soundeffect_tracking": "audio/soundeffect_tracking.mp3",
-    "audio:soundeffect_win": "audio/soundeffect_win.mp3"
+    "audio:soundeffect_win": "audio/soundeffect_win.mp3",
+    "audio:bgm": "audio/bgm.mp3"
   },
   "fonts": {
     "menuFont": {
