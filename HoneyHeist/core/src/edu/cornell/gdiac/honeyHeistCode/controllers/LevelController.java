@@ -754,12 +754,14 @@ public class LevelController implements ContactListener {
         addObject(honeyPatches);
         addObject(spikedPlatforms);
 
-        transition = new TransitionModel(level.getOrigin().x,level.getOrigin().y,true);
-        transition.setSensor(true);
-        transition.setGravityScale(0);
-        transition.setDrawScale(scale);
-        transition.setAnimationStrip(levelTransition);
-        addObject(transition);
+        if(transition!=null) {
+            transition = new TransitionModel(level.getOrigin().x, level.getOrigin().y, true);
+            transition.setSensor(true);
+            transition.setGravityScale(0);
+            transition.setDrawScale(scale);
+            transition.setAnimationStrip(levelTransition);
+            addObject(transition);
+        }
 
 
         /*
