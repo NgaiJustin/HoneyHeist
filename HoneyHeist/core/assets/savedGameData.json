@@ -1,105 +1,104 @@
 {
-  "levels":
-  [
-    {
-      "unlock": true,
-      "complete": false,
-      "file": "levels:rotation"
-    },
-    {
-      "unlock": true,
-      "complete": false,
-      "file": "levels:moreComplexMazeWithoutHazards"
-    },
-    {
-      "unlock": true,
-      "complete": false,
-      "file": "levels:spikesIntro"
-    },
-    {
-      "unlock": true,
-      "complete": false,
-      "file": "levels:complicatedSpikes"
-    },
-    {
-      "unlock": true,
-      "complete": false,
-      "file": "levels:oneLarvae"
-    },
-    {
-      "unlock": true,
-      "complete": false,
-      "file": "levels:larvaeAvoidMultiple"
-    },
-    {
-      "unlock": true,
-      "complete": false,
-      "file": "levels:killWithSpike"
-    },
-    {
-      "unlock": true,
-      "complete": false,
-      "file": "levels:toTheTopRight"
-    },
-    {
-      "unlock": true,
-      "complete": false,
-      "file": "levels:oneBee"
-    },
-    {
-      "unlock": true,
-      "complete": false,
-      "file": "levels:multipleEnemies"
-    },
-    {
-      "unlock": true,
-      "complete": false,
-      "file": "levels:honeypatchIntro"
-    },
-    {
-      "unlock": true,
-      "complete": false,
-      "file": "levels:honeyPatchAndTwoBees"
-    },
-    {
-      "unlock": true,
-      "complete": false,
-      "file": "levels:honeypatchWithBees"
-    },
-    {
-      "unlock": true,
-      "complete": false,
-      "file": "levels:yoloLarvaeDrop"
-    },
-    {
-      "unlock": true,
-      "complete": false,
-      "file": "levels:spikesEverywhereONEBee"
-    },
-    {
-      "unlock": true,
-      "complete": false,
-      "file": "levels:spikesEverywhereTWOBee"
-    },
-    {
-      "unlock": true,
-      "complete": false,
-      "file": "levels:prototypeLevelRedux"
-    },
-    {
-      "unlock": true,
-      "complete": false,
-      "file": "levels:yoloSkydiver"
-    },
-    {
-      "unlock": true,
-      "complete": false,
-      "file": "levels:rotationInMidAir"
-    },
-    {
-      "unlock": true,
-      "complete": false,
-      "file": "levels:threadTheNeedle"
-    }
-  ]
+"levels": [
+	{
+		"unlock": true,
+		"complete": true,
+		"file": "levels:rotation"
+	},
+	{
+		"unlock": true,
+		"complete": true,
+		"file": "levels:moreComplexMazeWithoutHazards"
+	},
+	{
+		"unlock": true,
+		"complete": true,
+		"file": "levels:spikesIntro"
+	},
+	{
+		"unlock": true,
+		"complete": true,
+		"file": "levels:complicatedSpikes"
+	},
+	{
+		"unlock": true,
+		"complete": true,
+		"file": "levels:oneLarvae"
+	},
+	{
+		"unlock": true,
+		"complete": true,
+		"file": "levels:larvaeAvoidMultiple"
+	},
+	{
+		"unlock": true,
+		"complete": true,
+		"file": "levels:killWithSpike"
+	},
+	{
+		"unlock": true,
+		"complete": true,
+		"file": "levels:toTheTopRight"
+	},
+	{
+		"unlock": true,
+		"complete": true,
+		"file": "levels:oneBee"
+	},
+	{
+		"unlock": true,
+		"complete": false,
+		"file": "levels:multipleEnemies"
+	},
+	{
+		"unlock": false,
+		"complete": false,
+		"file": "levels:honeypatchIntro"
+	},
+	{
+		"unlock": false,
+		"complete": false,
+		"file": "levels:honeyPatchAndTwoBees"
+	},
+	{
+		"unlock": false,
+		"complete": false,
+		"file": "levels:honeypatchWithBees"
+	},
+	{
+		"unlock": false,
+		"complete": false,
+		"file": "levels:yoloLarvaeDrop"
+	},
+	{
+		"unlock": false,
+		"complete": false,
+		"file": "levels:spikesEverywhereONEBee"
+	},
+	{
+		"unlock": false,
+		"complete": false,
+		"file": "levels:spikesEverywhereTWOBee"
+	},
+	{
+		"unlock": false,
+		"complete": false,
+		"file": "levels:prototypeLevelRedux"
+	},
+	{
+		"unlock": false,
+		"complete": false,
+		"file": "levels:yoloSkydiver"
+	},
+	{
+		"unlock": false,
+		"complete": false,
+		"file": "levels:rotationInMidAir"
+	},
+	{
+		"unlock": false,
+		"complete": false,
+		"file": "levels:threadTheNeedle"
+	}
+]
 }
