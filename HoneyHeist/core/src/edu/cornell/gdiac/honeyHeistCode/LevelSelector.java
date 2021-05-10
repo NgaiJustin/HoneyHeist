@@ -293,8 +293,8 @@ public class LevelSelector implements Screen {
         completeButtonStyle.down = completeButtonDrawable.tint(Color.GRAY);
         completeButtonStyle.font = skin.getFont("font");
 
+        // create the button and scroll page
         int numberOfPage = totalLevelNum/LEVEL_PER_PAGE;
-//        System.out.println("total page number = " + numberOfPage);
         for (int idx=0; idx <= numberOfPage; idx++) {
             Table page = new Table();
             Table levelTable = new Table();
