@@ -1070,12 +1070,14 @@ public class LevelController implements ContactListener {
                     // Player is dead
                     // System.out.println("PLAYER DIED");
                     avatar.setIsDead(true);
+                    playSound(deathSound, deathId);
                     setFailure(true);
                 }
                 else if (bd1isCharacterModel){
                     AbstractBeeModel bee = (AbstractBeeModel) bd1;
                     // System.out.println("ENEMY DIED: "+bee.getSensorName());
                     bee.setIsDead(true);
+                    playSound(deathSound, deathId);
                     // Marked for removed, moved to the update loop
                     // enemy is only removed when the death animation finishes playing
                     // bd1.markRemoved(true);
@@ -1083,6 +1085,7 @@ public class LevelController implements ContactListener {
                     AbstractBeeModel bee = (AbstractBeeModel) bd2;
                     System.out.println("ENEMY DIED: "+bee.getSensorName());
                     bee.setIsDead(true);
+                    playSound(deathSound, deathId);
                     // Marked for removed, moved to the update loop
                     // enemy is only removed when the death animation finishes playing
                     // bd2.markRemoved(true);
@@ -1136,12 +1139,14 @@ public class LevelController implements ContactListener {
                     ((bd1 == avatar && bd2.getClass().getSuperclass() == AbstractBeeModel.class) ||
                     (bd1.getClass().getSuperclass() == AbstractBeeModel.class && bd2 == avatar))) {
                 avatar.setIsDead(true);
+                playSound(deathSound, deathId);
                 setFailure(true);
             }
 
             // Check for win condition
             if (((bd1 == avatar && bd2 == goalDoor) ||
                     (bd1 == goalDoor && bd2 == avatar))&&!isComplete()) {
+                playSound(winSound, winId);
                 setComplete(true);
             }
         } catch (Exception e) {
