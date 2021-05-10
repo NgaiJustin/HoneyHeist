@@ -696,6 +696,7 @@ public class LevelController implements ContactListener {
         avatar.setAnimationStrip(PlayerModel.AntAnimations.FLAIL, flailingPlayer);
         avatar.setAnimationStrip(PlayerModel.AntAnimations.DEATH, dyingPlayer);
         avatar.setIsDead(false);
+        avatar.setIsTrulyDead(false);
         addObject(avatar);
 
         // Create chaser bees
@@ -931,8 +932,12 @@ public class LevelController implements ContactListener {
             honeyFixtures.clear();
         }
         if(avatar.getIsDead()){
-            avatar.animateAnt(PlayerModel.AntAnimations.DEATH, true);
-            avatar.haltMovement();
+            if (avatar.getIsTrulyDead()) {
+                avatar.markRemoved(true);
+            } else {
+                avatar.animateAnt(PlayerModel.AntAnimations.DEATH, true);
+                avatar.haltMovement();
+            }
         }
 
         // Process AI action
@@ -1078,22 +1083,22 @@ public class LevelController implements ContactListener {
                     // Player is dead
                     // System.out.println("PLAYER DIED");
                     avatar.setIsDead(true);
-                    deathId = playSound(deathSound, deathId);
+                    deathId = playSound(deathSound, deathId, 0.1f);
                     setFailure(true);
                 }
                 else if (bd1isCharacterModel){
                     AbstractBeeModel bee = (AbstractBeeModel) bd1;
                     // System.out.println("ENEMY DIED: "+bee.getSensorName());
                     bee.setIsDead(true);
-                    deathId = playSound(deathSound, deathId);
+                    deathId = playSound(deathSound, deathId, 0.1f);
                     // Marked for removed, moved to the update loop
                     // enemy is only removed when the death animation finishes playing
                     // bd1.markRemoved(true);
                 } else {
                     AbstractBeeModel bee = (AbstractBeeModel) bd2;
-                    System.out.println("ENEMY DIED: "+bee.getSensorName());
+                    // System.out.println("ENEMY DIED: "+bee.getSensorName());
                     bee.setIsDead(true);
-                    deathId = playSound(deathSound, deathId);
+                    deathId = playSound(deathSound, deathId, 0.1f);
                     // Marked for removed, moved to the update loop
                     // enemy is only removed when the death animation finishes playing
                     // bd2.markRemoved(true);
@@ -1147,7 +1152,7 @@ public class LevelController implements ContactListener {
                     ((bd1 == avatar && bd2.getClass().getSuperclass() == AbstractBeeModel.class) ||
                     (bd1.getClass().getSuperclass() == AbstractBeeModel.class && bd2 == avatar))) {
                 avatar.setIsDead(true);
-                deathId = playSound(deathSound, deathId);
+                deathId = playSound(deathSound, deathId, 0.1f);
                 setFailure(true);
             }
 

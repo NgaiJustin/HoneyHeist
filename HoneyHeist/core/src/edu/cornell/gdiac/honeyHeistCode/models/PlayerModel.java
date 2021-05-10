@@ -9,6 +9,10 @@ import edu.cornell.gdiac.util.FilmStrip;
  *  Model class for player in HoneyHeist.
  */
 public class PlayerModel extends CharacterModel {
+
+    /** True if the Enemy has already been flagged as dead and the death animation has completed */
+    protected boolean isTrulyDead;
+
     // Walking animation fields
     /** The texture filmstrip for the left animation node */
     private FilmStrip walkingAnim;
@@ -103,6 +107,9 @@ public class PlayerModel extends CharacterModel {
 
         // If do not wish to cycle, only play animation once
         if (!cycle && node.getFrame() == node.getSize() - 1) {
+            if (node == dyingAnim) {
+                this.setIsTrulyDead(true);
+            }
             return;
         }
 
@@ -170,4 +177,19 @@ public class PlayerModel extends CharacterModel {
             canvas.draw(texture, Color.WHITE, origin.x, origin.y, getX() * drawScale.x, getY() * drawScale.y, getAngle(), effect, 1.0f);
         }
     }
+
+    /**
+     * Set if the enemy has finished playing death animation.
+     * <p>
+     * Precondition: Enemy must be dead first inorder for isTrulyDead = true
+     */
+    public void setIsTrulyDead(boolean b) {
+        // Precondition: Enemy must be dead first
+        if (this.isDead) {
+            this.isTrulyDead = b;
+        }
+    }
+
+    /** Return if the enemy has already died and has finish playing death animation */
+    public boolean getIsTrulyDead(){return this.isTrulyDead;}
 }
