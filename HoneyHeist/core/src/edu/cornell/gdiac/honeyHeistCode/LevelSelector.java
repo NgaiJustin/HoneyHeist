@@ -14,9 +14,8 @@ import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.assets.*;
+import edu.cornell.gdiac.audio.SoundBuffer;
 import edu.cornell.gdiac.util.*;
-
-import java.util.Arrays;
 
 public class LevelSelector implements Screen {
     /** Internal assets for this loading screen */
@@ -76,6 +75,9 @@ public class LevelSelector implements Screen {
 
     /** Whether or not this player mode is still active */
     private boolean active;
+
+    private SoundBuffer menuBgm;
+    private long menuBgmId = 1;
 
     // Scene2d
     private Stage stage;
@@ -395,6 +397,19 @@ public class LevelSelector implements Screen {
             }
         });
         table.add(rightArrow).right().height(Value.percentHeight(3f)).width(Value.percentWidth(3f)).top();
+        menuBgm = directory.getEntry("audio:soundtrack_mainmenu", SoundBuffer.class);
+        menuBgmId = loopSound(menuBgm, menuBgmId, 1f);
+    }
+
+    public long loopSound(SoundBuffer sound, long soundId, float volume) {
+        if (soundId != -1 && sound.isPlaying( soundId )) {
+            sound.stop( soundId );
+        }
+        return sound.loop(volume);
+    }
+
+    public void stopAllSounds(){
+        menuBgm.stop(menuBgmId);
     }
 
     /**
