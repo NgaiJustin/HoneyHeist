@@ -15,6 +15,9 @@ public abstract class AbstractBeeModel extends CharacterModel {
     /** True if the Bee is currently chasing the player */
     protected boolean isChasing;
 
+    /** True if the bee already played the chase sound. */
+    protected boolean playedChaseSound;
+
     /** True if the Enemy has already been flagged as dead and the death animation has completed */
     protected boolean isTrulyDead;
 
@@ -25,6 +28,7 @@ public abstract class AbstractBeeModel extends CharacterModel {
         sensorFixtures = new ObjectSet<Fixture>();
         honeyFixtures = new ObjectSet<Fixture>();
         this.isDead = false;
+        this.playedChaseSound = false;
         this.isTrulyDead = false;
     }
 
@@ -59,6 +63,18 @@ public abstract class AbstractBeeModel extends CharacterModel {
     public boolean getIsChasing() {
         return this.isChasing;
     }
+
+    /**
+     * Set the playedChaseSound of this enemy status
+     * @param b
+     */
+    public void setPlayedChaseSound(boolean b) { this.playedChaseSound = b; }
+
+    /**
+     * Returns if the enemy has already played the chase sound
+     * @return
+     */
+    public boolean getPlayedChaseSound() { return this.playedChaseSound; }
 
     /**
      * Set if the enemy has finished playing death animation.

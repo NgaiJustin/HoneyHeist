@@ -342,19 +342,19 @@ public class LevelController implements ContactListener {
 
     /** The jump sound.  We only want to play once. */
     private SoundBuffer bgm;
-    private long bgmId = 10;
+    private long bgmId = 1;
 
     /** The jump sound.  We only want to play once */
-    private SoundBuffer jumpSound;
-    private long jumpId = -1;
+    private SoundBuffer deathSound;
+    private long deathId = -1;
 
     /** The weapon fire sound.  We only want to play once. */
-    private SoundBuffer fireSound;
-    private long fireId = -1;
+    private SoundBuffer trackingSound;
+    private long trackingId = -1;
 
     /** The weapon pop sound.  We only want to play once. */
-    private SoundBuffer plopSound;
-    private long plopId = -1;
+    private SoundBuffer winSound;
+    private long winId = -1;
 
     /** The default sound volume */
     private float volume;
@@ -465,10 +465,10 @@ public class LevelController implements ContactListener {
         platNinePatch  = new NinePatch(directory.getEntry("platform:platNinePatch", Texture.class),  16, 16 ,16 ,16 );
         spikeNinePatch = new NinePatch(directory.getEntry("platform:spikeNinePatch", Texture.class),  16, 16 ,16 ,16 );
 
-        jumpSound = directory.getEntry("platform:jump", SoundBuffer.class);
-        fireSound = directory.getEntry("platform:pew", SoundBuffer.class);
-        plopSound = directory.getEntry("platform:plop", SoundBuffer.class);
-        //bgm = directory.getEntry("platform:bgm", SoundBuffer.class);
+        deathSound = directory.getEntry("audio:soundeffect_death_pixel", SoundBuffer.class);
+        trackingSound = directory.getEntry("audio:soundeffect_tracking", SoundBuffer.class);
+        winSound = directory.getEntry("audio:soundeffect_win", SoundBuffer.class);
+        bgm = directory.getEntry("audio:bgm", SoundBuffer.class);
 
         constants = directory.getEntry("platform:constants2", JsonValue.class);
         System.out.println("DatafilePath = " + dataFilePath);
@@ -533,7 +533,7 @@ public class LevelController implements ContactListener {
         setComplete(false);
         setFailure(false);
         populateLevel();
-        //playSound(bgm, 1);
+        bgmId = loopSound(bgm, bgmId);
     }
 
     /**
@@ -959,6 +959,14 @@ public class LevelController implements ContactListener {
                 if (!bee.isInHoney()) {
                     bee.getHoneyFixtures().clear();
                 }
+                if (bee.getIsChasing()){
+                    if (!bee.getPlayedChaseSound()){
+                        trackingId = playSound(trackingSound, trackingId);
+                        bee.setPlayedChaseSound(true);
+                    }
+                } else if (bee.getPlayedChaseSound()){
+                    bee.setPlayedChaseSound(false);
+                }
             }
             if (bee.getIsDead()) {
               if (bee.getIsTrulyDead()){
@@ -974,15 +982,15 @@ public class LevelController implements ContactListener {
         angleLeft = platforms.getRemainingAngle();
         if (didRotate) {
             rotateClockwise();
-            //if (angleLeft <= 2*Math.PI/24 && isRotating && !didQueueCounterClockwise){
-            if (isRotating && !didQueueCounterClockwise){
+            if (angleLeft <= 2*Math.PI/24 && isRotating && !didQueueCounterClockwise){
+            //if (isRotating && !didQueueCounterClockwise){
                 System.out.print("Queue Clockwise\n");
                 didQueueClockwise = true;
             }
         } else if (didAntiRotate) {
             rotateCounterClockwise();
-            //if (angleLeft <= 2*Math.PI/24 && isRotating && !didQueueClockwise){
-            if (isRotating && !didQueueClockwise){
+            if (angleLeft <= 2*Math.PI/24 && isRotating && !didQueueClockwise){
+            //if (isRotating && !didQueueClockwise){
                 System.out.print("Queue Counter Clockwise\n");
                 didQueueCounterClockwise = true;
             }
@@ -1070,12 +1078,14 @@ public class LevelController implements ContactListener {
                     // Player is dead
                     // System.out.println("PLAYER DIED");
                     avatar.setIsDead(true);
+                    deathId = playSound(deathSound, deathId);
                     setFailure(true);
                 }
                 else if (bd1isCharacterModel){
                     AbstractBeeModel bee = (AbstractBeeModel) bd1;
                     // System.out.println("ENEMY DIED: "+bee.getSensorName());
                     bee.setIsDead(true);
+                    deathId = playSound(deathSound, deathId);
                     // Marked for removed, moved to the update loop
                     // enemy is only removed when the death animation finishes playing
                     // bd1.markRemoved(true);
@@ -1083,6 +1093,7 @@ public class LevelController implements ContactListener {
                     AbstractBeeModel bee = (AbstractBeeModel) bd2;
                     System.out.println("ENEMY DIED: "+bee.getSensorName());
                     bee.setIsDead(true);
+                    deathId = playSound(deathSound, deathId);
                     // Marked for removed, moved to the update loop
                     // enemy is only removed when the death animation finishes playing
                     // bd2.markRemoved(true);
@@ -1136,12 +1147,14 @@ public class LevelController implements ContactListener {
                     ((bd1 == avatar && bd2.getClass().getSuperclass() == AbstractBeeModel.class) ||
                     (bd1.getClass().getSuperclass() == AbstractBeeModel.class && bd2 == avatar))) {
                 avatar.setIsDead(true);
+                deathId = playSound(deathSound, deathId);
                 setFailure(true);
             }
 
             // Check for win condition
             if (((bd1 == avatar && bd2 == goalDoor) ||
                     (bd1 == goalDoor && bd2 == avatar))&&!isComplete()) {
+                winId = playSound(winSound, winId);
                 setComplete(true);
             }
         } catch (Exception e) {
@@ -1304,6 +1317,29 @@ public class LevelController implements ContactListener {
     }
 
     /**
+     * Same as playSound but it loops
+     * @param sound     Sound asset to play
+     * @param soundId   Sound instance
+     * @return  the new sound instance
+     */
+    public long loopSound(SoundBuffer sound, long soundId){
+        if (soundId != -1 && sound.isPlaying (soundId)){
+            sound.stop(soundId);
+        }
+        return sound.loop(1f);
+    }
+
+    /**
+     * Stops all sounds that are playing
+     */
+    public void stopAllSounds(){
+        bgm.stop(bgmId);
+        deathSound.stop(deathId);
+        trackingSound.stop(trackingId);
+        winSound.stop(winId);
+    }
+
+    /**
      * Called when the Screen is resized.
      *
      * This can happen at any point during a non-paused state but will never happen
@@ -1369,14 +1405,14 @@ public class LevelController implements ContactListener {
      * Pausing happens when we switch game modes.
      */
     public void pause() {
-        if (jumpSound.isPlaying(jumpId)) {
-            jumpSound.stop(jumpId);
+        if (deathSound.isPlaying(deathId)) {
+            deathSound.stop(deathId);
         }
-        if (plopSound.isPlaying(plopId)) {
-            plopSound.stop(plopId);
+        if (winSound.isPlaying(winId)) {
+            winSound.stop(winId);
         }
-        if (fireSound.isPlaying(fireId)) {
-            fireSound.stop(fireId);
+        if (trackingSound.isPlaying(trackingId)) {
+            trackingSound.stop(trackingId);
         }
         if (bgm.isPlaying(bgmId)){
             bgm.stop(bgmId);
