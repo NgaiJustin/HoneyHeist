@@ -959,6 +959,14 @@ public class LevelController implements ContactListener {
                 if (!bee.isInHoney()) {
                     bee.getHoneyFixtures().clear();
                 }
+                if (bee.getIsChasing()){
+                    if (!bee.getPlayedChaseSound()){
+                        playSound(trackingSound, trackingId);
+                        bee.setPlayedChaseSound(true);
+                    }
+                } else if (bee.getPlayedChaseSound()){
+                    bee.setPlayedChaseSound(false);
+                }
             }
             if (bee.getIsDead()) {
               if (bee.getIsTrulyDead()){
