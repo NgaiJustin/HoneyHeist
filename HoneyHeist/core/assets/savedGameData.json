@@ -47,26 +47,26 @@
 	},
 	{
 		"unlock": true,
-		"complete": false,
+		"complete": true,
 		"file": "levels:multipleEnemies"
 	},
 	{
-		"unlock": false,
-		"complete": false,
+		"unlock": true,
+		"complete": true,
 		"file": "levels:honeypatchIntro"
 	},
 	{
-		"unlock": false,
-		"complete": false,
+		"unlock": true,
+		"complete": true,
 		"file": "levels:honeyPatchAndTwoBees"
 	},
 	{
-		"unlock": false,
+		"unlock": true,
 		"complete": false,
 		"file": "levels:honeypatchWithBees"
 	},
 	{
-		"unlock": false,
+		"unlock": true,
 		"complete": false,
 		"file": "levels:yoloLarvaeDrop"
 	},
@@ -86,7 +86,7 @@
 		"file": "levels:prototypeLevelRedux"
 	},
 	{
-		"unlock": false,
+		"unlock": true,
 		"complete": false,
 		"file": "levels:yoloSkydiver"
 	},

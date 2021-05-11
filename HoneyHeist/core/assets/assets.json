@@ -17,7 +17,7 @@
     },
     "shared:crosshair": "shared/crosshair.png",
     "shared:goal": "shared/goaldoor.png",
-    "shared:background": "shared/background.png",
+    "shared:background": "shared/newbackground_w_keys.png",
     "shared:whiteSquare": "shared/whiteSquare.png",
     "shared:pauseButton": "shared/pause.png",
     "shared:pauseBackground": "shared/pause_background.png",
