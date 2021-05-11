@@ -65,7 +65,7 @@ public abstract class Obstacle {
 	/** Whether the platforms are rotating or not */
 	protected boolean isRotating = false;
 	/** Speed at which the platforms rotate in radians/second */
-	protected float rotationSpeed = ((float) Math.PI/3)*3f;
+	protected float rotationSpeed = ((float) Math.PI/3)*3.5f;
 	/** Speed at which the platform is currently rotating in radians/second */
 	protected float currentSpeed;
 	/** Whether the rotation is clockwise or not */

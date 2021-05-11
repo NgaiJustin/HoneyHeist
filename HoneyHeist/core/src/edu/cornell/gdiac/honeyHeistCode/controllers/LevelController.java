@@ -1042,6 +1042,9 @@ public class LevelController implements ContactListener {
             transition.setAnimationStrip(levelTransition);
             addObject(transition);
             if(platforms.isRotating()) {
+                float angle = ((float)Math.PI/3 - platforms.getRemainingAngle());
+                if(platforms.isClockwise()) transition.setAngle(angle);
+                else transition.setAngle(-angle);
                 transition.startRotation(platforms.getRemainingAngle(), platforms.isClockwise(), level.getOrigin());
                 transition.setCurrentSpeed(platforms.getCurrentSpeed());
             }
