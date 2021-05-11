@@ -785,7 +785,9 @@ public class LevelController implements ContactListener {
 
          */
 
-        volume = constants.getFloat("volume", 1.0f);
+        //volume = constants.getFloat("volume", 1.0f);
+        this.volume = constants.get("defaults").getFloat("volume", 1.0f);
+        System.out.println(volume);
 
     }
 
@@ -1125,14 +1127,14 @@ public class LevelController implements ContactListener {
                     // Player is dead
                     // System.out.println("PLAYER DIED");
                     avatar.setIsDead(true);
-                    deathId = playSound(deathSound, deathId, 0.1f);
+                    deathId = playSound(deathSound, deathId, 0.1f * this.volume);
                     setFailure(true);
                 }
                 else if (bd1isCharacterModel){
                     AbstractBeeModel bee = (AbstractBeeModel) bd1;
                     // System.out.println("ENEMY DIED: "+bee.getSensorName());
                     bee.setIsDead(true);
-                    deathId = playSound(deathSound, deathId, 0.1f);
+                    deathId = playSound(deathSound, deathId, 0.1f * this.volume);
                     // Marked for removed, moved to the update loop
                     // enemy is only removed when the death animation finishes playing
                     // bd1.markRemoved(true);
@@ -1140,7 +1142,7 @@ public class LevelController implements ContactListener {
                     AbstractBeeModel bee = (AbstractBeeModel) bd2;
                     // System.out.println("ENEMY DIED: "+bee.getSensorName());
                     bee.setIsDead(true);
-                    deathId = playSound(deathSound, deathId, 0.1f);
+                    deathId = playSound(deathSound, deathId, 0.1f * this.volume);
                     // Marked for removed, moved to the update loop
                     // enemy is only removed when the death animation finishes playing
                     // bd2.markRemoved(true);
@@ -1194,14 +1196,14 @@ public class LevelController implements ContactListener {
                     ((bd1 == avatar && bd2.getClass().getSuperclass() == AbstractBeeModel.class) ||
                     (bd1.getClass().getSuperclass() == AbstractBeeModel.class && bd2 == avatar))) {
                 avatar.setIsDead(true);
-                deathId = playSound(deathSound, deathId, 0.1f);
+                deathId = playSound(deathSound, deathId, 0.1f * this.volume);
                 setFailure(true);
             }
 
             // Check for win condition
             if (((bd1 == avatar && bd2 == goalDoor) ||
                     (bd1 == goalDoor && bd2 == avatar))&&!isComplete()) {
-                winId = playSound(winSound, winId);
+                winId = playSound(winSound, winId, 0.5f * volume);
                 setComplete(true);
             }
         } catch (Exception e) {
@@ -1337,7 +1339,7 @@ public class LevelController implements ContactListener {
      * @return the new sound instance for this asset.
      */
     public long playSound(SoundBuffer sound, long soundId) {
-        return playSound( sound, soundId, 1.0f );
+        return playSound( sound, soundId, volume );
     }
 
 
@@ -1352,15 +1354,15 @@ public class LevelController implements ContactListener {
      *
      * @param sound		The sound asset to play
      * @param soundId	The previously playing sound instance
-     * @param volume	The sound volume
+     * @param vol	The sound volume
      *
      * @return the new sound instance for this asset.
      */
-    public long playSound(SoundBuffer sound, long soundId, float volume) {
+    public long playSound(SoundBuffer sound, long soundId, float vol) {
         if (soundId != -1 && sound.isPlaying( soundId )) {
             sound.stop( soundId );
         }
-        return sound.play(volume);
+        return sound.play(vol);
     }
 
     /**
@@ -1373,7 +1375,7 @@ public class LevelController implements ContactListener {
         if (soundId != -1 && sound.isPlaying (soundId)){
             sound.stop(soundId);
         }
-        return sound.loop(1f);
+        return sound.loop(volume);
     }
 
     /**

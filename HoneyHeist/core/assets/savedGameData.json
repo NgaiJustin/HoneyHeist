@@ -47,11 +47,11 @@
 	},
 	{
 		"unlock": true,
-		"complete": false,
+		"complete": true,
 		"file": "levels:multipleEnemies"
 	},
 	{
-		"unlock": false,
+		"unlock": true,
 		"complete": false,
 		"file": "levels:honeypatchIntro"
 	},
