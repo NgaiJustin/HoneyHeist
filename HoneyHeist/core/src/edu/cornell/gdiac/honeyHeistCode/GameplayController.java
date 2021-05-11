@@ -173,7 +173,7 @@ public class GameplayController implements Screen, InputProcessor {
 	/** Constants for the position of pause button */
 	private final float PAUSE_XPOS = Gdx.graphics.getWidth()*0.85f;
 	private final float PAUSE_YPOS = Gdx.graphics.getHeight()*0.85f;
-	private final float PAUSE_SCALE = 4f;
+	private final float PAUSE_SCALE = 1f;
 	/** Menu button texture */
 	private Texture menuButton;
 	/** Offset for the menu word on the button */
@@ -634,7 +634,8 @@ public class GameplayController implements Screen, InputProcessor {
 	public void draw(float dt) {
 		canvas.clear();
 		canvas.begin();
-		canvas.draw(background, 0, 0);
+		// resize the image to have width and height fit for the Gdx graphics (screen)
+		canvas.draw(background, Color.WHITE, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 		Color tint;
 		if (pauseButton != null) {
 			tint = (pausePressed ? Color.GRAY: Color.WHITE);
@@ -674,34 +675,6 @@ public class GameplayController implements Screen, InputProcessor {
 			}
 		}
 		canvas.end();
-//		canvas.clear();
-//
-//		canvas.begin();
-//		for(Obstacle obj : objects) {
-//			obj.draw(canvas);
-//		}
-//		canvas.end();
-//
-//		if (debug) {
-//			canvas.beginDebug();
-//			for(Obstacle obj : objects) {
-//				obj.drawDebug(canvas);
-//			}
-//			canvas.endDebug();
-//		}
-//
-//		// Final message
-//		if (complete && !failed) {
-//			displayFont.setColor(Color.YELLOW);
-//			canvas.begin(); // DO NOT SCALE
-//			canvas.drawTextCentered("VICTORY!", displayFont, 0.0f);
-//			canvas.end();
-//		} else if (failed) {
-//			displayFont.setColor(Color.RED);
-//			canvas.begin(); // DO NOT SCALE
-//			canvas.drawTextCentered("FAILURE!", displayFont, 0.0f);
-//			canvas.end();
-//		}
 	}
 
 	/**
@@ -847,47 +820,51 @@ public class GameplayController implements Screen, InputProcessor {
 
 		// MENU button has a higher priority then the PAUSE button
 		float width, height;
-//		width = MENU_XSCALE * scaleFactor * menuButton.getWidth() / 2.0f;
-//		height = MENU_YSCALE * scaleFactor * menuButton.getHeight() / 2.0f;
-//		if (Math.abs(screenX - MENU_XPOS) < Math.abs(width) && Math.abs(screenY - MENU_YPOS) < Math.abs(height)) {
-//			menuPressed = true;
-//		}
 		if (isPaused) {
 			// MENU button
-			width = menuScale * scaleFactor * pauseMenu.getWidth() / 2.0f;
-			height = menuScale * scaleFactor * pauseMenu.getHeight() / 2.0f;
-			if (Math.abs(screenX - PAUSE_MENU_XPOS + width) < Math.abs(width) && Math.abs(screenY - PAUSE_MENU_YPOS +
-					height) < Math.abs(height)) {
-				menuPressed = true;
+			if (menuButton!=null) {
+				width = menuScale * scaleFactor * pauseMenu.getWidth() / 2.0f;
+				height = menuScale * scaleFactor * pauseMenu.getHeight() / 2.0f;
+				if (Math.abs(screenX - PAUSE_MENU_XPOS + width) < Math.abs(width) && Math.abs(screenY -
+						PAUSE_MENU_YPOS + height) < Math.abs(height)) {
+					menuPressed = true;
+				}
 			}
 			// QUIT button
-			width = menuScale * scaleFactor * pauseQuit.getWidth() / 2.0f;
-			height = menuScale * scaleFactor * pauseQuit.getHeight() / 2.0f;
-			if (Math.abs(screenX - PAUSE_QUIT_XPOS + width) < Math.abs(width) && Math.abs(screenY - PAUSE_QUIT_YPOS +
-					height) < Math.abs(height)) {
-				quitPressed = true;
+			if (pauseQuit!=null) {
+				width = menuScale * scaleFactor * pauseQuit.getWidth() / 2.0f;
+				height = menuScale * scaleFactor * pauseQuit.getHeight() / 2.0f;
+				if (Math.abs(screenX - PAUSE_QUIT_XPOS + width) < Math.abs(width) && Math.abs(screenY -
+						PAUSE_QUIT_YPOS + height) < Math.abs(height)) {
+					quitPressed = true;
+				}
 			}
 			// RESUME button
-			width = menuScale * scaleFactor * pauseResume.getWidth() / 2.0f;
-			height = menuScale * scaleFactor * pauseResume.getHeight() / 2.0f;
-			if (Math.abs(screenX - PAUSE_RESUME_XPOS + width) < Math.abs(width) && Math.abs(screenY - PAUSE_RESUME_YPOS +
-					height) < Math.abs(height)) {
-				resumePressed = true;
+			if (pauseMenu!=null) {
+				width = menuScale * scaleFactor * pauseResume.getWidth() / 2.0f;
+				height = menuScale * scaleFactor * pauseResume.getHeight() / 2.0f;
+				if (Math.abs(screenX - PAUSE_RESUME_XPOS + width) < Math.abs(width) && Math.abs(screenY -
+						PAUSE_RESUME_YPOS + height) < Math.abs(height)) {
+					resumePressed = true;
+				}
 			}
 		}
 		// PAUSE button
-		float radius, dist;
-		radius = PAUSE_SCALE * scaleFactor * pauseButton.getWidth() / 2.0f;
-		dist = (screenX - PAUSE_XPOS) * (screenX - PAUSE_XPOS) + (screenY - PAUSE_YPOS) * (screenY - PAUSE_YPOS);
-		if (dist < radius * radius) {
-			pausePressed = true;
+		if (pauseButton!=null) {
+			float radius, dist;
+//			Rectangle textureBounds=new Rectangle(PAUSE_XPOS,PAUSE_YPOS,PAUSE_SCALE * scaleFactor *
+//					pauseButton.getWidth(), PAUSE_SCALE * scaleFactor * pauseButton.getHeight());
+//			if(textureBounds.contains(screenX,screenY)) {
+//				pausePressed = true;
+//			}
+
+			width = PAUSE_SCALE * scaleFactor * pauseResume.getWidth() / 2.0f;
+			height = PAUSE_SCALE * scaleFactor * pauseResume.getHeight() / 2.0f;
+			if (Math.abs(screenX - PAUSE_XPOS) < Math.abs(width) && Math.abs(screenY -
+					PAUSE_YPOS) < Math.abs(height)) {
+				pausePressed = true;
+			}
 		}
-//		width = menuScale * scaleFactor * pauseResume.getWidth() / 2.0f;
-//		height = menuScale * scaleFactor * pauseResume.getHeight() / 2.0f;
-//		dist = (screenX - PAUSE_RESUME_XPOS) * (screenX - PAUSE_RESUME_XPOS) + (screenY - PAUSE_RESUME_YPOS) * (screenY - PAUSE_RESUME_YPOS);
-//		if (dist < width * height) {
-//			resumePressed = true;
-//		}
 		return false;
 	}
 
@@ -963,6 +940,7 @@ public class GameplayController implements Screen, InputProcessor {
 	public void saveData() {
 //		System.out.print("current directory: ");
 		String localPath = Gdx.files.getLocalStoragePath();
+		System.out.print("localPath: " + localPath);
 		FileHandle file = Gdx.files.absolute(localPath + "savedGameData.json");
 		System.out.println("file content: " + localPath + "savedGameData.json");
 		int size = allLevelData.size;
