@@ -6,13 +6,13 @@
 		"file": "levels:rotation"
 	},
 	{
-		"unlock": true,
-		"complete": true,
+		"unlock": false,
+		"complete": false,
 		"file": "levels:moreComplexMazeWithoutHazards"
 	},
 	{
-		"unlock": true,
-		"complete": true,
+		"unlock": false,
+		"complete": false,
 		"file": "levels:spikesIntro"
 	},
 	{
@@ -71,17 +71,17 @@
 		"file": "levels:yoloLarvaeDrop"
 	},
 	{
-		"unlock": false,
+		"unlock": true,
 		"complete": false,
 		"file": "levels:spikesEverywhereONEBee"
 	},
 	{
-		"unlock": false,
+		"unlock": true,
 		"complete": false,
 		"file": "levels:spikesEverywhereTWOBee"
 	},
 	{
-		"unlock": false,
+		"unlock": true,
 		"complete": false,
 		"file": "levels:prototypeLevelRedux"
 	},
@@ -91,12 +91,12 @@
 		"file": "levels:yoloSkydiver"
 	},
 	{
-		"unlock": false,
+		"unlock": true,
 		"complete": false,
 		"file": "levels:rotationInMidAir"
 	},
 	{
-		"unlock": false,
+		"unlock": true,
 		"complete": false,
 		"file": "levels:threadTheNeedle"
 	}
