@@ -32,6 +32,7 @@ import com.badlogic.gdx.controllers.ControllerMapping;
 
 import edu.cornell.gdiac.assets.*;
 import edu.cornell.gdiac.honeyHeistCode.GameCanvas;
+import edu.cornell.gdiac.honeyHeistCode.models.PlayerModel;
 import edu.cornell.gdiac.util.*;
 
 /**
@@ -75,8 +76,17 @@ public class LoadingMode implements Screen, InputProcessor, ControllerListener {
 	/** Right cap to the status forground (colored region) */
 	private TextureRegion statusFrgRight;
 
-	// Loading Tree animation
+	/** Loading text (empty) */
+	private Texture loadingEmpty;
+	/** Loading text (full) */
+	private Texture loadingFull;
+
+	/** Loading Tree animation */
 	private FilmStrip loadingTree;
+
+	/** Animation Parameters for loadingTree */
+	private final int FRAMES_PER_ANIM = 5;
+	private int animFrames = 0;
 
 	/** Default budget for asset loader (do nothing but load 60 fps) */
 	private static int DEFAULT_BUDGET = 15;
@@ -208,10 +218,8 @@ public class LoadingMode implements Screen, InputProcessor, ControllerListener {
 		statusBar = internal.getEntry( "progress", Texture.class );
 
 		// Put in the Loading animation gif
-		System.out.println("attempting");
 		loadingTree = internal.getEntry("tree.pacing", FilmStrip.class);
-		loadingTree.setFrame(1);
-		System.out.println("ok");
+
 
 
 		// Break up the status bar texture into regions
@@ -222,6 +230,9 @@ public class LoadingMode implements Screen, InputProcessor, ControllerListener {
 		statusFrgLeft = internal.getEntry( "progress.foreleft", TextureRegion.class );
 		statusFrgRight = internal.getEntry( "progress.foreright", TextureRegion.class );
 		statusFrgMiddle = internal.getEntry( "progress.foreground", TextureRegion.class );
+
+		loadingEmpty = internal.getEntry("empty", Texture.class);
+		loadingFull = internal.getEntry("full", Texture.class);
 
 		// No progress so far.
 		progress = 0;
@@ -247,7 +258,25 @@ public class LoadingMode implements Screen, InputProcessor, ControllerListener {
 		internal.unloadAssets();
 		internal.dispose();
 	}
-	
+
+	/**
+	 * Animates the tree sprite.
+	 */
+	public void animateTree() {
+		if (animFrames == FRAMES_PER_ANIM) {
+			if(loadingTree.getSize()-1 == loadingTree.getFrame()){
+				loadingTree.setFrame(0);
+			} else {
+				loadingTree.setFrame(loadingTree.getFrame() + 1);
+			}
+			animFrames = -1;
+		}
+
+		canvas.draw(loadingTree,Color.WHITE, centerX*0.04f, centerY*0.2f,
+				loadingTree.getRegionWidth()*1.2f, loadingTree.getRegionHeight()*1.2f);
+		animFrames++;
+	}
+
 	/**
 	 * Update the status of this player mode.
 	 *
@@ -279,24 +308,16 @@ public class LoadingMode implements Screen, InputProcessor, ControllerListener {
 		canvas.begin();
 
 		canvas.draw(background, 0, 0);
+		animateTree();
 
-		if(loadingTree != null){
-			System.out.println("success!");
-			float offsety = loadingTree.getRegionHeight();
-			float originx = loadingTree.getRegionX();
-			float originy = loadingTree.getRegionY();
-			canvas.draw(loadingTree,Color.WHITE, 0,0, 10,10,0,1,1);
-			canvas.draw(loadingTree,Color.WHITE, 0,0, 10,10,0,1,1);
-			canvas.draw(loadingTree,Color.WHITE, 0,0, 10,10,0,1,1);
-			canvas.draw(loadingTree,Color.WHITE, 0,0, 10,10,0,1,1);
-			canvas.draw(loadingTree,Color.WHITE, 0,0, 10,10,0,1,1);
-		}
 		if (playButton == null) {
 			drawProgress(canvas);
 		} else {
 			Color tint = (pressState == 1 ? Color.GRAY: Color.WHITE);
 			canvas.draw(playButton, tint, playButton.getWidth()/2, playButton.getHeight()/2, 
 						centerX, centerY, 0, BUTTON_SCALE*scale, BUTTON_SCALE*scale);
+
+
 		}
 
 		canvas.end();
@@ -313,6 +334,11 @@ public class LoadingMode implements Screen, InputProcessor, ControllerListener {
 	 */	
 	private void drawProgress(GameCanvas canvas) {
 
+
+		canvas.draw(loadingEmpty, Color.WHITE, centerX-(loadingEmpty.getWidth()/2), centerY*0.9f,
+				loadingEmpty.getWidth(), loadingEmpty.getHeight());
+
+		/*
 		canvas.draw(statusBkgLeft,   Color.WHITE, centerX-width/2, centerY,
 				scale*statusBkgLeft.getRegionWidth(), scale*statusBkgLeft.getRegionHeight());
 		canvas.draw(statusBkgRight,  Color.WHITE,centerX+width/2-scale*statusBkgRight.getRegionWidth(), centerY,
@@ -323,15 +349,27 @@ public class LoadingMode implements Screen, InputProcessor, ControllerListener {
 
 		canvas.draw(statusFrgLeft,   Color.WHITE,centerX-width/2, centerY,
 				scale*statusFrgLeft.getRegionWidth(), scale*statusFrgLeft.getRegionHeight());
+
+		 */
 		if (progress > 0) {
-			float span = progress*(width-scale*(statusFrgLeft.getRegionWidth()+statusFrgRight.getRegionWidth()))/2.0f;
+
+			float span = progress*loadingFull.getHeight();
+			canvas.draw(loadingFull, Color.WHITE, centerX-(loadingFull.getWidth()/2), centerY*0.9f,
+					loadingFull.getWidth(), loadingFull.getHeight(), 1, progress, true);
+
+			/*
 			canvas.draw(statusFrgRight,  Color.WHITE,centerX-width/2+scale*statusFrgLeft.getRegionWidth()+span, centerY,
 					scale*statusFrgRight.getRegionWidth(), scale*statusFrgRight.getRegionHeight());
 			canvas.draw(statusFrgMiddle, Color.WHITE,centerX-width/2+scale*statusFrgLeft.getRegionWidth(), centerY,
 					span, scale*statusFrgMiddle.getRegionHeight());
+			*/
+
 		} else {
+			/*
 			canvas.draw(statusFrgRight,  Color.WHITE,centerX-width/2+scale*statusFrgLeft.getRegionWidth(), centerY,
 					scale*statusFrgRight.getRegionWidth(), scale*statusFrgRight.getRegionHeight());
+
+			 */
 		}
 	}
 

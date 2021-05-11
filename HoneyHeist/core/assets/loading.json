@@ -5,13 +5,13 @@
           "file": "shared/loadingTree.png",
           "sprites": {
             "pacing": {
-              "rows": 1,
-              "cols": 61
+              "rows": 6,
+              "cols": 10
             }
           }
        },
-        "loading_empty": "shared/loading_text_empty.png",
-        "loading_full": "shared/loading_text_full.png",
+        "empty": "shared/loading_empty.png",
+        "full": "shared/loading_full.png",
 		"play": "shared/play.png",
         "progress": {
             "file":      "shared/progressbar.png",

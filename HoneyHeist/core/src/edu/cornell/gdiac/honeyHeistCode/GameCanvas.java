@@ -868,6 +868,21 @@ public class GameCanvas {
 		local.inv();
 		computeVertices(local,region.getVertices());
 	}
+
+	public void draw(Texture region, Color tint, float x, float y, float width, float height,
+					 float xFrac, float yFrac, boolean bool){
+		if (active != DrawPass.STANDARD) {
+			Gdx.app.error("GameCanvas", "Cannot draw without active begin()", new IllegalStateException());
+			return;
+		}
+		if (bool){
+			spriteBatch.setColor(tint);
+			//spriteBatch.draw(region, x, y, Math.round(width*xStart), Math.round(height*yStart),
+			// 		Math.round((xEnd-xStart)*width), Math.round((yEnd-yStart)*height));
+			spriteBatch.draw(region, x, y, Math.round(width*(1-xFrac)),Math.round(height*(1-yFrac)),
+				Math.round(width*xFrac),Math.round(height*yFrac));
+		}
+	}
 	
 	/**
 	 * Transform the given vertices by the affine transform
