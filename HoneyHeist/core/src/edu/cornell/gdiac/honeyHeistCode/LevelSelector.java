@@ -76,8 +76,13 @@ public class LevelSelector implements Screen {
     /** Whether or not this player mode is still active */
     private boolean active;
 
+    /** The constants */
+    private JsonValue constants;
+
     private SoundBuffer menuBgm;
     private long menuBgmId = 1;
+
+    private float volume = 1f;
 
     // Scene2d
     private Stage stage;
@@ -397,15 +402,17 @@ public class LevelSelector implements Screen {
             }
         });
         table.add(rightArrow).right().height(Value.percentHeight(3f)).width(Value.percentWidth(3f)).top();
+        constants = internal.getEntry("constants", JsonValue.class);
+        volume = constants.get("defaults").getFloat("volume");
         menuBgm = directory.getEntry("audio:soundtrack_mainmenu", SoundBuffer.class);
-        menuBgmId = loopSound(menuBgm, menuBgmId, 1f);
+        menuBgmId = loopSound(menuBgm, menuBgmId, volume);
     }
 
-    public long loopSound(SoundBuffer sound, long soundId, float volume) {
+    public long loopSound(SoundBuffer sound, long soundId, float vol) {
         if (soundId != -1 && sound.isPlaying( soundId )) {
             sound.stop( soundId );
         }
-        return sound.loop(volume);
+        return sound.loop(vol);
     }
 
     public void stopAllSounds(){
