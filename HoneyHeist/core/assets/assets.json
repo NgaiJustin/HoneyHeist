@@ -20,6 +20,10 @@
     "shared:background": "shared/background.png",
     "shared:whiteSquare": "shared/whiteSquare.png",
     "shared:pauseButton": "shared/OLDplay.png",
+    "shared:pauseBackground": "shared/pause_background.png",
+    "shared:pauseMainMenu": "shared/pause_menu_button.png",
+    "shared:pauseQuit": "shared/pause_quit_button.png",
+    "shared:pauseResume": "shared/pause_resume_button.png",
     "shared:menuButton": "shared/label.png",
     "shared:tilesBackground": {
       "file": "shared/tilesBackground.png",
