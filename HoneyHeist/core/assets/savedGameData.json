@@ -11,8 +11,8 @@
 		"file": "levels:moreComplexMazeWithoutHazards"
 	},
 	{
-		"unlock": true,
-		"complete": true,
+		"unlock": false,
+		"complete": false,
 		"file": "levels:spikesIntro"
 	},
 	{
@@ -62,42 +62,42 @@
 	},
 	{
 		"unlock": true,
-		"complete": true,
+		"complete": false,
 		"file": "levels:honeypatchWithBees"
 	},
 	{
 		"unlock": true,
-		"complete": true,
+		"complete": false,
 		"file": "levels:yoloLarvaeDrop"
 	},
 	{
 		"unlock": true,
-		"complete": true,
+		"complete": false,
 		"file": "levels:spikesEverywhereONEBee"
 	},
 	{
 		"unlock": true,
-		"complete": true,
+		"complete": false,
 		"file": "levels:spikesEverywhereTWOBee"
 	},
 	{
 		"unlock": true,
-		"complete": true,
+		"complete": false,
 		"file": "levels:prototypeLevelRedux"
 	},
 	{
 		"unlock": true,
-		"complete": true,
+		"complete": false,
 		"file": "levels:yoloSkydiver"
 	},
 	{
 		"unlock": true,
-		"complete": true,
+		"complete": false,
 		"file": "levels:rotationInMidAir"
 	},
 	{
 		"unlock": true,
-		"complete": true,
+		"complete": false,
 		"file": "levels:threadTheNeedle"
 	}
 ]
