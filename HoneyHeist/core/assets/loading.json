@@ -1,6 +1,17 @@
 {
 	"textures": {
         "background": "shared/loadingtemp.png",
+        "tree": {
+          "file": "shared/loadingTree.png",
+          "sprites": {
+            "pacing": {
+              "rows": 6,
+              "cols": 10
+            }
+          }
+       },
+        "empty": "shared/loading_empty.png",
+        "full": "shared/loading_full.png",
 		"play": "shared/play.png",
         "progress": {
             "file":      "shared/progressbar.png",
