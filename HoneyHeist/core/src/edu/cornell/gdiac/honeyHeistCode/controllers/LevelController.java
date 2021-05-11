@@ -57,6 +57,8 @@ public class LevelController implements ContactListener {
     protected TextureRegion background;
     /** The texture for the tilesBackground */
     protected TextureRegion tilesBackground;
+    /** The texture for the ball */
+    protected TextureRegion ballTexture;
     /** The texture for AI Nodes, used for debugging */
     protected TextureRegion whiteSquare;
     /** The font for giving messages to the player */
@@ -429,8 +431,10 @@ public class LevelController implements ContactListener {
      * @param directory Reference to global asset manager.
      */
     public void gatherAssets(AssetDirectory directory, String dataFilePath) {
+        ballTexture      = new TextureRegion(directory.getEntry("platform:ball", Texture.class));
+
         avatarTexture    = new TextureRegion(directory.getEntry("platform:ant", Texture.class));
-        larvaeTexture = new TextureRegion(directory.getEntry("platform:larvae", Texture.class));
+        larvaeTexture    = new TextureRegion(directory.getEntry("platform:larvae", Texture.class));
         flyingBeeTexture = new TextureRegion(directory.getEntry("platform:flyingBee", Texture.class));
 
         walkingPlayer   = directory.getEntry( "platform:playerWalk.pacing", FilmStrip.class );
@@ -706,9 +710,14 @@ public class LevelController implements ContactListener {
         avatar.setIsTrulyDead(false);
         addObject(avatar);
 
+        // Create Ball array
+        Array<BallModel> balls = new Array<>();
+
         // Create chaser bees
         Array<AbstractBeeModel> bees = new Array<AbstractBeeModel>();
-        level = new LevelModel(avatar,bees,goalDoor,platforms, spikedPlatforms, honeyPatches, levelBackground, new Rectangle(bounds));
+
+        // Init Level Model
+        level = new LevelModel(avatar,bees,balls,goalDoor,platforms, spikedPlatforms, honeyPatches, levelBackground, new Rectangle(bounds));
       
         aIController = new AIController(level);
 
@@ -749,8 +758,31 @@ public class LevelController implements ContactListener {
             aIController.createAIForSingleCharacter(flyingBee, constants.get("FlyingBee").get("ai_controller_options"));
         }
 
-        //establish draw order:
+        // Add Balls based on Level data
+        /*
+            TODO:   I wrote this code modelling of what we did for the bees and larvae.
+                    Have not tested that this works yet since we don't have a level with balls yet
+         */
+        JsonValue ballPositions = levelData.get("ballPos");
+        if (ballPositions != null) {
+            for (int i = 0; i < ballPositions.size; i++) {
+                float[] pos = flyingBeePositions.get(i).asFloatArray();
+                BallModel ball = new BallModel(constants.get("Ball"), pos[0], pos[1]);
+                ball.setDrawScale(scale);
+                ball.setTexture(ballTexture);
+                balls.add(ball);
+                addObject(ball);
+            }
+        }
 
+        // TODO: This is just to test the ball: Remove when we get the level editor working
+        BallModel testBall = new BallModel(constants.get("Ball"), 15, 15);
+        testBall.setDrawScale(scale);
+        testBall.setTexture(ballTexture);
+        balls.add(testBall);
+        addObject(testBall);
+
+        //establish draw order:
         addObject(honeyPatches);
         addObject(spikedPlatforms);
 
@@ -803,6 +835,7 @@ public class LevelController implements ContactListener {
         SpikedPlatformModel spikedPlatforms = level.getSpikedPlatforms();
         PlayerModel avatar = level.getPlayer();
         Array<AbstractBeeModel> bees = level.getBees();
+        Array<BallModel> balls = level.getBalls();
         Vector2 origin = level.getOrigin();
 
         platforms.startRotation(isClockwise, origin);
@@ -822,6 +855,12 @@ public class LevelController implements ContactListener {
         for(AbstractBeeModel bee : bees){
             if((bee.isGrounded()||bee.isInHoney()) && platformNotRotating) {
                 bee.startRotation(isClockwise, origin);
+            }
+        }
+        for (BallModel ball : balls) {
+            System.out.println("Grounded: " + ball.isGrounded());
+            if((ball.isGrounded()||ball.isInHoney()) && platformNotRotating) {
+                ball.startRotation(isClockwise, origin);
             }
         }
     }

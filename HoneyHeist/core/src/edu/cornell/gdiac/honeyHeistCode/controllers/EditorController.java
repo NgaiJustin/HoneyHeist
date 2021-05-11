@@ -429,10 +429,11 @@ public class EditorController extends WorldController implements InputProcessor 
         addObject(avatar);
         avatar.setGravityScale(0);
 
+        // Create Ball array
+        Array<BallModel> balls = new Array<>();
         // Create chaser bees
-
         Array<AbstractBeeModel> bees = new Array<AbstractBeeModel>();
-        level = new LevelModel(avatar,bees,goalDoor,platforms, spikedPlatforms, honeyPatches, levelBackground, new Rectangle(bounds));
+        level = new LevelModel(avatar,bees, balls, goalDoor,platforms, spikedPlatforms, honeyPatches, levelBackground, new Rectangle(bounds));
 
         dwidth = chaserBeeTexture.getRegionWidth() / scale.x;
         dheight = chaserBeeTexture.getRegionHeight() / scale.y;

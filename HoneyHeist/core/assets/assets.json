@@ -33,6 +33,7 @@
     "platform:ant": "platform/ant.png",
     "platform:larvae": "platform/larvae.png",
     "platform:flyingBee": "platform/chaserBee.png",
+    "platform:ball" : "platform/ball.png",
 
     "platform:playerWalk": {
       "file": "platform/walkstrip.png",

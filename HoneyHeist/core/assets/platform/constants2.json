@@ -81,5 +81,19 @@
       "ticksBeforeChangeInRandomDirection": 120,
       "ticksUntilChangeMustOccur": 240
     }
+  },
+  "Ball" : {
+    "shrink" : [
+      1, 1
+    ],
+    "damping": 10.0,
+    "density": 10.0,
+    "friction": 100.0,
+    "maxspeed": 3.0,
+    "radius": 0.5,
+    "sensor": {
+      "shrink": 0.1,
+      "height": 0.05
+    }
   }
 }
