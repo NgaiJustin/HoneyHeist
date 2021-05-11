@@ -121,6 +121,8 @@ public class LevelController implements ContactListener {
     private boolean isRotating = false;
     private float angleLeft = 0f;
 
+    private TransitionModel transition = null;
+
     /**
      * Returns true if debug mode is active.
      *
@@ -297,16 +299,21 @@ public class LevelController implements ContactListener {
     /** Player texture and filmstrip */
     private TextureRegion avatarTexture;
     private FilmStrip walkingPlayer;
+    private FilmStrip flailingPlayer;
     private FilmStrip dyingPlayer;
 
     /** Larvae texture and filmstrip */
-    private TextureRegion chaserBeeTexture;
+    private TextureRegion larvaeTexture;
     private FilmStrip walkingLarvae;
+    private FilmStrip flailingLarvae;
+    private FilmStrip dyingLarvae;
     private FilmStrip chasingLarvae;
 
     /** Bee texture and filmstrip */
     private TextureRegion flyingBeeTexture;
     private FilmStrip flyingBeeStrip;
+    private FilmStrip flailingBeestrip;
+    private FilmStrip dyingBeestrip;
     private FilmStrip chasingBeeStrip;
 
     /** Platform texture */
@@ -335,21 +342,24 @@ public class LevelController implements ContactListener {
     private NinePatch platNinePatch;
     private NinePatch spikeNinePatch;
 
+    /** Transition Animation */
+    private FilmStrip levelTransition;
+
     /** The jump sound.  We only want to play once. */
     private SoundBuffer bgm;
-    private long bgmId = 10;
+    private long bgmId = 1;
 
     /** The jump sound.  We only want to play once */
-    private SoundBuffer jumpSound;
-    private long jumpId = -1;
+    private SoundBuffer deathSound;
+    private long deathId = 1;
 
     /** The weapon fire sound.  We only want to play once. */
-    private SoundBuffer fireSound;
-    private long fireId = -1;
+    private SoundBuffer trackingSound;
+    private long trackingId = 1;
 
     /** The weapon pop sound.  We only want to play once. */
-    private SoundBuffer plopSound;
-    private long plopId = -1;
+    private SoundBuffer winSound;
+    private long winId = 1;
 
     /** The default sound volume */
     private float volume;
@@ -420,15 +430,24 @@ public class LevelController implements ContactListener {
      */
     public void gatherAssets(AssetDirectory directory, String dataFilePath) {
         avatarTexture    = new TextureRegion(directory.getEntry("platform:ant", Texture.class));
-        chaserBeeTexture = new TextureRegion(directory.getEntry("platform:larvae", Texture.class));
+        larvaeTexture = new TextureRegion(directory.getEntry("platform:larvae", Texture.class));
         flyingBeeTexture = new TextureRegion(directory.getEntry("platform:flyingBee", Texture.class));
 
         walkingPlayer   = directory.getEntry( "platform:playerWalk.pacing", FilmStrip.class );
+        flailingPlayer  = directory.getEntry("platform:playerFlail.pacing", FilmStrip.class);
         dyingPlayer     = directory.getEntry( "platform:playerDeath.pacing", FilmStrip.class );
+
         walkingLarvae   = directory.getEntry( "platform:larvaeWalk.pacing", FilmStrip.class );
+        flailingLarvae  = directory.getEntry("platform:larvaeFlail.pacing", FilmStrip.class);
+        dyingLarvae     = directory.getEntry("platform:larvaeDeath.pacing", FilmStrip.class);
         chasingLarvae   = directory.getEntry( "platform:larvaeChase.pacing", FilmStrip.class );
-        flyingBeeStrip  = directory.getEntry( "platform:beeFly.pacing", FilmStrip.class );
-        chasingBeeStrip = directory.getEntry( "platform:beeChase.pacing", FilmStrip.class );
+
+        flyingBeeStrip   = directory.getEntry( "platform:beeFly.pacing", FilmStrip.class );
+        flailingBeestrip = directory.getEntry("platform:beeFlail.pacing", FilmStrip.class);
+        dyingBeestrip    = directory.getEntry("platform:beeDeath.pacing", FilmStrip.class);
+        chasingBeeStrip  = directory.getEntry( "platform:beeChase.pacing", FilmStrip.class );
+
+        levelTransition = directory.getEntry("platform:levelTransition.pacing", FilmStrip.class);
 
         SpikeULeft  = new TextureRegion(directory.getEntry("platform:spikeULeft", Texture.class));
         SpikeUMid   = new TextureRegion(directory.getEntry("platform:spikeUMid", Texture.class));
@@ -453,10 +472,10 @@ public class LevelController implements ContactListener {
         platNinePatch  = new NinePatch(directory.getEntry("platform:platNinePatch", Texture.class),  16, 16 ,16 ,16 );
         spikeNinePatch = new NinePatch(directory.getEntry("platform:spikeNinePatch", Texture.class),  16, 16 ,16 ,16 );
 
-        jumpSound = directory.getEntry("platform:jump", SoundBuffer.class);
-        fireSound = directory.getEntry("platform:pew", SoundBuffer.class);
-        plopSound = directory.getEntry("platform:plop", SoundBuffer.class);
-        //bgm = directory.getEntry("platform:bgm", SoundBuffer.class);
+        deathSound = directory.getEntry("audio:soundeffect_death_pixel", SoundBuffer.class);
+        trackingSound = directory.getEntry("audio:soundeffect_tracking", SoundBuffer.class);
+        winSound = directory.getEntry("audio:soundeffect_win", SoundBuffer.class);
+        bgm = directory.getEntry("audio:bgm", SoundBuffer.class);
 
         constants = directory.getEntry("platform:constants2", JsonValue.class);
         System.out.println("DatafilePath = " + dataFilePath);
@@ -521,7 +540,7 @@ public class LevelController implements ContactListener {
         setComplete(false);
         setFailure(false);
         populateLevel();
-        //playSound(bgm, 1);
+        bgmId = loopSound(bgm, bgmId);
     }
 
     /**
@@ -681,30 +700,36 @@ public class LevelController implements ContactListener {
         avatar.setDrawScale(scale);
         avatar.setTexture(avatarTexture);
         avatar.setAnimationStrip(PlayerModel.AntAnimations.WALK, walkingPlayer);
+        avatar.setAnimationStrip(PlayerModel.AntAnimations.FLAIL, flailingPlayer);
         avatar.setAnimationStrip(PlayerModel.AntAnimations.DEATH, dyingPlayer);
+        avatar.setIsDead(false);
+        avatar.setIsTrulyDead(false);
         addObject(avatar);
 
         // Create chaser bees
-
         Array<AbstractBeeModel> bees = new Array<AbstractBeeModel>();
         level = new LevelModel(avatar,bees,goalDoor,platforms, spikedPlatforms, honeyPatches, levelBackground, new Rectangle(bounds));
       
         aIController = new AIController(level);
 
-        dwidth = chaserBeeTexture.getRegionWidth() / scale.x;
-        dheight = chaserBeeTexture.getRegionHeight() / scale.y;
+        dwidth = larvaeTexture.getRegionWidth() / scale.x;
+        dheight = larvaeTexture.getRegionHeight() / scale.y;
         //JsonValue.JsonIterator groundedBeeIterator = constants.get("groundedBees").iterator();
         JsonValue groundedBeePositions = levelData.get("groundedBeePos");
         for (int i=0; i<groundedBeePositions.size; i++){
             float[] pos = groundedBeePositions.get(i).asFloatArray();
-            LarvaeModel chaserBee = new LarvaeModel(constants.get("GroundedBee"), pos[0], pos[1], dwidth, dheight);
-            chaserBee.setDrawScale(scale);
-            chaserBee.setTexture(chaserBeeTexture);
-            chaserBee.setAnimationStrip(LarvaeModel.LarvaeAnimations.WALK, walkingLarvae);
-            chaserBee.setAnimationStrip(LarvaeModel.LarvaeAnimations.CHASE, chasingLarvae);
-            bees.add(chaserBee);
-            addObject(chaserBee);
-            aIController.createAIForSingleCharacter(chaserBee, constants.get("GroundedBee").get("ai_controller_options"));
+            LarvaeModel larvae = new LarvaeModel(constants.get("GroundedBee"), pos[0], pos[1], dwidth, dheight);
+            larvae.setDrawScale(scale);
+            larvae.setTexture(larvaeTexture);
+            larvae.setAnimationStrip(LarvaeModel.LarvaeAnimations.WALK, walkingLarvae);
+            larvae.setAnimationStrip(LarvaeModel.LarvaeAnimations.FLAIL, flailingLarvae);
+            larvae.setAnimationStrip(LarvaeModel.LarvaeAnimations.DEATH, dyingLarvae);
+            larvae.setAnimationStrip(LarvaeModel.LarvaeAnimations.CHASE, chasingLarvae);
+            larvae.setIsDead(false);
+            larvae.setIsTrulyDead(false);
+            bees.add(larvae);
+            addObject(larvae);
+            aIController.createAIForSingleCharacter(larvae, constants.get("GroundedBee").get("ai_controller_options"));
         }
 
         JsonValue flyingBeePositions = levelData.get("flyingBeePos");
@@ -714,7 +739,11 @@ public class LevelController implements ContactListener {
             flyingBee.setDrawScale(scale);
             flyingBee.setTexture(flyingBeeTexture);
             flyingBee.setAnimationStrip(FlyingBeeModel.BeeAnimations.FLY, flyingBeeStrip);
+            flyingBee.setAnimationStrip(FlyingBeeModel.BeeAnimations.FLAIL, flailingBeestrip);
+            flyingBee.setAnimationStrip(FlyingBeeModel.BeeAnimations.DEATH, dyingBeestrip);
             flyingBee.setAnimationStrip(FlyingBeeModel.BeeAnimations.CHASE, chasingBeeStrip);
+            flyingBee.setIsDead(false);
+            flyingBee.setIsTrulyDead(false);
             bees.add(flyingBee);
             addObject(flyingBee);
             aIController.createAIForSingleCharacter(flyingBee, constants.get("FlyingBee").get("ai_controller_options"));
@@ -724,6 +753,15 @@ public class LevelController implements ContactListener {
 
         addObject(honeyPatches);
         addObject(spikedPlatforms);
+
+        if(transition!=null) {
+            transition = new TransitionModel(level.getOrigin().x, level.getOrigin().y, true);
+            transition.setSensor(true);
+            transition.setGravityScale(0);
+            transition.setDrawScale(scale);
+            transition.setAnimationStrip(levelTransition);
+            addObject(transition);
+        }
 
 
         /*
@@ -771,6 +809,11 @@ public class LevelController implements ContactListener {
         level.getLevelBackground().startRotation(isClockwise,origin);
 
         level.getGoalDoor().startRotation(isClockwise,origin);
+
+        if(transition != null){
+            transition.startRotation(isClockwise,origin);
+        }
+
         if ((avatar.isGrounded()||avatar.isInHoney())&&platformNotRotating){
             avatar.startRotation(isClockwise, origin);
         }
@@ -886,16 +929,21 @@ public class LevelController implements ContactListener {
 //    }
     public void update(float horizontal, boolean didRotate, boolean didAntiRotate) {
         // Process actions in object model
-        moveAnt(horizontal);
         PlayerModel avatar  = level.getPlayer();
         PlatformModel platforms = level.getPlatforms();
-        avatar.applyForce();
+
+        // Only move if player is not dead
+        if (!avatar.getIsDead()) {
+            moveAnt(horizontal);
+            avatar.applyForce();
+        }
 
         platforms.animatePlatform(PlatformModel.PlatformAnimations.SHUFFLE, true);
 
         if((platforms.isRotating() && !avatar.isRotating()) && (avatar.isGrounded() || avatar.isInHoney())){
                 //&&((avatar.isGrounded() && !avatar.isInHoney())||(avatar.isInHoney() && avatar.getHoneyTime()==0))){
             avatar.startRotation(platforms.getRemainingAngle(), platforms.isClockwise(), level.getOrigin());
+            avatar.setCurrentSpeed(platforms.getCurrentSpeed());
         }
 
         if(!avatar.isGrounded()){
@@ -903,6 +951,14 @@ public class LevelController implements ContactListener {
         }
         if(!avatar.isInHoney()){
             honeyFixtures.clear();
+        }
+        if(avatar.getIsDead()){
+            if (avatar.getIsTrulyDead()) {
+                avatar.markRemoved(true);
+            } else {
+                avatar.animateAnt(PlayerModel.AntAnimations.DEATH, true);
+                avatar.haltMovement();
+            }
         }
 
         // Process AI action
@@ -914,16 +970,37 @@ public class LevelController implements ContactListener {
 //        aIController.updateAccessibility();
 
         for(AbstractBeeModel bee : level.getBees()){
-            bee.applyForce();
-            if((platforms.isRotating() && !bee.isRotating()) && (bee.isGrounded()|| bee.isInHoney())){
+            // Only move enemy if not dead
+            if (!bee.getIsDead()) {
+                bee.applyForce();
+
+                if ((platforms.isRotating() && !bee.isRotating()) && (bee.isGrounded() || bee.isInHoney())) {
                     //&&((bee.isGrounded() && !bee.isInHoney())||(bee.isInHoney() && bee.getHoneyTime()==0))){
-                bee.startRotation(platforms.getRemainingAngle(), platforms.isClockwise(), level.getOrigin());
+                    bee.startRotation(platforms.getRemainingAngle(), platforms.isClockwise(), level.getOrigin());
+                    bee.setCurrentSpeed(platforms.getCurrentSpeed());
+                }
+                if(!bee.isGrounded()){
+                    bee.getSensorFixtures().clear();
+                }
+                if (!bee.isInHoney()) {
+                    bee.getHoneyFixtures().clear();
+                }
+                if (bee.getIsChasing()){
+                    if (!bee.getPlayedChaseSound()){
+                        trackingId = playSound(trackingSound, trackingId);
+                        bee.setPlayedChaseSound(true);
+                    }
+                } else if (bee.getPlayedChaseSound()){
+                    bee.setPlayedChaseSound(false);
+                }
             }
-            if(!bee.isGrounded()){
-                bee.getSensorFixtures().clear();
-            }
-            if(!bee.isInHoney()){
-                bee.getHoneyFixtures().clear();
+            if (bee.getIsDead()) {
+              if (bee.getIsTrulyDead()){
+                  bee.markRemoved(true);
+              }
+              else {
+                  bee.animateDeath();
+              }
             }
         }
 
@@ -931,12 +1008,16 @@ public class LevelController implements ContactListener {
         angleLeft = platforms.getRemainingAngle();
         if (didRotate) {
             rotateClockwise();
-            if (angleLeft <= 2*Math.PI/12 && isRotating && !didQueueCounterClockwise){
+            if (angleLeft <= 2*Math.PI/24 && isRotating && !didQueueCounterClockwise){
+            //if (isRotating && !didQueueCounterClockwise){
+                System.out.print("Queue Clockwise\n");
                 didQueueClockwise = true;
             }
         } else if (didAntiRotate) {
             rotateCounterClockwise();
-            if (angleLeft <= 2*Math.PI/12 && isRotating && !didQueueClockwise){
+            if (angleLeft <= 2*Math.PI/24 && isRotating && !didQueueClockwise){
+            //if (isRotating && !didQueueClockwise){
+                System.out.print("Queue Counter Clockwise\n");
                 didQueueCounterClockwise = true;
             }
         }
@@ -946,6 +1027,27 @@ public class LevelController implements ContactListener {
         } else if (!isRotating && didQueueCounterClockwise){
             rotateCounterClockwise();
             didQueueCounterClockwise = false;
+        }
+
+        if(transition != null && transition.isFinished()){
+            transition.markRemoved(true);
+            transition = null;
+        }
+
+        if(isComplete()&&transition==null&&countdown<EXIT_COUNT-40){
+            transition = new TransitionModel(level.getOrigin().x,level.getOrigin().y,false);
+            transition.setSensor(true);
+            transition.setGravityScale(0);
+            transition.setDrawScale(scale);
+            transition.setAnimationStrip(levelTransition);
+            addObject(transition);
+            if(platforms.isRotating()) {
+                float angle = ((float)Math.PI/3 - platforms.getRemainingAngle());
+                if(platforms.isClockwise()) transition.setAngle(angle);
+                else transition.setAngle(-angle);
+                transition.startRotation(platforms.getRemainingAngle(), platforms.isClockwise(), level.getOrigin());
+                transition.setCurrentSpeed(platforms.getCurrentSpeed());
+            }
         }
     }
     /**
@@ -1019,14 +1121,29 @@ public class LevelController implements ContactListener {
 
             if (((bd1.getName().contains("spiked")) && bd2isCharacterModel) ||
             bd2.getName().contains("spiked") && bd1isCharacterModel){
-                if ((avatar == bd1 || avatar == bd2)&&!isComplete()){
+                if ((avatar == bd1 || avatar == bd2) && !isComplete()){
+                    // Player is dead
+                    // System.out.println("PLAYER DIED");
+                    avatar.setIsDead(true);
+                    deathId = playSound(deathSound, deathId, 0.1f);
                     setFailure(true);
                 }
-
-                if (bd1isCharacterModel){
-                    bd1.markRemoved(true);
+                else if (bd1isCharacterModel){
+                    AbstractBeeModel bee = (AbstractBeeModel) bd1;
+                    // System.out.println("ENEMY DIED: "+bee.getSensorName());
+                    bee.setIsDead(true);
+                    deathId = playSound(deathSound, deathId, 0.1f);
+                    // Marked for removed, moved to the update loop
+                    // enemy is only removed when the death animation finishes playing
+                    // bd1.markRemoved(true);
                 } else {
-                    bd2.markRemoved(true);
+                    AbstractBeeModel bee = (AbstractBeeModel) bd2;
+                    // System.out.println("ENEMY DIED: "+bee.getSensorName());
+                    bee.setIsDead(true);
+                    deathId = playSound(deathSound, deathId, 0.1f);
+                    // Marked for removed, moved to the update loop
+                    // enemy is only removed when the death animation finishes playing
+                    // bd2.markRemoved(true);
                 }
             }
 
@@ -1072,14 +1189,19 @@ public class LevelController implements ContactListener {
                 avatar.setMaxspeed(level.getHoneyPatches().getSlowSpeed());
             }
 
-            // Check for win condition
+            // Check for contact with enemy
             if (!isFailure() && !isComplete() &&
                     ((bd1 == avatar && bd2.getClass().getSuperclass() == AbstractBeeModel.class) ||
                     (bd1.getClass().getSuperclass() == AbstractBeeModel.class && bd2 == avatar))) {
+                avatar.setIsDead(true);
+                deathId = playSound(deathSound, deathId, 0.1f);
                 setFailure(true);
             }
+
+            // Check for win condition
             if (((bd1 == avatar && bd2 == goalDoor) ||
                     (bd1 == goalDoor && bd2 == avatar))&&!isComplete()) {
+                winId = playSound(winSound, winId);
                 setComplete(true);
             }
         } catch (Exception e) {
@@ -1242,6 +1364,29 @@ public class LevelController implements ContactListener {
     }
 
     /**
+     * Same as playSound but it loops
+     * @param sound     Sound asset to play
+     * @param soundId   Sound instance
+     * @return  the new sound instance
+     */
+    public long loopSound(SoundBuffer sound, long soundId){
+        if (soundId != -1 && sound.isPlaying (soundId)){
+            sound.stop(soundId);
+        }
+        return sound.loop(1f);
+    }
+
+    /**
+     * Stops all sounds that are playing
+     */
+    public void stopAllSounds(){
+        bgm.stop(bgmId);
+        deathSound.stop(deathId);
+        trackingSound.stop(trackingId);
+        winSound.stop(winId);
+    }
+
+    /**
      * Called when the Screen is resized.
      *
      * This can happen at any point during a non-paused state but will never happen
@@ -1307,14 +1452,14 @@ public class LevelController implements ContactListener {
      * Pausing happens when we switch game modes.
      */
     public void pause() {
-        if (jumpSound.isPlaying(jumpId)) {
-            jumpSound.stop(jumpId);
+        if (deathSound.isPlaying(deathId)) {
+            deathSound.stop(deathId);
         }
-        if (plopSound.isPlaying(plopId)) {
-            plopSound.stop(plopId);
+        if (winSound.isPlaying(winId)) {
+            winSound.stop(winId);
         }
-        if (fireSound.isPlaying(fireId)) {
-            fireSound.stop(fireId);
+        if (trackingSound.isPlaying(trackingId)) {
+            trackingSound.stop(trackingId);
         }
         if (bgm.isPlaying(bgmId)){
             bgm.stop(bgmId);

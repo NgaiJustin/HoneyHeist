@@ -31,22 +31,22 @@ public class EditorController extends WorldController implements InputProcessor 
     private TextureRegion crosshairTexture;
     /** The texture for the background */
     protected TextureRegion background;
-    /**
-     * Texture asset for player avatar
-     */
+
+    /** Player texture and filmstrip */
     private TextureRegion avatarTexture;
-    /**
-     * Texture filmstrip for player walking animation
-     */
     private FilmStrip walkingPlayer;
-    /**
-     * Texture asset for chaser bee avatar
-     */
+    private FilmStrip dyingPlayer;
+
+    /** Larvae texture and filmstrip */
     private TextureRegion chaserBeeTexture;
-    /**
-     * Texture asset for chaser bee avatar
-     */
+    private FilmStrip walkingLarvae;
+    private FilmStrip chasingLarvae;
+
+    /** Bee texture and filmstrip */
     private TextureRegion flyingBeeTexture;
+    private FilmStrip flyingBeeStrip;
+    private FilmStrip chasingBeeStrip;
+
     /**
      * Texture asset for testEnemy avatar
      */
@@ -242,6 +242,12 @@ public class EditorController extends WorldController implements InputProcessor 
      */
     public void gatherAssets(AssetDirectory directory) {
         this.directory = directory;
+        walkingPlayer   = directory.getEntry( "platform:playerWalk.pacing", FilmStrip.class );
+        dyingPlayer     = directory.getEntry( "platform:playerDeath.pacing", FilmStrip.class );
+        walkingLarvae   = directory.getEntry( "platform:larvaeWalk.pacing", FilmStrip.class );
+        chasingLarvae   = directory.getEntry( "platform:larvaeChase.pacing", FilmStrip.class );
+        flyingBeeStrip  = directory.getEntry( "platform:beeFly.pacing", FilmStrip.class );
+        chasingBeeStrip = directory.getEntry( "platform:beeChase.pacing", FilmStrip.class );
 
         SpikeULeft  = new TextureRegion(directory.getEntry("platform:spikeULeft", Texture.class));
         SpikeUMid   = new TextureRegion(directory.getEntry("platform:spikeUMid", Texture.class));
@@ -1032,6 +1038,7 @@ public class EditorController extends WorldController implements InputProcessor 
         avatar.setDrawScale(scale);
         avatar.setTexture(avatarTexture);
         avatar.setAnimationStrip(PlayerModel.AntAnimations.WALK, walkingPlayer);
+        avatar.setAnimationStrip(PlayerModel.AntAnimations.DEATH, dyingPlayer);
         addObject(avatar);
         //avatar.setActive(false);
         avatar.setGravityScale(0);
@@ -1087,6 +1094,8 @@ public class EditorController extends WorldController implements InputProcessor 
 
         chaserBee.setDrawScale(scale);
         chaserBee.setTexture(chaserBeeTexture);
+        chaserBee.setAnimationStrip(LarvaeModel.LarvaeAnimations.WALK, walkingLarvae);
+        chaserBee.setAnimationStrip(LarvaeModel.LarvaeAnimations.CHASE, chasingLarvae);
         level.getBees().add(chaserBee);
         addObject(chaserBee);
         //chaserBee.setActive(false);
@@ -1102,6 +1111,8 @@ public class EditorController extends WorldController implements InputProcessor 
 
         flyingBee.setDrawScale(scale);
         flyingBee.setTexture(flyingBeeTexture);
+        flyingBee.setAnimationStrip(FlyingBeeModel.BeeAnimations.FLY, flyingBeeStrip);
+        flyingBee.setAnimationStrip(FlyingBeeModel.BeeAnimations.CHASE, chasingBeeStrip);
         level.getBees().add(flyingBee);
         addObject(flyingBee);
         //chaserBee.setActive(false);

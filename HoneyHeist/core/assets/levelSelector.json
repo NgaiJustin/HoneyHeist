@@ -3,7 +3,9 @@
         "background": "shared/background_menu.png",
 		"play": "shared/play.png",
         "levelEditor": "shared/button.png",
-        "button": "shared/level.png",
+        "unlock_button": "shared/level_empty.png",
+        "complete_button": "shared/level_complete_thick.png",
+        "lock_button": "shared/level_locked_large.png"
         "title": "shared/levelselectlabel.png",
         "left": "shared/left_arrow.png",
         "right": "shared/right_arrow.png",

@@ -49,6 +49,10 @@ public class CharacterModel extends CapsuleObstacle {
      */
     protected boolean isInHoney;
     /**
+     * Whether the character has died, used to trigger death animation
+     */
+    protected boolean isDead;
+    /**
      * Sensor fixtures for isGrounded detection
      */
     protected ObjectSet<Fixture> sensorFixtures;
@@ -136,6 +140,16 @@ public class CharacterModel extends CapsuleObstacle {
      */
     public void setInHoney(boolean value) { isInHoney = value; }
 
+    /**
+     * Sets whether the character is dead
+     */
+    public void setIsDead (boolean value) {isDead = value;}
+
+    /**
+     * Get whether the character is dead
+     */
+    public boolean getIsDead () {return isDead;}
+
     public void setMaxspeed(float speed){ maxspeed = speed; }
 
     public void setDefaultMaxspeed(){ maxspeed = defaultMaxspeed; }
@@ -143,6 +157,16 @@ public class CharacterModel extends CapsuleObstacle {
     public void setHoneyTime(float time) { honeyTime = time; }
 
     public float getHoneyTime() { return honeyTime; }
+
+    /**
+     * Remove all forces on the bee - Halts movement
+     */
+    public void haltMovement(){
+        if (body != null) {
+            body.setAngularVelocity(0);
+            body.setLinearVelocity(0, 0);
+        }
+    }
 
     /**
      * Returns how much force to apply to get the ant moving
@@ -205,6 +229,7 @@ public class CharacterModel extends CapsuleObstacle {
 
     public void startRotation(boolean isClockwise, Vector2 point){
         if (isRotating) return;
+        currentSpeed = 0f;
         if(isGrounded) {
             setBodyType(BodyDef.BodyType.StaticBody);
             sticking = true;
@@ -216,6 +241,7 @@ public class CharacterModel extends CapsuleObstacle {
     }
     public void startRotation(float rotationAmount, boolean isClockwise, Vector2 point){
         if (isRotating) return;
+        currentSpeed = 0f;
         if(isGrounded) {
             setBodyType(BodyDef.BodyType.StaticBody);
             sticking = true;
@@ -246,8 +272,8 @@ public class CharacterModel extends CapsuleObstacle {
         faceRight = true;
 
         //Probably replace the following code with json data
-        rotationAngle = (float) Math.PI/3;
-        rotationSpeed = ((float) Math.PI/3)*1.3f;
+        //rotationAngle = (float) Math.PI/3;
+        //rotationSpeed = ((float) Math.PI/3)*1.3f;
 
     }
 
@@ -319,7 +345,8 @@ public class CharacterModel extends CapsuleObstacle {
             return;
         }
 
-        float rotationAmount = rotationSpeed * dt;
+        getRotSpeed(dt);
+        float rotationAmount = currentSpeed * dt;
         if (rotationAmount > remainingAngle){
             rotationAmount = remainingAngle;
             isRotating = false;
@@ -387,7 +414,6 @@ public class CharacterModel extends CapsuleObstacle {
             setVY(Math.min(-0.145f,getVY()));
         }*/
     }
-
 
     /**
      * Draws the outline of the physics body.

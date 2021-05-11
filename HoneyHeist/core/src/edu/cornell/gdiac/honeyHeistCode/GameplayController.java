@@ -17,6 +17,7 @@
 package edu.cornell.gdiac.honeyHeistCode;
 
 import com.badlogic.gdx.*;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.math.*;
 import com.badlogic.gdx.utils.*;
 import com.badlogic.gdx.graphics.*;
@@ -24,12 +25,16 @@ import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.physics.box2d.*;
 import edu.cornell.gdiac.assets.AssetDirectory;
 import edu.cornell.gdiac.audio.SoundBuffer;
+import edu.cornell.gdiac.honeyHeistCode.controllers.EditorController;
 import edu.cornell.gdiac.honeyHeistCode.controllers.aiControllers.AISingleCharacterController;
 import edu.cornell.gdiac.honeyHeistCode.controllers.InputController;
 import edu.cornell.gdiac.honeyHeistCode.obstacle.Obstacle;
 import edu.cornell.gdiac.util.PooledList;
 import edu.cornell.gdiac.util.ScreenListener;
 import edu.cornell.gdiac.honeyHeistCode.controllers.LevelController;
+
+import javax.swing.*;
+//import org.
 
 /**
  * Base class for a world-specific controller.
@@ -143,6 +148,10 @@ public class GameplayController implements Screen, InputProcessor {
 	private Texture pauseResume;
 	/** If the resume button is pressed */
 	private boolean resumePressed;
+
+	private JsonValue allLevelData;
+	private int currentLevelNum;
+
 //	/** If the game is ready to resume */
 //	private boolean resumeReady;
 	/** Constants for the position of pauseResume */
@@ -164,7 +173,7 @@ public class GameplayController implements Screen, InputProcessor {
 	/** Constants for the position of pause button */
 	private final float PAUSE_XPOS = Gdx.graphics.getWidth()*0.85f;
 	private final float PAUSE_YPOS = Gdx.graphics.getHeight()*0.85f;
-	private final float PAUSE_SCALE = 0.5f;
+	private final float PAUSE_SCALE = 4f;
 	/** Menu button texture */
 	private Texture menuButton;
 	/** Offset for the menu word on the button */
@@ -200,6 +209,15 @@ public class GameplayController implements Screen, InputProcessor {
     public LevelController getLevelController( ) {
         return levelController;
     }
+
+	/**
+	 * Returns the current level number
+	 *
+	 * @return currentLevelNum
+	 */
+	public int getCurrentLevelNum( ) {
+		return currentLevelNum;
+	}
 
 	/**
 	 * Returns true if debug mode is active.
@@ -390,10 +408,12 @@ public class GameplayController implements Screen, InputProcessor {
 	 *
 	 * @param directory	Reference to global asset manager.
 	 */
-	public void gatherAssets(AssetDirectory directory, String levelData) {
+	public void gatherAssets(AssetDirectory directory, String levelData, JsonValue allLevelData, int currentLevelNum) {
 		// Allocate the tiles
 //		earthTile = new TextureRegion(directory.getEntry( "shared:earth", Texture.class ));
 //		goalTile  = new TextureRegion(directory.getEntry( "shared:goal", Texture.class ));
+		this.allLevelData = allLevelData;
+		this.currentLevelNum = currentLevelNum;
 		// background
 		background = new TextureRegion(directory.getEntry( "shared:background",  Texture.class ));
 		menuFont = directory.getEntry( "menuFont" ,BitmapFont.class);
@@ -523,6 +543,7 @@ public class GameplayController implements Screen, InputProcessor {
 			return false;
 		} else if (menuReady) {
         	pause();
+        	levelController.stopAllSounds();
         	listener.exitScreen(this, EXIT_MENU);
         	return false;
 //		} else if (input.didRetreat()) {
@@ -536,6 +557,9 @@ public class GameplayController implements Screen, InputProcessor {
 				reset();
 			} else if (levelController.isComplete()) {
 				pause();
+				saveData();
+				currentLevelNum ++;
+				System.out.println("current level: " + currentLevelNum);
 				listener.exitScreen(this, EXIT_NEXT);
 				return false;
 //				reset();
@@ -823,31 +847,33 @@ public class GameplayController implements Screen, InputProcessor {
 
 		// MENU button has a higher priority then the PAUSE button
 		float width, height;
-		// MENU button
 //		width = MENU_XSCALE * scaleFactor * menuButton.getWidth() / 2.0f;
 //		height = MENU_YSCALE * scaleFactor * menuButton.getHeight() / 2.0f;
 //		if (Math.abs(screenX - MENU_XPOS) < Math.abs(width) && Math.abs(screenY - MENU_YPOS) < Math.abs(height)) {
 //			menuPressed = true;
 //		}
-		width = menuScale * scaleFactor * pauseMenu.getWidth() / 2.0f;
-		height = menuScale * scaleFactor * pauseMenu.getHeight() / 2.0f;
-		if (Math.abs(screenX - PAUSE_MENU_XPOS + width) < Math.abs(width) && Math.abs(screenY - PAUSE_MENU_YPOS +
-				height) < Math.abs(height)) {
-			menuPressed = true;
-		}
-		// QUIT button
-		width = menuScale * scaleFactor * pauseQuit.getWidth() / 2.0f;
-		height = menuScale * scaleFactor * pauseQuit.getHeight() / 2.0f;
-		if (Math.abs(screenX - PAUSE_QUIT_XPOS + width) < Math.abs(width) && Math.abs(screenY - PAUSE_QUIT_YPOS +
-				height) < Math.abs(height)) {
-			quitPressed = true;
-		}
-		// RESUME button
-		width = menuScale * scaleFactor * pauseResume.getWidth() / 2.0f;
-		height = menuScale * scaleFactor * pauseResume.getHeight() / 2.0f;
-		if (Math.abs(screenX - PAUSE_RESUME_XPOS + width) < Math.abs(width) && Math.abs(screenY - PAUSE_RESUME_YPOS +
-				height) < Math.abs(height)) {
-			resumePressed = true;
+		if (isPaused) {
+			// MENU button
+			width = menuScale * scaleFactor * pauseMenu.getWidth() / 2.0f;
+			height = menuScale * scaleFactor * pauseMenu.getHeight() / 2.0f;
+			if (Math.abs(screenX - PAUSE_MENU_XPOS + width) < Math.abs(width) && Math.abs(screenY - PAUSE_MENU_YPOS +
+					height) < Math.abs(height)) {
+				menuPressed = true;
+			}
+			// QUIT button
+			width = menuScale * scaleFactor * pauseQuit.getWidth() / 2.0f;
+			height = menuScale * scaleFactor * pauseQuit.getHeight() / 2.0f;
+			if (Math.abs(screenX - PAUSE_QUIT_XPOS + width) < Math.abs(width) && Math.abs(screenY - PAUSE_QUIT_YPOS +
+					height) < Math.abs(height)) {
+				quitPressed = true;
+			}
+			// RESUME button
+			width = menuScale * scaleFactor * pauseResume.getWidth() / 2.0f;
+			height = menuScale * scaleFactor * pauseResume.getHeight() / 2.0f;
+			if (Math.abs(screenX - PAUSE_RESUME_XPOS + width) < Math.abs(width) && Math.abs(screenY - PAUSE_RESUME_YPOS +
+					height) < Math.abs(height)) {
+				resumePressed = true;
+			}
 		}
 		// PAUSE button
 		float radius, dist;
@@ -899,6 +925,57 @@ public class GameplayController implements Screen, InputProcessor {
 			return false;
 		}
 		return true;
+	}
+
+	public class Levels{
+		public Level[] levels;
+		public Levels(){
+		}
+		public void setLevel(Level[] levels) { this.levels = levels; }
+	}
+
+	public class Level{
+		public boolean unlock;
+		public boolean complete;
+		public String file;
+		public Level(){
+		}
+		public void setUnlock(boolean unlock) { this.unlock = unlock; }
+		public void setComplete(boolean complete) { this.complete = complete; }
+		public void setFile(String file) { this.file = file; }
+	}
+
+	public Levels convertToJsonLevel() {
+		Levels jsonLevels = new Levels();
+		Level[] levelArray = new Level[allLevelData.size];
+		for (int i=0; i<allLevelData.size; i++) {
+			Level level = new Level();
+			level.setComplete(allLevelData.get(i).get("complete").asBoolean());
+			level.setUnlock(allLevelData.get(i).get("unlock").asBoolean());
+			level.setFile(allLevelData.get(i).get("file").asString());
+			levelArray[i] = level;
+		}
+		jsonLevels.setLevel(levelArray);
+
+		return jsonLevels;
+	}
+
+	public void saveData() {
+//		System.out.print("current directory: ");
+		String localPath = Gdx.files.getLocalStoragePath();
+		FileHandle file = Gdx.files.absolute(localPath + "savedGameData.json");
+		System.out.println("file content: " + localPath + "savedGameData.json");
+		int size = allLevelData.size;
+		System.out.println("size: " + size);
+		allLevelData.get(currentLevelNum - 1).get("complete").set(true);
+		if (currentLevelNum < size) {
+			allLevelData.get(currentLevelNum).get("unlock").set(true);
+		}
+		Levels jsonLevels = convertToJsonLevel();
+		Json json = new Json();
+		json.setOutputType(JsonWriter.OutputType.json);
+		file.writeString(json.prettyPrint(jsonLevels), false);
+		System.out.println("saved");
 	}
 
 	/**

@@ -4,24 +4,18 @@ import com.badlogic.gdx.*;
 import com.badlogic.gdx.graphics.*;
 import com.badlogic.gdx.graphics.Texture.TextureFilter;
 import com.badlogic.gdx.graphics.g2d.*;
-import com.badlogic.gdx.controllers.Controller;
-import com.badlogic.gdx.controllers.ControllerListener;
-import com.badlogic.gdx.controllers.ControllerMapping;
 
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
-import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.JsonValue;
-import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import edu.cornell.gdiac.assets.*;
+import edu.cornell.gdiac.audio.SoundBuffer;
 import edu.cornell.gdiac.util.*;
-
-import java.util.Arrays;
 
 public class LevelSelector implements Screen {
     /** Internal assets for this loading screen */
@@ -32,10 +26,6 @@ public class LevelSelector implements Screen {
     /** Background texture for start-up */
     private Texture background;
     private TextureRegion backgroundRegion;
-    /** levelEditor button */
-    private Texture levelEditor;
-    /** is levelEditor button pressed */
-    private boolean pressLevelEditor;
     /** Title texture */
     private Texture title;
     /** selected level number */
@@ -48,39 +38,23 @@ public class LevelSelector implements Screen {
     private int LEVEL_PER_ROW = 4;
     /** current page. Initially it's 0. */
     private int currentPage;
-    /** The font for numbers of level displayed */
-    private BitmapFont displayFont;
-    /** Offset for the number message on the screen */
-    private static final float COUNTER_OFFSET   = 10.0f;
     /** JsonValue data for all level data */
     private JsonValue allLevelData;
     /** The String that tells the file path of selected level data */
     private String selectedLevelData;
     /** level buttons, should have the size specified by allLevelData */
-    private Texture[] buttons;
     private TextButton[] levelButtons;
     /** Exit code for going to the playing level */
-    public static final int EXIT_QUIT = 0;
+    public static final int EXIT_PLAY = 0;
     /** Exit code for going to the editor */
     public static final int EXIT_EDITOR = 1;
-    private static final float Y_OFFSET = 50.0f;
-    private static final float TITLE_OFFSET = 100.0f;
+    /** Exit code for exit the game */
+    public static final int EXIT_QUIT = 2;
 
-    /** Default budget for asset loader (do nothing but load 60 fps) */
-    private static int DEFAULT_BUDGET = 15;
     /** Standard window size (for scaling) */
     private static int STANDARD_WIDTH  = 800;
     /** Standard window height (for scaling) */
     private static int STANDARD_HEIGHT = 700;
-//    /** Ratio of the bar width to the screen */
-    private static float BAR_WIDTH_RATIO  = 0.66f;
-//    /** Ration of the bar height to the screen */
-    private static float BAR_HEIGHT_RATIO = 0.25f;
-    /** Height of the progress bar */
-    private static float BUTTON_SCALE  = 2.5f;
-
-    private static float LEVELSELECT_SCALE  = 0.5f;
-    private static float TITLE_SCALE  = 2.5f;
 
     /** Reference to GameCanvas created by the root */
     private GameCanvas canvas;
@@ -96,24 +70,23 @@ public class LevelSelector implements Screen {
     /** Scaling factor for when the student changes the resolution. */
     private float scale;
 
-    /** Current progress (0 to 1) of the asset manager */
-    private float progress;
     /** The current state of the play button; it should be one bigger than the button index. */
     private int   pressState;
-    /** The amount of time to devote to loading assets (as opposed to on screen hints, etc.) */
-    private int   budget;
 
     /** Whether or not this player mode is still active */
     private boolean active;
+
+    private SoundBuffer menuBgm;
+    private long menuBgmId = 1;
 
     // Scene2d
     private Stage stage;
     private Skin skin;
     private Table table;
-//    private int LEVEL_PER_ROW = 6;
     // Whether the level buttons are pressed.
     private boolean[] pressStates;
     private boolean isPressLevelEditor;
+    private boolean isQuit;
     // magic numbers for widgets
     private int EDITOR_WIDTH = 150;
     private int EDITOR_HEIGHT = 70;
@@ -150,33 +123,8 @@ public class LevelSelector implements Screen {
         return selectedLevelData;
     }
 
-
-    /**
-     * Returns the budget for the asset loader.
-     *
-     * The budget is the number of milliseconds to spend loading assets each animation
-     * frame.  This allows you to do something other than load assets.  An animation
-     * frame is ~16 milliseconds. So if the budget is 10, you have 6 milliseconds to
-     * do something else.  This is how game companies animate their loading screens.
-     *
-     * @return the budget in milliseconds
-     */
-    public int getBudget() {
-        return budget;
-    }
-
-    /**
-     * Sets the budget for the asset loader.
-     *
-     * The budget is the number of milliseconds to spend loading assets each animation
-     * frame.  This allows you to do something other than load assets.  An animation
-     * frame is ~16 milliseconds. So if the budget is 10, you have 6 milliseconds to
-     * do something else.  This is how game companies animate their loading screens.
-     *
-     * @param millis the budget in milliseconds
-     */
-    public void setBudget(int millis) {
-        budget = millis;
+    public JsonValue getAllLevelData() {
+        return allLevelData;
     }
 
     /**
@@ -211,11 +159,9 @@ public class LevelSelector implements Screen {
      *
      * @param directory  	The asset directory to load in the background
      * @param canvas 	The game canvas to draw to
-     * @param millis The loading budget in milliseconds
      */
-    public LevelSelector(AssetDirectory directory, GameCanvas canvas, int millis) {
+    public LevelSelector(AssetDirectory directory, GameCanvas canvas, int currentLevelNum) {
         this.canvas  = canvas;
-        budget = millis;
 
         // Compute the dimensions from the canvas
         resize(canvas.getWidth(),canvas.getHeight());
@@ -227,41 +173,19 @@ public class LevelSelector implements Screen {
 
         // get the level data
         allLevelData = internal.getEntry("levelData", JsonValue.class).get("levels");
-//        System.out.println(allLevelData);
-//        allLevelData.get(finalI).get("unlock").asBoolean();
-//        totalLevelNum = allLevelData.size;
         totalLevelNum = allLevelData.size;
-//        System.out.println(totalLevelNum);
-
-//        totalLevelNum = 20;
-        final int totalLevelTest = 20;
-//        System.out.println(totalLevelNum);
-        buttons = new Texture[totalLevelTest];
-        // initailize the buttons to null
-        Arrays.fill(buttons, null);
 
         background = internal.getEntry( "background", Texture.class );
         background.setFilter( TextureFilter.Linear, TextureFilter.Linear );
         title = internal.getEntry("title", Texture.class);
-        displayFont = internal.getEntry("times",BitmapFont.class);
-        // new
-        levelEditor = internal.getEntry("levelEditor", Texture.class);
-        pressLevelEditor = false;
 
         // No progress so far.
-        progress = 0;
-//        pressState = -1;
         pressState = 0;
         isPressLevelEditor = false;
-        currentPage = 0;
-        currentLevelNum = 0;
-
-//        Gdx.input.setInputProcessor( this );
-
-//        // Let ANY connected controller start the game.
-//        for (XBoxController controller : Controllers.get().getXBoxControllers()) {
-//            controller.addListener( this );
-//        }
+        isQuit = false;
+        this.currentLevelNum = currentLevelNum;
+        currentPage = this.currentLevelNum == 0? 0 : (currentLevelNum-1)/LEVEL_PER_PAGE;
+        System.out.println("currentPage: " + currentPage);
 
         // Start loading the real assets
         assets = directory;
@@ -283,7 +207,6 @@ public class LevelSelector implements Screen {
         skin = new Skin();
         skin.add("background", background);
         skin.add("title", title);
-        skin.add("levelButton", internal.getEntry("button", Texture.class));
         skin.add("font", internal.getEntry("times", BitmapFont.class));
         skin.add("levelEditor", internal.getEntry("levelEditor", Texture.class));
         // set background
@@ -297,12 +220,11 @@ public class LevelSelector implements Screen {
         levelEditorStyle.down = levelEditorDrawable.tint(Color.GRAY);
         levelEditorStyle.font = skin.getFont("font");
         TextButton levelEditor = new TextButton("Edit", levelEditorStyle);
-//        Cell editorCell = table.add(levelEditor).width(Value.percentWidth(0.15f)).height(
-//                Value.percentHeight(0.2f)).left();
         // change the size
         levelEditor.invalidate();
         levelEditor.setSize(EDITOR_WIDTH, EDITOR_HEIGHT);
-        levelEditor.setPosition(stage.getWidth()*0.1f, stage.getHeight()*0.6f);
+//        levelEditor.setPosition(stage.getWidth()*0.1f, stage.getHeight()*0.6f);
+        levelEditor.setPosition(stage.getWidth()*0.05f, stage.getHeight()*0.8f);
         levelEditor.validate();
         // add listen to pressing event
         levelEditor.addListener(new ChangeListener() {
@@ -311,6 +233,26 @@ public class LevelSelector implements Screen {
             }
         });
         stage.addActor(levelEditor);
+
+        // *** quit button *** //
+        TextButtonStyle quitStyle = new TextButtonStyle();
+        quitStyle.up = levelEditorDrawable;
+        quitStyle.down = levelEditorDrawable.tint(Color.GRAY);
+        quitStyle.font = skin.getFont("font");
+        TextButton quitButton = new TextButton("Quit", levelEditorStyle);
+        // change the size
+        quitButton.invalidate();
+        quitButton.setSize(EDITOR_WIDTH, EDITOR_HEIGHT);
+//        quitButton.setPosition(stage.getWidth()*0.9f-EDITOR_WIDTH, stage.getHeight()*0.6f);
+        quitButton.setPosition(stage.getWidth()*0.95f-EDITOR_WIDTH, stage.getHeight()*0.8f);
+        quitButton.validate();
+        // add listen to pressing event
+        quitButton.addListener(new ChangeListener() {
+            public void changed(ChangeEvent event, Actor actor) {
+                isQuit = true;
+            }
+        });
+        stage.addActor(quitButton);
 
         // *** title *** //
         Image titleImage = new Image(title);
@@ -324,30 +266,48 @@ public class LevelSelector implements Screen {
         Table scrollTable = new Table();
 
         // level buttons
-        TextureRegion buttonImage = new TextureRegion(internal.getEntry("button", Texture.class));
+        TextureRegion buttonImage = new TextureRegion(internal.getEntry("unlock_button", Texture.class));
         TextureRegionDrawable buttonDrawable = new TextureRegionDrawable(buttonImage);
         TextButtonStyle buttonStyle = new TextButtonStyle();
+//        buttonStyle.unpressedOffsetY=-10.0f;
+//        buttonStyle.pressedOffsetY=-10.0f;
+//        buttonStyle.checkedOffsetY=-10.0f;
         buttonStyle.up = buttonDrawable;
         buttonStyle.down = buttonDrawable.tint(Color.GRAY);
         buttonStyle.font = skin.getFont("font");
-        levelButtons = new TextButton[totalLevelTest];
+        levelButtons = new TextButton[totalLevelNum];
 
-        TextureRegion lockButtonImage = new TextureRegion(internal.getEntry("button", Texture.class));
+        TextureRegion lockButtonImage = new TextureRegion(internal.getEntry("lock_button", Texture.class));
         TextureRegionDrawable lockButtonDrawable = new TextureRegionDrawable(lockButtonImage);
         TextButtonStyle lockButtonStyle = new TextButtonStyle();
-        lockButtonStyle.up = lockButtonDrawable.tint(Color.GRAY);
+        lockButtonStyle.unpressedOffsetY=-10.0f;
+        lockButtonStyle.pressedOffsetY=-10.0f;
+        lockButtonStyle.checkedOffsetY=-10.0f;
+        lockButtonStyle.up = lockButtonDrawable;
+        lockButtonStyle.down = lockButtonDrawable.tint(Color.GRAY);
         lockButtonStyle.font = skin.getFont("font");
 
-        int numberOfPage = totalLevelTest/LEVEL_PER_PAGE;
-//        System.out.println("total page number = " + numberOfPage);
+//        TextureRegion completeButtonImage = new TextureRegion(internal.getEntry("complete_button", Texture.class));
+//        TextureRegionDrawable completeButtonDrawable = new TextureRegionDrawable(completeButtonImage);
+//        TextButtonStyle completeButtonStyle = new TextButtonStyle();
+//        completeButtonStyle.unpressedOffsetY=-10.0f;
+//        completeButtonStyle.pressedOffsetY=-10.0f;
+//        completeButtonStyle.checkedOffsetY=-10.0f;
+//        completeButtonStyle.up = completeButtonDrawable;
+//        completeButtonStyle.down = completeButtonDrawable.tint(Color.GRAY);
+//        completeButtonStyle.font = skin.getFont("font");
+
+        // create the button and scroll page
+        int numberOfPage = totalLevelNum/LEVEL_PER_PAGE;
         for (int idx=0; idx <= numberOfPage; idx++) {
             Table page = new Table();
             Table levelTable = new Table();
             // implementation 1
-            for (int i = 0; i < totalLevelTest; i++) {
-                Boolean isUnlock = allLevelData.get(i).get("unlock").asBoolean();
-                System.out.print(i);
-                System.out.println(": " + isUnlock);
+            boolean isUnlock;
+            boolean isComplete;
+            for (int i = 0; i < totalLevelNum; i++) {
+                isUnlock = allLevelData.get(i).get("unlock").asBoolean();
+                isComplete = allLevelData.get(i).get("complete").asBoolean();
                 // first line has one more level button than the second line
                 if (i % (LEVEL_PER_ROW * 2 - 1) == LEVEL_PER_ROW && i / LEVEL_PER_PAGE == idx) {
                     page.row();
@@ -360,7 +320,10 @@ public class LevelSelector implements Screen {
                 }
                 // create buttons for this specific page
                 if (i / LEVEL_PER_PAGE == idx) {
-                    if (isUnlock) {
+//                    if (isComplete) {
+//                        levelButtons[i] = new TextButton(String.valueOf(i+1), completeButtonStyle);
+//                    } else
+                        if (isUnlock) {
                         levelButtons[i] = new TextButton(String.valueOf(i + 1), buttonStyle);
                     } else {
                         levelButtons[i] = new TextButton(String.valueOf(i + 1), lockButtonStyle);
@@ -372,7 +335,6 @@ public class LevelSelector implements Screen {
                             // "the button can only be pressed if the level is unlocked"
                             if (finalI < totalLevelNum && allLevelData.get(finalI).get("unlock").asBoolean()) {
                                 pressState = finalI + 1;
-                                currentLevelNum = pressState;
                                 selectedLevelData = allLevelData.get(pressState - 1).get("file").asString();
                             }
                         }
@@ -418,11 +380,11 @@ public class LevelSelector implements Screen {
         rightArrowStyle.down = rightArrowDrawable.tint(Color.GRAY);
         rightArrowStyle.font = skin.getFont("font");
         leftArrow = new Button(leftArrowStyle);
+        final float pageWidth = stage.getWidth()*0.6f;
+        scroller.scrollTo(pageWidth*currentPage, scroller.getHeight(), pageWidth, scroller.getHeight());
         leftArrow.addListener(new ChangeListener() {
             public void changed(ChangeEvent event, Actor actor) {
                 if (currentPage > 0) currentPage --;
-//                System.out.println(currentPage);
-                float pageWidth = stage.getWidth()*0.6f;
                 scroller.scrollTo(pageWidth*currentPage, scroller.getHeight(), pageWidth, scroller.getHeight());
             }
         });
@@ -430,13 +392,24 @@ public class LevelSelector implements Screen {
         rightArrow = new Button(rightArrowStyle);
         rightArrow.addListener(new ChangeListener() {
             public void changed(ChangeEvent event, Actor actor) {
-                if (currentPage < totalLevelTest/LEVEL_PER_PAGE) currentPage ++;
-//                System.out.println(currentPage);
-                float pageWidth = stage.getWidth()*0.6f;
+                if (currentPage < totalLevelNum/LEVEL_PER_PAGE) currentPage ++;
                 scroller.scrollTo(pageWidth*currentPage, scroller.getHeight(), pageWidth, scroller.getHeight());
             }
         });
         table.add(rightArrow).right().height(Value.percentHeight(3f)).width(Value.percentWidth(3f)).top();
+        menuBgm = directory.getEntry("audio:soundtrack_mainmenu", SoundBuffer.class);
+        menuBgmId = loopSound(menuBgm, menuBgmId, 1f);
+    }
+
+    public long loopSound(SoundBuffer sound, long soundId, float volume) {
+        if (soundId != -1 && sound.isPlaying( soundId )) {
+            sound.stop( soundId );
+        }
+        return sound.loop(volume);
+    }
+
+    public void stopAllSounds(){
+        menuBgm.stop(menuBgmId);
     }
 
     /**
@@ -499,34 +472,6 @@ public class LevelSelector implements Screen {
      */
     private void draw() {
         canvas.begin();
-//        canvas.draw(background, 0, 0);
-//        canvas.draw(title, Color.WHITE, title.getWidth()/2f, title.getHeight()/2f,
-//                centerX, canvas.getHeight()-TITLE_OFFSET, 0, TITLE_SCALE*scale,
-//                TITLE_SCALE*scale);
-//        Color tint;
-//        // new
-//        if (levelEditor != null) {
-//            tint = (pressState == -2 ? Color.GRAY: Color.WHITE);
-//            canvas.draw(levelEditor, tint, levelEditor.getWidth()/2f, levelEditor.getHeight()/2f,
-//                    centerX/3f, canvas.getHeight()-TITLE_OFFSET, 0, LEVELSELECT_SCALE*scale,
-//                    LEVELSELECT_SCALE*scale);
-//        }
-//        for (int i=0; i<buttons.length; i++) {
-//            if (buttons[i] != null) {
-//                // pressState is one bigger than the button index
-//                tint = (pressState == i+1 ? Color.GRAY: Color.WHITE);
-//                // draw the button
-//                Texture button = buttons[i];
-//                // pos_offset helps to decide the position of the button
-//                float pos_offset = (i+1)/(float)totalLevelNum;
-//                canvas.draw(button, tint, button.getWidth()/2f, button.getHeight()/2f,
-//                    centerX*pos_offset, centerY+Y_OFFSET, 0, BUTTON_SCALE*scale,
-//                        BUTTON_SCALE*scale);
-//                // draw the letter
-//                canvas.drawText(Integer.toString(i+1), displayFont, centerX*pos_offset-COUNTER_OFFSET,
-//                        centerY+Y_OFFSET+COUNTER_OFFSET);
-//            }
-//        }
         canvas.end();
     }
 
@@ -540,27 +485,6 @@ public class LevelSelector implements Screen {
      * @param delta Number of seconds since last animation frame
      */
     public void render(float delta) {
-//        if (active) {
-//            update(delta);
-//            draw();
-//
-//            if (isReady() && listener != null && pressLevelEditor) {
-//                listener.exitScreen(this, EXIT_EDITOR);
-//            }
-//
-//            // We are are ready, notify our listener
-//            else if (isReady() && listener != null) {
-//                listener.exitScreen(this, EXIT_QUIT);
-//            }
-//        }
-//        assets.update(budget);
-//        this.progress = assets.getProgress();
-//        if (progress < 1.0f) {
-//            active = false;
-//        } else {
-//            progress = 1.0f;
-//            active = true;
-//        }
         if (active) {
             Gdx.gl.glClearColor(1, 1, 1, 1);
             Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
@@ -571,7 +495,13 @@ public class LevelSelector implements Screen {
                 return;
             }
             if (pressState != 0) {
+                currentLevelNum = pressState;
+                listener.exitScreen(this, EXIT_PLAY);
+                return;
+            }
+            if (isQuit) {
                 listener.exitScreen(this, EXIT_QUIT);
+                return;
             }
         }
     }
@@ -623,233 +553,6 @@ public class LevelSelector implements Screen {
         this.listener = listener;
     }
 
-//    // PROCESSING PLAYER INPUT
-//    /**
-//     * Called when the screen was touched or a mouse button was pressed.
-//     *
-//     * This method checks to see if the play button is available and if the click
-//     * is in the bounds of the play button.  If so, it signals the that the button
-//     * has been pressed and is currently down. Any mouse button is accepted.
-//     *
-//     * @param screenX the x-coordinate of the mouse on the screen
-//     * @param screenY the y-coordinate of the mouse on the screen
-//     * @param pointer the button or touch finger number
-//     * @return whether to hand the event to other listeners.
-//     */
-//    public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-//        boolean flag = levelEditor == null;
-//        for (Texture b : buttons) {
-//            if (b != null) {
-//                flag = false;
-//                break;
-//            }
-//        }
-//        if (flag || pressState == 0) {
-//            return true;
-//        }
-////        if ((levelOne == null && levelTwo == null && levelThree == null) || pressState == 0) {
-////            return true;
-////        }
-//
-//        // Flip to match graphics coordinates
-//        screenY = heightY-screenY;
-//
-//        // TODO: Fix scaling
-//        // Play button is a circle.
-//        float radius, dist;
-//        for (int i=0; i<buttons.length; i++) {
-//            // "the button can only be pressed if the level is unlocked"
-//            if (buttons[i] != null && allLevelData.get(i).get("unlock").asBoolean()) {
-//                radius = BUTTON_SCALE*scale*buttons[i].getWidth()/2.0f;
-//                float offset = (i+1)/(float)totalLevelNum;
-//                dist = (screenX-centerX*offset)*(screenX-centerX*offset)+(screenY-centerY-Y_OFFSET)*
-//                        (screenY-centerY-Y_OFFSET);
-//                if (dist < radius*radius) {
-//                    pressState = i+1;
-//                }
-//            }
-//        }
-//        if (levelEditor != null) {
-//            radius = LEVELSELECT_SCALE*scale*levelEditor.getWidth()/2.0f;
-//            dist = (screenX-centerX/3f)*(screenX-centerX/3f)+(screenY-(canvas.getHeight()-TITLE_OFFSET))*
-//                    (screenY-(canvas.getHeight()-TITLE_OFFSET));
-//            if (dist < radius*radius) {
-//                pressState = -2;
-//                pressLevelEditor = true;
-//            }
-//        }
-//        return false;
-//    }
-//    /**
-//     * Called when a finger was lifted or a mouse button was released.
-//     *
-//     * This method checks to see if the play button is currently pressed down. If so,
-//     * it signals the that the player is ready to go.
-//     *
-//     * @param screenX the x-coordinate of the mouse on the screen
-//     * @param screenY the y-coordinate of the mouse on the screen
-//     * @param pointer the button or touch finger number
-//     * @return whether to hand the event to other listeners.
-//     */
-//    public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-//        if (pressState >= 1 && pressState <= totalLevelNum) {
-////        if (pressState == 1 || pressState == 2 || pressState == 3) {
-//            // set the selected level number according to the pressState
-//            levelNumber = pressState;
-//            selectedLevelData = allLevelData.get(levelNumber-1).get("file").asString();
-//            System.out.println(selectedLevelData);
-//            pressState = 0;
-//            return false;
-//        } else if (pressState == -2) {
-//            // press the level editor
-//            pressState = 0;
-//            return false;
-//        }
-//        return true;
-//    }
-//
-//    /**
-//     * Called when a button on the Controller was pressed.
-//     *
-//     * The buttonCode is controller specific. This listener only supports the start
-//     * button on an X-Box controller.  This outcome of this method is identical to
-//     * pressing (but not releasing) the play button.
-//     *
-//     * @param controller The game controller
-//     * @param buttonCode The button pressed
-//     * @return whether to hand the event to other listeners.
-//     */
-//    public boolean buttonDown (Controller controller, int buttonCode) {
-//        // for now XBOX can only go to the first level
-//        if (pressState == -1) {
-//            ControllerMapping mapping = controller.getMapping();
-//            if (mapping != null && buttonCode == mapping.buttonStart ) {
-//                pressState = 1;
-//                return false;
-//            }
-//        }
-//        return true;
-//    }
-//
-//    /**
-//     * Called when a button on the Controller was released.
-//     *
-//     * The buttonCode is controller specific. This listener only supports the start
-//     * button on an X-Box controller.  This outcome of this method is identical to
-//     * releasing the the play button after pressing it.
-//     *
-//     * @param controller The game controller
-//     * @param buttonCode The button pressed
-//     * @return whether to hand the event to other listeners.
-//     */
-//    public boolean buttonUp (Controller controller, int buttonCode) {
-//        if (pressState == 1 || pressState == 2 || pressState == 3) {
-//            ControllerMapping mapping = controller.getMapping();
-//            if (mapping != null && buttonCode == mapping.buttonStart ) {
-//                pressState = 0;
-//                return false;
-//            }
-//        }
-//        return true;
-//    }
-//
-//    // UNSUPPORTED METHODS FROM InputProcessor
-//
-//    /**
-//     * Called when a key is pressed (UNSUPPORTED)
-//     *
-//     * @param keycode the key pressed
-//     * @return whether to hand the event to other listeners.
-//     */
-//    public boolean keyDown(int keycode) {
-//        return true;
-//    }
-//
-//    /**
-//     * Called when a key is typed (UNSUPPORTED)
-//     *
-//     //	 * @param keycode the key typed
-//     * @return whether to hand the event to other listeners.
-//     */
-//    public boolean keyTyped(char character) {
-//        return true;
-//    }
-//
-//    /**
-//     * Called when a key is released (UNSUPPORTED)
-//     *
-//     * @param keycode the key released
-//     * @return whether to hand the event to other listeners.
-//     */
-//    public boolean keyUp(int keycode) {
-//        return true;
-//    }
-//
-//    /**
-//     * Called when the mouse was moved without any buttons being pressed. (UNSUPPORTED)
-//     *
-//     * @param screenX the x-coordinate of the mouse on the screen
-//     * @param screenY the y-coordinate of the mouse on the screen
-//     * @return whether to hand the event to other listeners.
-//     */
-//    public boolean mouseMoved(int screenX, int screenY) {
-//        return true;
-//    }
-//
-//    /**
-//     * Called when the mouse wheel was scrolled. (UNSUPPORTED)
-//     *
-//     * @param dx the amount of horizontal scroll
-//     * @param dy the amount of vertical scroll
-//     *
-//     * @return whether to hand the event to other listeners.
-//     */
-//    public boolean scrolled(float dx, float dy) {
-//        return true;
-//    }
-//
-//    /**
-//     * Called when the mouse or finger was dragged. (UNSUPPORTED)
-//     *
-//     * @param screenX the x-coordinate of the mouse on the screen
-//     * @param screenY the y-coordinate of the mouse on the screen
-//     * @param pointer the button or touch finger number
-//     * @return whether to hand the event to other listeners.
-//     */
-//    public boolean touchDragged(int screenX, int screenY, int pointer) {
-//        return true;
-//    }
-//
-//    // UNSUPPORTED METHODS FROM ControllerListener
-//
-//    /**
-//     * Called when a controller is connected. (UNSUPPORTED)
-//     *
-//     * @param controller The game controller
-//     */
-//    public void connected (Controller controller) {}
-//
-//    /**
-//     * Called when a controller is disconnected. (UNSUPPORTED)
-//     *
-//     * @param controller The game controller
-//     */
-//    public void disconnected (Controller controller) {}
-//
-//    /**
-//     * Called when an axis on the Controller moved. (UNSUPPORTED)
-//     *
-//     * The axisCode is controller specific. The axis value is in the range [-1, 1].
-//     *
-//     * @param controller The game controller
-//     * @param axisCode 	The axis moved
-//     * @param value 	The axis value, -1 to 1
-//     * @return whether to hand the event to other listeners.
-//     */
-//    public boolean axisMoved (Controller controller, int axisCode, float value) {
-//        return true;
-//    }
-//
     /**
      * Called when the Screen is paused.
      *

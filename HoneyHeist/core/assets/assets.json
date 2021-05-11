@@ -19,7 +19,7 @@
     "shared:goal": "shared/goaldoor.png",
     "shared:background": "shared/background.png",
     "shared:whiteSquare": "shared/whiteSquare.png",
-    "shared:pauseButton": "shared/OLDplay.png",
+    "shared:pauseButton": "shared/pause.png",
     "shared:pauseBackground": "shared/pause_background.png",
     "shared:pauseMainMenu": "shared/pause_menu_button.png",
     "shared:pauseQuit": "shared/pause_quit_button.png",
@@ -35,11 +35,20 @@
     "platform:flyingBee": "platform/chaserBee.png",
 
     "platform:playerWalk": {
-      "file": "platform/beeWalkstrip.png",
+      "file": "platform/walkstrip.png",
       "sprites": {
         "pacing": {
           "rows": 1,
           "cols": 6
+        }
+      }
+    },
+    "platform:playerFlail": {
+      "file": "platform/flailStrip.png",
+      "sprites": {
+        "pacing": {
+          "rows": 1,
+          "cols": 5
         }
       }
     },
@@ -48,16 +57,35 @@
       "sprites": {
         "pacing": {
           "rows": 1,
-          "cols": 3
+          "cols": 7
         }
       }
     },
+
     "platform:larvaeWalk": {
       "file": "platform/larvaeWalkstrip.png",
       "sprites": {
         "pacing": {
           "rows": 1,
           "cols": 4
+        }
+      }
+    },
+    "platform:larvaeFlail": {
+      "file": "platform/larvaeFlailStrip.png",
+      "sprites": {
+        "pacing": {
+          "rows": 1,
+          "cols": 4
+        }
+      }
+    },
+    "platform:larvaeDeath": {
+      "file": "platform/larvaeDeathStrip.png",
+      "sprites": {
+        "pacing": {
+          "rows": 1,
+          "cols": 6
         }
       }
     },
@@ -70,12 +98,31 @@
         }
       }
     },
+
     "platform:beeFly": {
       "file": "platform/beeFlystrip.png",
       "sprites": {
         "pacing": {
           "rows": 1,
           "cols": 5
+        }
+      }
+    },
+    "platform:beeFlail": {
+      "file": "platform/beeFlailStrip.png",
+      "sprites": {
+        "pacing": {
+          "rows": 1,
+          "cols": 6
+        }
+      }
+    },
+    "platform:beeDeath": {
+      "file": "platform/beeDeathStrip.png",
+      "sprites": {
+        "pacing": {
+          "rows": 1,
+          "cols": 6
         }
       }
     },
@@ -88,6 +135,16 @@
         }
       }
     },
+    "platform:levelTransition":{
+      "file": "platform/leveltransitionstrip.png",
+      "sprites": {
+        "pacing": {
+          "rows": 1,
+          "cols": 12
+        }
+      }
+    },
+
     "platform:spikeULeft": "platform/upLeftSpike.png",
     "platform:spikeUMid": "platform/upMidSpike.png",
     "platform:spikeURight": "platform/upRightSpike.png",
@@ -152,7 +209,13 @@
   "sounds": {
     "platform:jump": "platform/jump.mp3",
     "platform:pew": "platform/pew.mp3",
-    "platform:plop": "platform/plop.mp3"
+    "platform:plop": "platform/plop.mp3",
+    "audio:soundeffect_death": "audio/soundeffect_death.mp3",
+    "audio:soundeffect_death_pixel": "audio/soundeffect_death_pixel.mp3",
+    "audio:soundeffect_tracking": "audio/soundeffect_tracking.mp3",
+    "audio:soundeffect_win": "audio/soundeffect_win.mp3",
+    "audio:bgm": "audio/bgm.mp3",
+    "audio:soundtrack_mainmenu": "audio/soundtrack_mainmenu.mp3"
   },
   "fonts": {
     "menuFont": {

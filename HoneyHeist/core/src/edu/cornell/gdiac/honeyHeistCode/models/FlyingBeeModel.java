@@ -14,15 +14,18 @@ public class FlyingBeeModel extends AbstractBeeModel{
     // Flying animation fields
     /** The texture filmstrip for the left animation node */
     private FilmStrip flyingAnim;
+    private FilmStrip flailingAnim;
+    private FilmStrip dyingAnim;
     private FilmStrip chasingAnim;
+
     /** The animation phase for the walking animation */
     private boolean flyCycle = true;
+    private boolean flailCycle = true;
+    private boolean deathCycle = false;
     private boolean chaseCycle = true;
     private final int FRAMES_PER_ANIM = 7;
     private int animFrames = 0;
 
-    /** True if the Bee is currently chasing the player */
-    private boolean isChasing;
 
     /**
      * Enumeration to identify the ant animations
@@ -30,6 +33,10 @@ public class FlyingBeeModel extends AbstractBeeModel{
     public enum BeeAnimations {
         /** Walking animation */
         FLY,
+        /** Flailing animation */
+        FLAIL,
+        /** Death animation */
+        DEATH,
         /** Chasing animation */
         CHASE,
         // Future animations to be supported
@@ -83,14 +90,6 @@ public class FlyingBeeModel extends AbstractBeeModel{
 
     public float getVMovement () {
         return vMovement;
-    }
-
-    /**
-     * Remove all forces on the bee - Halts movement
-     */
-    public void haltMovement(){
-        body.setAngularVelocity(0);
-        body.setLinearVelocity(0,0);
     }
 
     @Override
@@ -151,10 +150,16 @@ public class FlyingBeeModel extends AbstractBeeModel{
     public void setAnimationStrip(BeeAnimations anim, FilmStrip strip) {
         switch (anim) {
             case FLY:
-                flyingAnim= strip;
+                flyingAnim= strip.copy();
+                break;
+            case FLAIL:
+                flailingAnim= strip.copy();
+                break;
+            case DEATH:
+                dyingAnim= strip.copy();
                 break;
             case CHASE:
-                chasingAnim= strip;
+                chasingAnim= strip.copy();
                 break;
             default:
                 assert false : "Invalid Bee animation enumeration";
@@ -178,6 +183,14 @@ public class FlyingBeeModel extends AbstractBeeModel{
                 node  = flyingAnim;
                 cycle = flyCycle;
                 break;
+            case FLAIL:
+                node = flailingAnim;
+                cycle = flailCycle;
+                break;
+            case DEATH:
+                node = dyingAnim;
+                cycle = deathCycle;
+                break;
             case CHASE:
                 node = chasingAnim;
                 cycle = chaseCycle;
@@ -186,23 +199,39 @@ public class FlyingBeeModel extends AbstractBeeModel{
             default:
                 assert false : "Invalid burner enumeration";
         }
-        if (animFrames % FRAMES_PER_ANIM == 0) {
-            if (on) {
-                // Turn on the flames and go back and forth
-                if (node.getFrame() == 0 || node.getFrame() == 1) {
-                    cycle = true;
-                } else if (node.getFrame() == node.getSize() - 1) {
-                    cycle = false;
-                }
 
-                // Increment
-                if (cycle) {
-                    node.setFrame(node.getFrame() + 1);
+        // If do not wish to cycle, only play animation once
+        if (!cycle && node.getFrame() == node.getSize() - 1) {
+            // Finished playing death animation, bee can be removed
+            if (node == dyingAnim) {
+                this.setIsTrulyDead(true);
+            }
+            return;
+        }
+
+        if (animFrames % FRAMES_PER_ANIM == 0) {
+            if (node == dyingAnim){
+                int nextFrame = (node.getFrame() + 1) % node.getSize();
+                node.setFrame(nextFrame);
+            }
+            else {
+                if (on) {
+                    // Turn on the flames and go back and forth
+                    if (node.getFrame() == 0) {
+                        cycle = true;
+                    } else if (node.getFrame() == node.getSize() - 1) {
+                        cycle = false;
+                    }
+
+                    // Increment
+                    if (cycle) {
+                        node.setFrame(node.getFrame() + 1);
+                    } else {
+                        node.setFrame(0);
+                    }
                 } else {
                     node.setFrame(0);
                 }
-            } else {
-                node.setFrame(0);
             }
         }
         animFrames++;
@@ -211,13 +240,25 @@ public class FlyingBeeModel extends AbstractBeeModel{
             case FLY:
                 flyCycle = cycle;
                 break;
+            case FLAIL:
+                flailCycle = cycle;
+                break;
+            case DEATH:
+                deathCycle = cycle;
+                break;
             case CHASE:
                 chaseCycle = cycle;
                 break;
             // Add more cases for future animations
             default:
-                assert false : "Invalid burner enumeration";
+                assert false : "Invalid bee animation enumeration";
         }
+    }
+
+    @Override
+    public void animateDeath(){
+        System.out.println("Flying Bee Dying");
+        this.animateBee(BeeAnimations.DEATH, true);
     }
 
     /**
@@ -230,25 +271,11 @@ public class FlyingBeeModel extends AbstractBeeModel{
     public void setMovement(float value) {
         super.setMovement(value);
         animateBee(BeeAnimations.FLY, true);
+        animateBee(BeeAnimations.FLAIL, true);
         animateBee(BeeAnimations.CHASE, true);
     }
 
-    /**
-     * Set the status of this enemy as chasing. The chasing
-     * art will render when isChasing is true
-     * @param b
-     */
-    public void setIsChasing(boolean b) {
-        this.isChasing = b;
-    }
 
-    /**
-     * Returns if the enemy is currently chasing the player
-     * @return
-     */
-    public boolean getIsChasing() {
-        return this.isChasing;
-    }
 
     /**
      * Draws the physics object.
@@ -257,7 +284,18 @@ public class FlyingBeeModel extends AbstractBeeModel{
      */
     public void draw(GameCanvas canvas) {
         float effect = this.faceRight ? -1.0f : 1.0f;
-        FilmStrip currAnim = this.isChasing ? chasingAnim : flyingAnim;
+        // FilmStrip currAnim = this.isChasing ? chasingAnim : flyingAnim;
+        FilmStrip currAnim = flyingAnim;
+        if (this.isDead){
+            currAnim = dyingAnim;
+        }
+        else if (this.isChasing){
+            currAnim = chasingAnim;
+        }
+        else if (this.isInHoney){
+            // Can change this if it looks weird
+            currAnim = flailingAnim;
+        }
         // Walking Animation
         if (currAnim != null) {
             float offsety = currAnim.getRegionHeight()-origin.y;
