@@ -171,9 +171,9 @@ public class GameplayController implements Screen, InputProcessor {
 	/** If it's in the pause state */
 	private boolean isPaused;
 	/** Constants for the position of pause button */
-	private final float PAUSE_XPOS = Gdx.graphics.getWidth()*0.85f;
-	private final float PAUSE_YPOS = Gdx.graphics.getHeight()*0.85f;
-	private final float PAUSE_SCALE = 1f;
+	private final float PAUSE_XPOS = Gdx.graphics.getWidth()*0.95f;
+	private final float PAUSE_YPOS = Gdx.graphics.getHeight()*0.95f;
+	private final float PAUSE_SCALE = 0.7f;
 	/** Menu button texture */
 	private Texture menuButton;
 	/** Offset for the menu word on the button */
@@ -366,7 +366,6 @@ public class GameplayController implements Screen, InputProcessor {
 	 * @param gravity	The gravitational force on this Box2d world
 	 */
 	protected GameplayController(Rectangle bounds, Vector2 gravity) {
-//		world = new World(gravity,false);
 		this.bounds = new Rectangle(bounds);
 		this.scale = new Vector2(1,1);
 		complete = false;
@@ -410,8 +409,6 @@ public class GameplayController implements Screen, InputProcessor {
 	 */
 	public void gatherAssets(AssetDirectory directory, String levelData, JsonValue allLevelData, int currentLevelNum) {
 		// Allocate the tiles
-//		earthTile = new TextureRegion(directory.getEntry( "shared:earth", Texture.class ));
-//		goalTile  = new TextureRegion(directory.getEntry( "shared:goal", Texture.class ));
 		this.allLevelData = allLevelData;
 		this.currentLevelNum = currentLevelNum;
 		// background
@@ -639,17 +636,9 @@ public class GameplayController implements Screen, InputProcessor {
 		Color tint;
 		if (pauseButton != null) {
 			tint = (pausePressed ? Color.GRAY: Color.WHITE);
-			canvas.draw(pauseButton, tint, pauseButton.getWidth()/2f, pauseButton.getHeight()/2f,
+			canvas.draw(pauseButton, tint, pauseButton.getWidth(), pauseButton.getHeight(),
 					PAUSE_XPOS, PAUSE_YPOS, 0, PAUSE_SCALE*scaleFactor, PAUSE_SCALE*scaleFactor);
 		}
-//		if (menuButton != null) {
-//			tint = (menuPressed ? Color.GRAY: Color.WHITE);
-//			canvas.draw(menuButton, tint, menuButton.getWidth()/2f, menuButton.getHeight()/2f,
-//					MENU_XPOS, MENU_YPOS, 0, MENU_XSCALE*scaleFactor, MENU_YSCALE*scaleFactor);
-//			// draw the letter
-//			canvas.drawText("Menu", menuFont, MENU_XPOS-MENU_XOFFSET,
-//					MENU_YPOS+MENU_YOFFSET);
-//		}
 		levelController.draw(dt);
 		canvas.begin();
 		if (isPaused) {
@@ -857,11 +846,15 @@ public class GameplayController implements Screen, InputProcessor {
 //			if(textureBounds.contains(screenX,screenY)) {
 //				pausePressed = true;
 //			}
-
-			width = PAUSE_SCALE * scaleFactor * pauseResume.getWidth() / 2.0f;
-			height = PAUSE_SCALE * scaleFactor * pauseResume.getHeight() / 2.0f;
-			if (Math.abs(screenX - PAUSE_XPOS) < Math.abs(width) && Math.abs(screenY -
-					PAUSE_YPOS) < Math.abs(height)) {
+//			radius = PAUSE_SCALE*scaleFactor*pauseButton.getWidth()/2.0f;
+//			dist = (screenX-PAUSE_XPOS)*(screenX-PAUSE_XPOS)+(screenY-PAUSE_YPOS)*(screenY-PAUSE_YPOS);
+//			if (dist < radius*radius) {
+//				pausePressed = true;
+//			}
+			width = PAUSE_SCALE * scaleFactor * pauseButton.getWidth() /2.0f;
+			height = PAUSE_SCALE * scaleFactor * pauseButton.getHeight() /2.0f;
+			if (Math.abs(screenX - PAUSE_XPOS + width) < Math.abs(width) && Math.abs(screenY -
+					PAUSE_YPOS + height) < Math.abs(height)) {
 				pausePressed = true;
 			}
 		}
