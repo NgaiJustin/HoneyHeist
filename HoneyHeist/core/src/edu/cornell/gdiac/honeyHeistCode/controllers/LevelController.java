@@ -351,15 +351,15 @@ public class LevelController implements ContactListener {
 
     /** The jump sound.  We only want to play once */
     private SoundBuffer deathSound;
-    private long deathId = -1;
+    private long deathId = 1;
 
     /** The weapon fire sound.  We only want to play once. */
     private SoundBuffer trackingSound;
-    private long trackingId = -1;
+    private long trackingId = 1;
 
     /** The weapon pop sound.  We only want to play once. */
     private SoundBuffer winSound;
-    private long winId = -1;
+    private long winId = 1;
 
     /** The default sound volume */
     private float volume;

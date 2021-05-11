@@ -154,6 +154,7 @@ public class GDXRoot extends Game implements ScreenListener {
 			loading = null;
 		} else if (screen == levelSelector && exitCode == LevelSelector.EXIT_PLAY) {
 //			directory = levelSelector.getAssets();
+			levelSelector.stopAllSounds();
 			String levelData = levelSelector.getLevelData();
 			JsonValue allLevelData = levelSelector.getAllLevelData();
 			int currentLevelNum = levelSelector.getCurrentLevelNum();
@@ -171,6 +172,7 @@ public class GDXRoot extends Game implements ScreenListener {
 //			levelSelector.dispose();
 //			levelSelector = null;
 		} else if(screen == levelSelector && exitCode == LevelSelector.EXIT_EDITOR) {
+			levelSelector.stopAllSounds();
 			directory = levelSelector.getAssets();
 			JsonValue allLevelData = levelSelector.getAllLevelData();
 			editorController.gatherAssets(directory);
