@@ -216,7 +216,8 @@ public class BallModel extends WheelObstacle {
         sensorFixtures = new ObjectSet<Fixture>();
         honeyFixtures = new ObjectSet<Fixture>();
         setDensity(data.getFloat("density", 0));
-        setFriction(data.getFloat("friction", 0));
+        //setFriction(data.getFloat("friction", 0));
+        setFriction(0.9f);
         setFixedRotation(false);
         maxspeed = data.getFloat("maxspeed", 0);
         defaultMaxspeed = maxspeed;
