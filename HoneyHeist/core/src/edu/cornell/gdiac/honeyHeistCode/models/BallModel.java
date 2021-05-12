@@ -281,7 +281,7 @@ public class BallModel extends WheelObstacle {
                     isGrounded = false;
                 }
             }
-            if(!isGrounded){
+            /*if(!isGrounded){
                 float angle = getAngle();
                 float rotSpeed = ((isInHoney) ? 4f : 13f);
                 if(angle<-0.05) {
@@ -294,7 +294,7 @@ public class BallModel extends WheelObstacle {
                     setAngularVelocity(0f);
                 }
                 //setAngle(0);
-            }
+            }*/
             return;
         }
 
