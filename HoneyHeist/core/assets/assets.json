@@ -179,7 +179,8 @@
     "editor:loadButton": "editor/loadButton.png",
     "editor:larvaButton": "editor/larvaButton.png",
     "editor:honeyPatchButton": "editor/honeyPatchButton.png",
-    "editor:spikedPlatformButton": "editor/spikedPlatformButton.png"
+    "editor:spikedPlatformButton": "editor/spikedPlatformButton.png",
+    "editor:ballButton": "editor/ballButton.png"
   },
   "jsons": {
     "platform:constants": "platform/constants.json",

@@ -62,7 +62,7 @@ public class BallModel extends WheelObstacle {
     /**
      * The physics shape of this object
      */
-    protected PolygonShape sensorShape;
+    protected CircleShape sensorShape;
     /**
      * Identifier to allow us to track the sensor in ContactListener
      */
@@ -250,14 +250,16 @@ public class BallModel extends WheelObstacle {
         // To determine whether or not the ant is on the ground,
         // we create a thin sensor under his feet, which reports
         // collisions with the world but has no collision response.
-        Vector2 sensorCenter = new Vector2(0, -getRadius());
+        Vector2 sensorCenter = new Vector2(0, 0);
         FixtureDef sensorDef = new FixtureDef();
-        sensorDef.density = data.getFloat("density", 0);
+        // sensorDef.density = data.getFloat("density", 0);
+        sensorDef.density = 0;
         sensorDef.isSensor = true;
-        sensorShape = new PolygonShape();
+        sensorShape = new CircleShape();
         JsonValue sensorjv = data.get("sensor");
-        sensorShape.setAsBox(sensorjv.getFloat("shrink", 0) * getRadius()/0.8f ,
-                sensorjv.getFloat("height", 0)*1.5f, sensorCenter, 0.0f);
+
+        float sensorScaleFactor = 1.1f;
+        sensorShape.setRadius(this.getRadius() * sensorScaleFactor);
         sensorDef.shape = sensorShape;
 
         // Ground sensor to represent our feet
@@ -383,7 +385,7 @@ public class BallModel extends WheelObstacle {
      */
     public void drawDebug(GameCanvas canvas) {
         super.drawDebug(canvas);
-        canvas.drawPhysics(sensorShape, Color.RED, getX(), getY(), getAngle(), drawScale.x, drawScale.y);
+        canvas.drawPhysics(sensorShape, Color.RED, getX(), getY());
     }
 
 }
