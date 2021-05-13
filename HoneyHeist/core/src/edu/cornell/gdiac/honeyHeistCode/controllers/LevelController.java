@@ -766,7 +766,7 @@ public class LevelController implements ContactListener {
         JsonValue ballPositions = levelData.get("ballPos");
         if (ballPositions != null) {
             for (int i = 0; i < ballPositions.size; i++) {
-                float[] pos = flyingBeePositions.get(i).asFloatArray();
+                float[] pos = ballPositions.get(i).asFloatArray();
                 BallModel ball = new BallModel(constants.get("Ball"), pos[0], pos[1]);
                 ball.setDrawScale(scale);
                 ball.setTexture(ballTexture);
@@ -774,13 +774,6 @@ public class LevelController implements ContactListener {
                 addObject(ball);
             }
         }
-
-        // TODO: This is just to test the ball: Remove when we get the level editor working
-        BallModel testBall = new BallModel(constants.get("Ball"), 15, 15);
-        testBall.setDrawScale(scale);
-        testBall.setTexture(ballTexture);
-        balls.add(testBall);
-        addObject(testBall);
 
         //establish draw order:
         addObject(honeyPatches);

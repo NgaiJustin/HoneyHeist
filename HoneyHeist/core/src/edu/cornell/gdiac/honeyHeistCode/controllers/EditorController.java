@@ -288,7 +288,7 @@ public class EditorController extends WorldController implements InputProcessor 
         tilesBackground = new TextureRegion(directory.getEntry("shared:tilesBackground", Texture.class));
         ballTexture = new TextureRegion(directory.getEntry("platform:ball", Texture.class));
 
-        walkingPlayer = directory.getEntry( "platform:walk.pacing", FilmStrip.class );
+        //walkingPlayer = directory.getEntry( "platform:walk.pacing", FilmStrip.class );
 
         jumpSound = directory.getEntry("platform:jump", SoundBuffer.class);
         fireSound = directory.getEntry("platform:pew", SoundBuffer.class);
@@ -442,6 +442,13 @@ public class EditorController extends WorldController implements InputProcessor 
         // Create chaser bees
         Array<AbstractBeeModel> bees = new Array<AbstractBeeModel>();
         level = new LevelModel(avatar,bees, balls, goalDoor,platforms, spikedPlatforms, honeyPatches, levelBackground, new Rectangle(bounds));
+        JsonValue ballPos = levelData.get("ballPos");
+        if (!(ballPos == null)) {
+            for (int i = 0; i < ballPos.size; i++) {
+                float[] pos = ballPos.get(i).asFloatArray();
+                newBall(pos[0], pos[1]);
+            }
+        }
 
         dwidth = chaserBeeTexture.getRegionWidth() / scale.x;
         dheight = chaserBeeTexture.getRegionHeight() / scale.y;
@@ -597,8 +604,9 @@ public class EditorController extends WorldController implements InputProcessor 
         newPlayer(json.get("playerPos").asFloatArray()[0], json.get("playerPos").asFloatArray()[1]);
 
         //Balls
+        level.setBalls(new Array<BallModel>());
         JsonValue balls = json.get("ballPos");
-        if (!balls.isNull()) {
+        if (!(balls == null)) {
             for (int i = 0; i < balls.size; i++) {
                 float[] pos = balls.get(i).asFloatArray();
                 newBall(pos[0], pos[1]);
@@ -738,7 +746,7 @@ public class EditorController extends WorldController implements InputProcessor 
                 }
                 else if (Math.abs(ballbY() - clickY) < ballButton.getHeight()*BUTTON_SCALE/2){
                     this.ballbPressed = true;
-                    // this.mode = ...; // TODO: Set the mode number for placing ball
+                    this.mode = 8;
                 }
                 // RESET BUTTON CLICKED
                 else if (Math.abs(rbY() - clickY) < resetButton.getHeight()*BUTTON_SCALE/2){
@@ -889,7 +897,7 @@ public class EditorController extends WorldController implements InputProcessor 
                             PolygonObstacle obj = (PolygonObstacle) selector.getObstacle();
                             level.getPlatforms().getArrayBodies().removeValue(obj, false);
                         }
-                        if (selector.getObstacle().getName().contains("spiked")) {
+                        if (selector.getObstacle().getName().contains("spikedplat")) {
                             PolygonObstacle obj = (PolygonObstacle) selector.getObstacle();
                             level.getSpikedPlatforms().getArrayBodies().removeValue(obj, false);
                         }
@@ -907,6 +915,11 @@ public class EditorController extends WorldController implements InputProcessor 
                         if (selector.getObstacle().getName() == "goal") {
                             level.setGoalDoor(null);
                         }
+                        if (selector.getObstacle().getClass() == BallModel.class) {
+                            BallModel ball = (BallModel) selector.getObstacle();
+                            level.getBalls().removeValue(ball,false);
+                         }
+
                         selector.getObstacle().markRemoved(true);
                     }
 
@@ -916,7 +929,7 @@ public class EditorController extends WorldController implements InputProcessor 
                                     ((PolygonObstacle)selector.getObstacle()).getTruePoints());
                             temp.setPosition(temp.getPosition().add(0,platWidth*2));
                         }
-                        if (selector.getObstacle().getName().contains("spiked")) {
+                        if (selector.getObstacle().getName().contains("spikedplat")) {
                             PolygonObstacle temp = newSpikedPlatform(
                                     ((PolygonObstacle)selector.getObstacle()).getTruePoints());
                             temp.setPosition(temp.getPosition().add(0,platWidth*2));
@@ -933,6 +946,10 @@ public class EditorController extends WorldController implements InputProcessor 
                         if (selector.getObstacle().getClass() == FlyingBeeModel.class) {
                             FlyingBeeModel temp = (FlyingBeeModel) selector.getObstacle();
                             newFlyingBee(temp.getX(),temp.getY()+temp.getHeight()*2);
+                        }
+                        if (selector.getObstacle().getClass() == BallModel.class) {
+                            BallModel temp = (BallModel) selector.getObstacle();
+                            newBall(temp.getX(),temp.getY()+temp.getRadius()*2);
                         }
                     }
                 }
@@ -1014,6 +1031,15 @@ public class EditorController extends WorldController implements InputProcessor 
                     clickCache.clear();
                 }
             }
+
+            if(mode == 8){
+                if (input.didMouseClick()) {
+                    clickCache.add(new Vector2(input.getCrossHair().x, input.getCrossHair().y));
+                    newBall(clickCache.get(0).x, clickCache.get(0).y);
+                    clickCache.clear();
+                }
+            }
+            //
         }
 
         //stop weird character movement
@@ -1024,6 +1050,11 @@ public class EditorController extends WorldController implements InputProcessor 
         for(AbstractBeeModel bee : level.getBees()){
             bee.setVX(0);
             bee.setVY(0);
+        }
+        for(BallModel ball : level.getBalls()){
+            ball.setVX(0);
+            ball.setVY(0);
+            ball.setAngle(0);
         }
 
         if (input.didSave()){
@@ -1087,7 +1118,7 @@ public class EditorController extends WorldController implements InputProcessor 
         // obj.setTexture(poisonTile);
         addObject(obj);
         //obj.setActive(false);
-        obj.setName("spiked");
+        obj.setName("spikedplat");
         level.getSpikedPlatforms().getArrayBodies().add(obj);
         return obj;
     }
@@ -1148,6 +1179,7 @@ public class EditorController extends WorldController implements InputProcessor 
         ball.setTexture(ballTexture);
         level.getBalls().add(ball);
         addObject(ball);
+        ball.setGravityScale(0);
     }
 
     /**
