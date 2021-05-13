@@ -1045,6 +1045,21 @@ public class LevelController implements ContactListener {
             }
         }
 
+        for (BallModel ball : level.getBalls()){
+            ball.applyForce();
+            if ((platforms.isRotating() && !ball.isRotating()) && (ball.isGrounded() || ball.isInHoney())) {
+                //&&((bee.isGrounded() && !bee.isInHoney())||(bee.isInHoney() && bee.getHoneyTime()==0))){
+                ball.startRotation(platforms.getRemainingAngle(), platforms.isClockwise(), level.getOrigin());
+                ball.setCurrentSpeed(platforms.getCurrentSpeed());
+            }
+            if(!ball.isGrounded()){
+                ball.getSensorFixtures().clear();
+            }
+            if(!ball.isInHoney()){
+                ball.getHoneyFixtures().clear();
+            }
+        }
+
         isRotating = platforms.isRotating();
         angleLeft = platforms.getRemainingAngle();
         if (didRotate) {
@@ -1148,6 +1163,7 @@ public class LevelController implements ContactListener {
 
         PlayerModel avatar = level.getPlayer();
         Array<AbstractBeeModel> bees = level.getBees();
+        Array<BallModel> balls = level.getBalls();
         BoxObstacle goalDoor = level.getGoalDoor();
 
         try {
@@ -1217,6 +1233,33 @@ public class LevelController implements ContactListener {
                     bee.setMaxspeed(level.getHoneyPatches().getSlowSpeed());
                 }
             }
+            //check if ball is grounded
+            for (BallModel ball : balls) {
+                if (((ball.getSensorName().equals(fd2) && ball != bd1)&&
+                        (bd1.getName().contains("platform")||bd1.getName().contains("spikedplat")) &&
+                        !ball.getSensorFixtures().contains(fix1)) ||
+                    ((ball.getSensorName().equals(fd1) && ball != bd2)&&
+                        (bd2.getName().contains("platform")||bd2.getName().contains("spikedplat")) &&
+                        !ball.getSensorFixtures().contains(fix2))) {
+                    ball.setGrounded(true);
+                    ball.getSensorFixtures().add(ball == bd1 ? fix2 : fix1); // Could have more than one ground
+                }
+                if (((ball.getSensorName().equals(fd2) && ball != bd1)&& fix2.isSensor()&&(bd1.getName().contains("honeypatch")) &&
+                //if (((ball.getSensorName().equals(fd2) && ball != bd1)&&(bd1.getName().contains("honeypatch")) &&
+                        !ball.getHoneyFixtures().contains(fix1)) ||
+                        ((ball.getSensorName().equals(fd1) && ball != bd2)&& fix1.isSensor()&&(bd2.getName().contains("honeypatch"))&&
+                        //((ball.getSensorName().equals(fd1) && ball != bd2)&&(bd2.getName().contains("honeypatch"))&&
+                                !ball.getHoneyFixtures().contains(fix2))) {
+                    //System.out.print(bee.getSensorName()+" in honeypatch\n");
+                    //bee.setGrounded(true);
+                    ball.setInHoney(true);
+                    //bee.setHoneyTime(0.5f);
+                    ball.getHoneyFixtures().add(ball == bd1 ? fix2 : fix1); // Could have more than one ground
+                    System.out.print("honey fixtures: " + ball.getHoneyFixtures().size + "\n");
+                    ball.setMaxspeed(level.getHoneyPatches().getSlowSpeed());
+                }
+            }
+
             // Check for honeypatch
             if (((avatar.getSensorName().equals(fd2) && avatar != bd1)&& fix2.isSensor() && (bd1.getName().contains("honeypatch"))&&
                     !honeyFixtures.contains(fix1)) ||
@@ -1311,6 +1354,30 @@ public class LevelController implements ContactListener {
                     if (bee.getHoneyFixtures().size == 0) {
                         bee.setDefaultMaxspeed();
                         bee.setInHoney(false);
+                    }
+                    //if (bee.getSensorFixtures().size == 0) {
+                    //    bee.setGrounded(false);
+                    //}
+                }
+            }
+
+            for(BallModel ball : level.getBalls()) {
+                if (((ball.getSensorName().equals(fd2) && ball != bd1)&&
+                        (bd1.getName().contains("platform")||bd1.getName().contains("spikedplat"))) ||
+                        ((ball.getSensorName().equals(fd1) && ball != bd2)&&
+                        (bd2.getName().contains("platform")||bd2.getName().contains("spikedplat")))) {
+                    ball.getSensorFixtures().remove(ball == bd1 ? fix2 : fix1);
+                    if (ball.getSensorFixtures().size == 0) {
+                        ball.setGrounded(false);
+                    }
+                }
+                if (((ball.getSensorName().equals(fd2) && ball != bd1)&& fix2.isSensor()&&(bd1.getName().contains("honeypatch"))) ||
+                        ((ball.getSensorName().equals(fd1) && ball != bd2)&& fix1.isSensor()&&(bd2.getName().contains("honeypatch")))) {
+                    ball.getHoneyFixtures().remove(ball == bd1 ? fix2 : fix1);
+                    //System.out.print("exiting honeypatch!\n");
+                    if (ball.getHoneyFixtures().size == 0) {
+                        ball.setDefaultMaxspeed();
+                        ball.setInHoney(false);
                     }
                     //if (bee.getSensorFixtures().size == 0) {
                     //    bee.setGrounded(false);

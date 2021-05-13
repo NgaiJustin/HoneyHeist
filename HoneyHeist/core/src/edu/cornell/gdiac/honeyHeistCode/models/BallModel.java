@@ -186,10 +186,10 @@ public class BallModel extends WheelObstacle {
         System.out.println("Rotating");
         if (isRotating) return;
         currentSpeed = 0f;
-        if(isGrounded) {
+        /*if(isGrounded) {
             setBodyType(BodyDef.BodyType.StaticBody);
             sticking = true;
-        }
+        }*/
         stageCenter = point;
         isRotating = true;
         this.isClockwise = isClockwise;
@@ -199,10 +199,10 @@ public class BallModel extends WheelObstacle {
     public void startRotation(float rotationAmount, boolean isClockwise, Vector2 point){
         if (isRotating) return;
         currentSpeed = 0f;
-        if(isGrounded) {
+        /*if(isGrounded) {
             setBodyType(BodyDef.BodyType.StaticBody);
             sticking = true;
-        }
+        }*/
         stageCenter = point;
         isRotating = true;
         this.isClockwise = isClockwise;
@@ -211,7 +211,7 @@ public class BallModel extends WheelObstacle {
 
     public BallModel (JsonValue data, float x, float y) {
         super(x, y, data.getFloat("radius"));
-        setName("ball");
+        setName("spikedball");
         sensorName = "BallGroundSensor" + x + y;
         sensorFixtures = new ObjectSet<Fixture>();
         honeyFixtures = new ObjectSet<Fixture>();
