@@ -47,6 +47,8 @@ public class EditorController extends WorldController implements InputProcessor 
     private FilmStrip flyingBeeStrip;
     private FilmStrip chasingBeeStrip;
 
+    private TextureRegion ballTexture;
+
     /**
      * Texture asset for testEnemy avatar
      */
@@ -284,6 +286,7 @@ public class EditorController extends WorldController implements InputProcessor 
         chaserBeeTexture = new TextureRegion(directory.getEntry("platform:larvae", Texture.class));
         flyingBeeTexture = new TextureRegion(directory.getEntry("platform:flyingBee", Texture.class));
         tilesBackground = new TextureRegion(directory.getEntry("shared:tilesBackground", Texture.class));
+        ballTexture = new TextureRegion(directory.getEntry("platform:ball", Texture.class));
 
         walkingPlayer = directory.getEntry( "platform:walk.pacing", FilmStrip.class );
 
@@ -595,9 +598,11 @@ public class EditorController extends WorldController implements InputProcessor 
 
         //Balls
         JsonValue balls = json.get("ballPos");
-        for (int i=0; i<balls.size; i++){
-            float[] pos = balls.get(i).asFloatArray();
-
+        if (!balls.isNull()) {
+            for (int i = 0; i < balls.size; i++) {
+                float[] pos = balls.get(i).asFloatArray();
+                newBall(pos[0], pos[1]);
+            }
         }
 
         addObject(honeyPatches);
@@ -1133,6 +1138,16 @@ public class EditorController extends WorldController implements InputProcessor 
         addObject(flyingBee);
         //chaserBee.setActive(false);
         flyingBee.setGravityScale(0);
+    }
+
+    private void newBall(float x, float y){
+        float dwidth = ballTexture.getRegionWidth() / scale.x;
+        float dheight = ballTexture.getRegionHeight() / scale.y;
+        BallModel ball = new BallModel(constants.get("ball"), x, y);
+        ball.setDrawScale(scale);
+        ball.setTexture(ballTexture);
+        level.getBalls().add(ball);
+        addObject(ball);
     }
 
     /**
