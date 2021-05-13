@@ -593,6 +593,12 @@ public class EditorController extends WorldController implements InputProcessor 
         //Player
         newPlayer(json.get("playerPos").asFloatArray()[0], json.get("playerPos").asFloatArray()[1]);
 
+        //Balls
+        JsonValue balls = json.get("ballPos");
+        for (int i=0; i<balls.size; i++){
+            float[] pos = balls.get(i).asFloatArray();
+
+        }
 
         addObject(honeyPatches);
 
@@ -1507,6 +1513,7 @@ public class EditorController extends WorldController implements InputProcessor 
         public float[][] spikedPlatformPos;
         public float[][] honeyPatchPos;
         public float[] background;
+        public float[][] ballPos;
 
         public Level(){
 
@@ -1520,6 +1527,7 @@ public class EditorController extends WorldController implements InputProcessor 
         public void setSpikedPlatform(float[][] spikedPlatformPos) {this.spikedPlatformPos = spikedPlatformPos; }
         public void setHoneyPatch(float[][] honeyPatchPos) { this.honeyPatchPos = honeyPatchPos; }
         public void setBackground(float[] backgroundPos) { this.background = backgroundPos; }
+        public void setBall(float[][] ballPos) { this.ballPos = ballPos; }
 
     }
 
@@ -1581,6 +1589,17 @@ public class EditorController extends WorldController implements InputProcessor 
 
         if (level.getHoneyPatches().getArrayBodies().size > 0){
             jsonLevel.setHoneyPatch(getPlatforms(2));
+        }
+
+        if (level.getBees() != null){
+            Array<BallModel> balls = level.getBalls();
+            float[][] ballArray = new float[balls.size][2];
+            for (int i=0; i<ballArray.length; i++){
+                Vector2 ballPos = balls.get(i).getPosition();
+                ballArray[i][0] = ballPos.x;
+                ballArray[i][1] = ballPos.y;
+            }
+            jsonLevel.setBall(ballArray);
         }
 
         return jsonLevel;
