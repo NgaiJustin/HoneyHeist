@@ -3,6 +3,7 @@ package edu.cornell.gdiac.honeyHeistCode.models;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
+import com.badlogic.gdx.utils.Json;
 import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.honeyHeistCode.GameCanvas;
 import edu.cornell.gdiac.util.FilmStrip;
@@ -25,6 +26,8 @@ public class FlyingBeeModel extends AbstractBeeModel{
     private boolean chaseCycle = true;
     private final int FRAMES_PER_ANIM = 7;
     private int animFrames = 0;
+
+    private CircleShape sensor2Shape;
 
 
     /**
@@ -80,6 +83,22 @@ public class FlyingBeeModel extends AbstractBeeModel{
         // Ground sensor to represent our feet
         Fixture sensorFixture = body.createFixture(sensorDef);
         sensorFixture.setUserData(getSensorName());
+
+        Vector2 sensor2Center = new Vector2(0,0);
+        FixtureDef sensor2Def = new FixtureDef();
+        sensor2Def.density = data.getFloat("density", 0);
+        sensor2Def.isSensor = true;
+        PolygonShape sensor2Shape = new PolygonShape();
+        JsonValue sensor2jv = data.get("shrink");
+        sensor2Shape.setAsBox(getWidth()/8f,
+                getWidth()/8f,
+                sensor2Center,0.0f);
+        sensor2Def.shape = sensor2Shape;
+
+        sensorShape = sensor2Shape;
+
+        Fixture sensor2Fixture = body.createFixture(sensor2Def);
+        sensor2Fixture.setUserData("clipping"+getSensorName());
 
         return true;
     }
@@ -275,6 +294,23 @@ public class FlyingBeeModel extends AbstractBeeModel{
         animateBee(BeeAnimations.CHASE, true);
     }
 
+
+    public void startRotation(boolean isClockwise, Vector2 point){
+        if (isRotating) return;
+        currentSpeed = 0f;
+        stageCenter = point;
+        isRotating = true;
+        this.isClockwise = isClockwise;
+        addRotation(rotationAngle);
+    }
+    public void startRotation(float rotationAmount, boolean isClockwise, Vector2 point){
+        if (isRotating) return;
+        currentSpeed = 0f;
+        stageCenter = point;
+        isRotating = true;
+        this.isClockwise = isClockwise;
+        addRotation(rotationAmount);
+    }
 
 
     /**

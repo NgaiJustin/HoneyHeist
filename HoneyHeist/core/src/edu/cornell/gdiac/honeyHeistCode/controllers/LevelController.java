@@ -1210,7 +1210,14 @@ public class LevelController implements ContactListener {
                 if ((((bee.getSensorName().equals(fd2) && bee != bd1)&&(bd1.getName().contains("platform")) &&
                         !bee.getSensorFixtures().contains(fix1)) ||
                     ((bee.getSensorName().equals(fd1) && bee != bd2)&&(bd2.getName().contains("platform")) &&
-                        !bee.getSensorFixtures().contains(fix2)))&&bee.getClass()== LarvaeModel.class) {
+                        !bee.getSensorFixtures().contains(fix2)))&&bee.getClass() == LarvaeModel.class) {
+                    bee.setGrounded(true);
+                    bee.getSensorFixtures().add(bee == bd1 ? fix2 : fix1); // Could have more than one ground
+                }
+                else if ((((("clipping"+bee.getSensorName()).equals(fd2) && bee != bd1)&&(bd1.getName().contains("platform")) &&
+                        !bee.getSensorFixtures().contains(fix1)) ||
+                        ((("clipping"+bee.getSensorName()).equals(fd1) && bee != bd2)&&(bd2.getName().contains("platform")) &&
+                                !bee.getSensorFixtures().contains(fix2)))&&bee.getClass() == FlyingBeeModel.class) {
                     bee.setGrounded(true);
                     bee.getSensorFixtures().add(bee == bd1 ? fix2 : fix1); // Could have more than one ground
                 }
@@ -1267,12 +1274,20 @@ public class LevelController implements ContactListener {
             }
 
             // Check for contact with enemy
-            if (!isFailure() && !isComplete() &&
+            if (!isFailure() &&
                     ((bd1 == avatar && bd2.getClass().getSuperclass() == AbstractBeeModel.class) ||
                     (bd1.getClass().getSuperclass() == AbstractBeeModel.class && bd2 == avatar))) {
-                avatar.setIsDead(true);
-                deathId = playSound(deathSound, deathId, 0.1f * this.volume);
-                setFailure(true);
+
+                AbstractBeeModel temp = (bd2.getClass().getSuperclass() == AbstractBeeModel.class ?
+                        (AbstractBeeModel) bd2 : (AbstractBeeModel) bd1);
+
+                if(!temp.getIsDead()) {
+                    avatar.setIsDead(true);
+                    deathId = playSound(deathSound, deathId, 0.1f * this.volume);
+                    if (!isComplete()) {
+                        setFailure(true);
+                    }
+                }
             }
 
             // Check for win condition
@@ -1333,8 +1348,8 @@ public class LevelController implements ContactListener {
             }
 
             for(AbstractBeeModel bee : bees) {
-                if (((bee.getSensorName().equals(fd2) && bee != bd1)&&(bd1.getName().contains("platform"))) ||
-                        ((bee.getSensorName().equals(fd1) && bee != bd2)&&(bd2.getName().contains("platform")))) {
+                if ((((bee.getSensorName().equals(fd2)||("clipping"+bee.getSensorName()).equals(fd2))  && bee != bd1)&&(bd1.getName().contains("platform"))) ||
+                        (((bee.getSensorName().equals(fd1)||("clipping"+bee.getSensorName()).equals(fd1)) && bee != bd2)&&(bd2.getName().contains("platform")))) {
                     bee.getSensorFixtures().remove(bee == bd1 ? fix2 : fix1);
                     if (bee.getSensorFixtures().size == 0) {
                         bee.setGrounded(false);

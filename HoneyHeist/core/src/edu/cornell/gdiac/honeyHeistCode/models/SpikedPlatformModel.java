@@ -16,7 +16,7 @@ public class SpikedPlatformModel extends PlatformModel{
      * @param data The physics constants and polygon information for the platforms in this model
      */
     public SpikedPlatformModel(JsonValue data, Vector2 worldCenter) {
-        super(data, "spikedplat", worldCenter);
+        super(data, "spikedplatform", worldCenter);
     }
 
     public SpikedPlatformModel() {
