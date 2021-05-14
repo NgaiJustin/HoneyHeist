@@ -228,7 +228,7 @@
       "size": 32
     },
     "shared:retro": {
-        "file": "shared/RetroGame.ttf",
+        "file": "shared/LoRes9OTWide-Bold.ttf",
         "size": 64
     },
     "shared:marker": {
