@@ -6,7 +6,7 @@
       "wrapV": "repeated"
     },
     "shared:honeyPatch": {
-      "file": "shared/honeyPatch.png",
+      "file": "shared/honeypatch.png",
       "wrapU": "repeated",
       "wrapV": "repeated"
     },
