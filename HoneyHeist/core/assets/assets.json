@@ -206,7 +206,10 @@
     "levels:threadTheNeedle": "levels/threadTheNeedle.json",
     "levels:toTheTopRight": "levels/toTheTopRight.json",
     "levels:yoloLarvaeDrop": "levels/yoloLarvaeDrop.json",
-    "levels:yoloSkydiver": "levels/yoloSkydiver.json"
+    "levels:yoloSkydiver": "levels/yoloSkydiver.json",
+    "levels:simpleSpikedBall": "levels/simpleSpikedBall.json",
+    "levels:killTheBeesWithTheBall": "levels/killTheBeesWithTheBall.json",
+    "levels:ballMaze": "levels/ballMaze.json"
   },
   "sounds": {
     "platform:jump": "platform/jump.mp3",
