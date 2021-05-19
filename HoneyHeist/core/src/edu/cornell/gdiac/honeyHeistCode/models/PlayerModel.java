@@ -12,6 +12,9 @@ public class PlayerModel extends CharacterModel {
 
     /** True if the Enemy has already been flagged as dead and the death animation has completed */
     protected boolean isTrulyDead;
+    private boolean isShrinking;    // End of level
+    private float shrinkFactor;
+    private final float SHRINK_RATE = 0.04f;
 
     // Walking animation fields
     /** The texture filmstrip for the left animation node */
@@ -50,6 +53,8 @@ public class PlayerModel extends CharacterModel {
         super(data, x, y, width, height);
         setName("ant");
         sensorName = "AntGroundSensor";
+        this.isShrinking = false;
+        this.shrinkFactor = 1.0f;
     }
 
     /**
@@ -170,11 +175,21 @@ public class PlayerModel extends CharacterModel {
         // Walking Animation
         if (currAnim != null) {
             float offsety = currAnim.getRegionHeight()-origin.y;
-            canvas.draw(currAnim,Color.WHITE,origin.x,offsety,getX()*drawScale.x,getY()*drawScale.x,getAngle(),effect,1);
+            if (isShrinking){
+                canvas.draw(currAnim,Color.WHITE,origin.x,offsety,getX()*drawScale.x,getY()*drawScale.x,getAngle(),effect * shrinkFactor,1 * shrinkFactor);
+                shrink();
+            } else {
+                canvas.draw(currAnim, Color.WHITE, origin.x, offsety, getX() * drawScale.x, getY() * drawScale.x, getAngle(), effect, 1);
+            }
         }
         // Stationary ant
         else {
-            canvas.draw(texture, Color.WHITE, origin.x, origin.y, getX() * drawScale.x, getY() * drawScale.y, getAngle(), effect, 1.0f);
+            if (isShrinking) {
+                canvas.draw(texture, Color.WHITE, origin.x, origin.y, getX() * drawScale.x, getY() * drawScale.y, getAngle(), effect * shrinkFactor, shrinkFactor);
+                shrink();
+            } else {
+                canvas.draw(texture, Color.WHITE, origin.x, origin.y, getX() * drawScale.x, getY() * drawScale.y, getAngle(), effect, 1.0f);
+            }
         }
     }
 
@@ -187,6 +202,17 @@ public class PlayerModel extends CharacterModel {
         // Precondition: Enemy must be dead first
         if (this.isDead) {
             this.isTrulyDead = b;
+        }
+    }
+
+    public void setShrinking (boolean b){
+        this.isShrinking = b;
+    }
+
+    private void shrink(){
+        this.shrinkFactor -= SHRINK_RATE;
+        if (this.shrinkFactor < 0) {
+            this.shrinkFactor = 0;
         }
     }
 

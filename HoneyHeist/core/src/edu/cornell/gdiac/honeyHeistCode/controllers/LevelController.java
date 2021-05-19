@@ -1082,6 +1082,17 @@ public class LevelController implements ContactListener {
             transition.markRemoved(true);
             transition = null;
         }
+        if (isComplete()){
+            float dist = 0.35f;
+            Vector2 goalPos = level.getGoalDoor().getPosition().cpy();
+            Vector2 playerPos = avatar.getPosition().cpy();
+            if (goalPos.dst(playerPos) < dist) {
+                // System.out.println("CONTACT");
+                avatar.setBodyType(BodyDef.BodyType.StaticBody);
+            }
+            avatar.setInHoney(true);
+            avatar.setShrinking(true);
+        }
 
         if(isComplete()&&transition==null&&countdown<EXIT_COUNT-40){
             transition = new TransitionModel(level.getOrigin().x,level.getOrigin().y,false);
@@ -1170,7 +1181,7 @@ public class LevelController implements ContactListener {
                     bd2.getClass().getSuperclass().getSuperclass().getSimpleName().equals("CharacterModel");
 
             if (((bd1.getName().contains("spiked")) && bd2isCharacterModel) ||
-            bd2.getName().contains("spiked") && bd1isCharacterModel){
+                bd2.getName().contains("spiked") && bd1isCharacterModel){
                 if ((avatar == bd1 || avatar == bd2) && !isComplete()){
                     // Player is dead
                     // System.out.println("PLAYER DIED");
