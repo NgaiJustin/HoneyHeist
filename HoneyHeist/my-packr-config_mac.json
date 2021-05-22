@@ -1,0 +1,14 @@
+{
+  "platform": "mac",
+  "jdk": "jdk-9.0.4.jdk.zip",
+  "executable": "HoneyHeist.app",
+  "classpath": [
+    "HoneyHeist.jar"
+  ],
+  "mainclass": "edu.cornell.gdiac.honeyHeistCode.desktop.DesktopLauncher",
+  "resources": [
+    "core/resources"
+  ],
+  "minimizejre": "soft",
+  "output": "out-mac"
+}

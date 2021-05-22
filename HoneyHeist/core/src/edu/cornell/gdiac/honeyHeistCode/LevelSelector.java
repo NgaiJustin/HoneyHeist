@@ -217,34 +217,33 @@ public class LevelSelector implements Screen {
         // set background
         table.setBackground(skin.getDrawable("background"));
 
-        // *** levelEditor button *** //
+//        // *** levelEditor button *** //
         TextureRegion levelEditorImage = new TextureRegion(internal.getEntry("levelEditor", Texture.class));
         TextureRegionDrawable levelEditorDrawable = new TextureRegionDrawable(levelEditorImage);
         TextButtonStyle levelEditorStyle = new TextButtonStyle();
-        levelEditorStyle.up = levelEditorDrawable;
-        levelEditorStyle.down = levelEditorDrawable.tint(Color.GRAY);
-        levelEditorStyle.font = skin.getFont("font");
-        TextButton levelEditor = new TextButton("Edit", levelEditorStyle);
-        // change the size
-        levelEditor.invalidate();
-        levelEditor.setSize(EDITOR_WIDTH, EDITOR_HEIGHT);
-//        levelEditor.setPosition(stage.getWidth()*0.1f, stage.getHeight()*0.6f);
-        levelEditor.setPosition(stage.getWidth()*0.05f, stage.getHeight()*0.8f);
-        levelEditor.validate();
-        // add listen to pressing event
-        levelEditor.addListener(new ChangeListener() {
-            public void changed(ChangeEvent event, Actor actor) {
-                isPressLevelEditor = true;
-            }
-        });
-        stage.addActor(levelEditor);
+//        levelEditorStyle.up = levelEditorDrawable;
+//        levelEditorStyle.down = levelEditorDrawable.tint(Color.GRAY);
+//        levelEditorStyle.font = skin.getFont("font");
+//        TextButton levelEditor = new TextButton("Edit", levelEditorStyle);
+//        // change the size
+//        levelEditor.invalidate();
+//        levelEditor.setSize(EDITOR_WIDTH, EDITOR_HEIGHT);
+//        levelEditor.setPosition(stage.getWidth()*0.05f, stage.getHeight()*0.8f);
+//        levelEditor.validate();
+//        // add listen to pressing event
+//        levelEditor.addListener(new ChangeListener() {
+//            public void changed(ChangeEvent event, Actor actor) {
+//                isPressLevelEditor = true;
+//            }
+//        });
+//        stage.addActor(levelEditor);
 
         // *** quit button *** //
         TextButtonStyle quitStyle = new TextButtonStyle();
         quitStyle.up = levelEditorDrawable;
         quitStyle.down = levelEditorDrawable.tint(Color.GRAY);
         quitStyle.font = skin.getFont("font");
-        TextButton quitButton = new TextButton("Quit", levelEditorStyle);
+        TextButton quitButton = new TextButton("Quit", quitStyle);
         // change the size
         quitButton.invalidate();
         quitButton.setSize(EDITOR_WIDTH, EDITOR_HEIGHT);
@@ -347,23 +346,6 @@ public class LevelSelector implements Screen {
                     levelTable.add(levelButtons[i]).height(100).width(120).
                             padLeft(5f).padRight(5f);
                 }
-
-                // implementation 2
-//            levelButtons[i] = new TextButton(String.valueOf(i+1), buttonStyle);
-//            table.add(levelButtons[i]).height(Value.percentHeight(1.2f)).width(Value.percentWidth(1.25f)).
-//                    padLeft(20f).padRight(20f);
-//            levelTable.add(levelButtons[i]).fillX().fillY();
-                // 4 levels per row
-//            if (i%LEVEL_PER_ROW == (LEVEL_PER_ROW-1)) {
-//                if (i/LEVEL_PER_ROW%2 == 0) {
-////                    table.row().spaceLeft(50f);
-//                    table.row().right();
-//                } else {
-////                    table.row().spaceRight(50f);
-//                    table.row().left();
-//                }
-////                levelTable.row();
-//            }
             }
             scrollTable.add(page).width(stage.getWidth()*0.6f);
         }
@@ -442,35 +424,6 @@ public class LevelSelector implements Screen {
     }
 
     /**
-     * Update the status of this player mode.
-     *
-     * We prefer to separate update and draw from one another as separate methods, instead
-     * of using the single render() method that LibGDX does.  We will talk about why we
-     * prefer this in lecture.
-     *
-     * @param delta Number of seconds since last animation frame
-     */
-//    private void update(float delta) {
-//        boolean flag = true;
-//        for (TextButton button : levelButtons) {
-//            if (button != null) {
-//                flag = false;
-//                break;
-//            }
-//        }
-//        if (flag) {
-//            assets.update(budget);
-//            this.progress = assets.getProgress();
-//            if (progress >= 1.0f) {
-//                this.progress = 1.0f;
-//                for (int i=0; i<buttons.length; i++) {
-//                    buttons[i] = internal.getEntry("button", Texture.class);
-//                }
-//            }
-//        }
-//    }
-
-    /**
      * Draw the status of this player mode.
      *
      * We prefer to separate update and draw from one another as separate methods, instead
@@ -497,10 +450,10 @@ public class LevelSelector implements Screen {
             Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
             stage.act();
             stage.draw();
-            if (isPressLevelEditor) {
-                listener.exitScreen(this, EXIT_EDITOR);
-                return;
-            }
+//            if (isPressLevelEditor) {
+//                listener.exitScreen(this, EXIT_EDITOR);
+//                return;
+//            }
             if (pressState != 0) {
                 currentLevelNum = pressState;
                 listener.exitScreen(this, EXIT_PLAY);
