@@ -530,23 +530,22 @@ public class GameplayController implements Screen, InputProcessor {
         }
 
         // Now it is time to maybe switch screens.
-        if (input.didExit() || quitReady) {
-            pause();
-            listener.exitScreen(this, EXIT_QUIT);
-            return false;
-        } else if (input.didAdvance()) {
+        if (quitReady) {
 			pause();
-			listener.exitScreen(this, EXIT_EDITOR);
+			listener.exitScreen(this, EXIT_QUIT);
 			return false;
+		} else if (input.didExit()) {
+        	isPaused = true;
+        	return false;
+//        } else if (input.didAdvance()) {
+//			pause();
+//			listener.exitScreen(this, EXIT_EDITOR);
+//			return false;
 		} else if (menuReady) {
         	pause();
         	levelController.stopAllSounds();
         	listener.exitScreen(this, EXIT_MENU);
         	return false;
-//		} else if (input.didRetreat()) {
-//			pause();
-//			listener.exitScreen(this, EXIT_PREV);
-//			return false;
 		} else if (levelController.getCountdown() > 0) {
 			levelController.decreaseCountdown();
 		} else if (levelController.getCountdown() == 0) {
