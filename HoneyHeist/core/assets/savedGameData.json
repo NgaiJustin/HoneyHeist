@@ -2,7 +2,7 @@
 "levels": [
 	{
 		"unlock": true,
-		"complete": false,
+		"complete": true,
 		"file": "levels:rotation"
 	},
 	{

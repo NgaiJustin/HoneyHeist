@@ -1,0 +1,10 @@
+{
+  "jrePath": "jre",
+  "classPath": [
+    "HoneyHeist.jar"
+  ],
+  "mainClass": "edu.cornell.gdiac.honeyHeistCode.desktop.DesktopLauncher",
+  "useZgcIfSupportedOs": false,
+  "vmArgs": [
+  ]
+}

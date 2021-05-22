@@ -1303,7 +1303,7 @@ public class EditorController extends WorldController implements InputProcessor 
     public void draw(float dt) {
         canvas.clear();
         canvas.begin();
-        canvas.draw(background, 0, 0);
+        canvas.draw(background, Color.WHITE, 0, 0, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         level.getLevelBackground().draw(canvas);
         for(Obstacle obj : objects) {
             if(obj.getClass() == PolygonObstacle.class) {
