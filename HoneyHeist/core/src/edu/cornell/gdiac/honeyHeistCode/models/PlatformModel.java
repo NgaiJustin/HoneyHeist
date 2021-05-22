@@ -82,7 +82,8 @@ public class PlatformModel extends Obstacle {
 			obj = new PolygonObstacle(data.get(ii).asFloatArray(), 0, 0);
 			obj.setBodyType(BodyDef.BodyType.StaticBody);
 			obj.setDensity(data.getFloat( "density", 0.0f ));
-			obj.setFriction(data.getFloat( "friction", 0.0f ));
+			//obj.setFriction(data.getFloat( "friction", 0.0f ));
+			obj.setFriction(0.9f);
 			obj.setRestitution(data.getFloat( "restitution", 0.0f ));
 			obj.setName(pname+ii);
 			bodies.add(obj);
@@ -107,7 +108,8 @@ public class PlatformModel extends Obstacle {
 			obj = new PolygonObstacle(data.get(ii).asFloatArray(), 0, 0);
 			obj.setBodyType(BodyDef.BodyType.StaticBody);
 			obj.setDensity(data.getFloat( "density", 0.0f ));
-			obj.setFriction(data.getFloat( "friction", 0.0f ));
+			//obj.setFriction(data.getFloat( "friction", 0.0f ));
+			obj.setFriction(0.9f);
 			obj.setRestitution(data.getFloat( "restitution", 0.0f ));
 			obj.setName(pname+ii);
 			bodies.add(obj);

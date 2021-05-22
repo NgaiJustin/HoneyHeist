@@ -47,6 +47,8 @@ public class EditorController extends WorldController implements InputProcessor 
     private FilmStrip flyingBeeStrip;
     private FilmStrip chasingBeeStrip;
 
+    private TextureRegion ballTexture;
+
     /**
      * Texture asset for testEnemy avatar
      */
@@ -138,7 +140,7 @@ public class EditorController extends WorldController implements InputProcessor 
     // Fields for the Editor controller GUI
 //    private EditorOverlay overlay;
 //    private Stage stage;
-    private int buttonNum = 11;
+    private int buttonNum = 12;
 
     private Texture antButton;
     private Texture larvaButton;
@@ -151,6 +153,7 @@ public class EditorController extends WorldController implements InputProcessor 
     private Texture saveButton;
     private Texture loadButton;
     private Texture resetButton;
+    private Texture ballButton;
 
     private Boolean abPressed = false;  // Ant button
     private Boolean lbPressed = false;  // Larva button
@@ -163,6 +166,7 @@ public class EditorController extends WorldController implements InputProcessor 
     private Boolean sbPressed = false;  // Save button
     private Boolean loadbPressed = false;  // Load button
     private Boolean rbPressed = false;  // Reset button
+    private Boolean ballbPressed = false; // Ball button
 
     private static float BUTTON_SCALE  = 0.3f;
 
@@ -182,26 +186,28 @@ public class EditorController extends WorldController implements InputProcessor 
 
     private float rbY() {return smbY() * 4;}
 
-    private float spbY() {return smbY() * 5;}
+    private float ballbY() {return smbY() * 5;}
+
+    private float spbY() {return smbY() * 6;}
 
     private float pbY(){
-        return smbY() * 6;
+        return smbY() * 7;
     }
 
-    private float hpbY() {return smbY() * 7;}
+    private float hpbY() {return smbY() * 8;}
 
     private float gbY(){
-        return smbY() * 8;
-    }
-
-    private float bbY(){
         return smbY() * 9;
     }
 
-    private float lbY() {return smbY() * 10;}
+    private float bbY(){
+        return smbY() * 10;
+    }
+
+    private float lbY() {return smbY() * 11;}
 
     private float abY(){
-        return smbY() * 11;
+        return smbY() * 12;
     }
 
     private void resetButtons(){
@@ -216,6 +222,7 @@ public class EditorController extends WorldController implements InputProcessor 
         hpbPressed = false;
         spbPressed = false;
         loadbPressed = false;
+        ballbPressed = false;
     }
 
 
@@ -279,8 +286,9 @@ public class EditorController extends WorldController implements InputProcessor 
         chaserBeeTexture = new TextureRegion(directory.getEntry("platform:larvae", Texture.class));
         flyingBeeTexture = new TextureRegion(directory.getEntry("platform:flyingBee", Texture.class));
         tilesBackground = new TextureRegion(directory.getEntry("shared:tilesBackground", Texture.class));
+        ballTexture = new TextureRegion(directory.getEntry("platform:ball", Texture.class));
 
-        walkingPlayer = directory.getEntry( "platform:walk.pacing", FilmStrip.class );
+        //walkingPlayer = directory.getEntry( "platform:walk.pacing", FilmStrip.class );
 
         jumpSound = directory.getEntry("platform:jump", SoundBuffer.class);
         fireSound = directory.getEntry("platform:pew", SoundBuffer.class);
@@ -301,7 +309,7 @@ public class EditorController extends WorldController implements InputProcessor 
         resetButton = directory.getEntry("editor:resetButton", Texture.class);
         loadButton = directory.getEntry("editor:loadButton", Texture.class);
         saveButton = directory.getEntry("editor:saveButton", Texture.class);
-
+        ballButton = directory.getEntry("editor:ballButton", Texture.class);
 
         super.gatherAssets(directory);
     }
@@ -412,7 +420,7 @@ public class EditorController extends WorldController implements InputProcessor 
         // Create honeypatches
         HoneypatchModel honeyPatches = new HoneypatchModel(levelData.get("honeypatchPos"),0.4f, worldCenter);
         honeyPatches.setDrawScale(scale);
-        honeyPatches.setTexture(earthTile); //TODO: Change honeyPatch texture
+        honeyPatches.setTexture(earthTile);
         //dont add yet so that it can overlap
         //addObject(honeyPatches);
 
@@ -429,10 +437,18 @@ public class EditorController extends WorldController implements InputProcessor 
         addObject(avatar);
         avatar.setGravityScale(0);
 
+        // Create Ball array
+        Array<BallModel> balls = new Array<>();
         // Create chaser bees
-
         Array<AbstractBeeModel> bees = new Array<AbstractBeeModel>();
-        level = new LevelModel(avatar,bees,goalDoor,platforms, spikedPlatforms, honeyPatches, levelBackground, new Rectangle(bounds));
+        level = new LevelModel(avatar,bees, balls, goalDoor,platforms, spikedPlatforms, honeyPatches, levelBackground, new Rectangle(bounds));
+        JsonValue ballPos = levelData.get("ballPos");
+        if (!(ballPos == null)) {
+            for (int i = 0; i < ballPos.size; i++) {
+                float[] pos = ballPos.get(i).asFloatArray();
+                newBall(pos[0], pos[1]);
+            }
+        }
 
         dwidth = chaserBeeTexture.getRegionWidth() / scale.x;
         dheight = chaserBeeTexture.getRegionHeight() / scale.y;
@@ -587,6 +603,15 @@ public class EditorController extends WorldController implements InputProcessor 
         //Player
         newPlayer(json.get("playerPos").asFloatArray()[0], json.get("playerPos").asFloatArray()[1]);
 
+        //Balls
+        level.setBalls(new Array<BallModel>());
+        JsonValue balls = json.get("ballPos");
+        if (!(balls == null)) {
+            for (int i = 0; i < balls.size; i++) {
+                float[] pos = balls.get(i).asFloatArray();
+                newBall(pos[0], pos[1]);
+            }
+        }
 
         addObject(honeyPatches);
 
@@ -718,6 +743,10 @@ public class EditorController extends WorldController implements InputProcessor 
                 else if (Math.abs(gbY() - clickY) < goalButton.getHeight()*BUTTON_SCALE/2){
                     this.gbPressed = true;
                     this.mode = 3;
+                }
+                else if (Math.abs(ballbY() - clickY) < ballButton.getHeight()*BUTTON_SCALE/2){
+                    this.ballbPressed = true;
+                    this.mode = 8;
                 }
                 // RESET BUTTON CLICKED
                 else if (Math.abs(rbY() - clickY) < resetButton.getHeight()*BUTTON_SCALE/2){
@@ -868,7 +897,7 @@ public class EditorController extends WorldController implements InputProcessor 
                             PolygonObstacle obj = (PolygonObstacle) selector.getObstacle();
                             level.getPlatforms().getArrayBodies().removeValue(obj, false);
                         }
-                        if (selector.getObstacle().getName().contains("spiked")) {
+                        if (selector.getObstacle().getName().contains("spikedplat")) {
                             PolygonObstacle obj = (PolygonObstacle) selector.getObstacle();
                             level.getSpikedPlatforms().getArrayBodies().removeValue(obj, false);
                         }
@@ -886,6 +915,11 @@ public class EditorController extends WorldController implements InputProcessor 
                         if (selector.getObstacle().getName() == "goal") {
                             level.setGoalDoor(null);
                         }
+                        if (selector.getObstacle().getClass() == BallModel.class) {
+                            BallModel ball = (BallModel) selector.getObstacle();
+                            level.getBalls().removeValue(ball,false);
+                         }
+
                         selector.getObstacle().markRemoved(true);
                     }
 
@@ -895,7 +929,7 @@ public class EditorController extends WorldController implements InputProcessor 
                                     ((PolygonObstacle)selector.getObstacle()).getTruePoints());
                             temp.setPosition(temp.getPosition().add(0,platWidth*2));
                         }
-                        if (selector.getObstacle().getName().contains("spiked")) {
+                        if (selector.getObstacle().getName().contains("spikedplat")) {
                             PolygonObstacle temp = newSpikedPlatform(
                                     ((PolygonObstacle)selector.getObstacle()).getTruePoints());
                             temp.setPosition(temp.getPosition().add(0,platWidth*2));
@@ -912,6 +946,10 @@ public class EditorController extends WorldController implements InputProcessor 
                         if (selector.getObstacle().getClass() == FlyingBeeModel.class) {
                             FlyingBeeModel temp = (FlyingBeeModel) selector.getObstacle();
                             newFlyingBee(temp.getX(),temp.getY()+temp.getHeight()*2);
+                        }
+                        if (selector.getObstacle().getClass() == BallModel.class) {
+                            BallModel temp = (BallModel) selector.getObstacle();
+                            newBall(temp.getX(),temp.getY()+temp.getRadius()*2);
                         }
                     }
                 }
@@ -993,6 +1031,15 @@ public class EditorController extends WorldController implements InputProcessor 
                     clickCache.clear();
                 }
             }
+
+            if(mode == 8){
+                if (input.didMouseClick()) {
+                    clickCache.add(new Vector2(input.getCrossHair().x, input.getCrossHair().y));
+                    newBall(clickCache.get(0).x, clickCache.get(0).y);
+                    clickCache.clear();
+                }
+            }
+            //
         }
 
         //stop weird character movement
@@ -1003,6 +1050,11 @@ public class EditorController extends WorldController implements InputProcessor 
         for(AbstractBeeModel bee : level.getBees()){
             bee.setVX(0);
             bee.setVY(0);
+        }
+        for(BallModel ball : level.getBalls()){
+            ball.setVX(0);
+            ball.setVY(0);
+            ball.setAngle(0);
         }
 
         if (input.didSave()){
@@ -1066,7 +1118,7 @@ public class EditorController extends WorldController implements InputProcessor 
         // obj.setTexture(poisonTile);
         addObject(obj);
         //obj.setActive(false);
-        obj.setName("spiked");
+        obj.setName("spikedplat");
         level.getSpikedPlatforms().getArrayBodies().add(obj);
         return obj;
     }
@@ -1117,6 +1169,17 @@ public class EditorController extends WorldController implements InputProcessor 
         addObject(flyingBee);
         //chaserBee.setActive(false);
         flyingBee.setGravityScale(0);
+    }
+
+    private void newBall(float x, float y){
+        float dwidth = ballTexture.getRegionWidth() / scale.x;
+        float dheight = ballTexture.getRegionHeight() / scale.y;
+        BallModel ball = new BallModel(constants.get("ball"), x, y);
+        ball.setDrawScale(scale);
+        ball.setTexture(ballTexture);
+        level.getBalls().add(ball);
+        addObject(ball);
+        ball.setGravityScale(0);
     }
 
     /**
@@ -1343,6 +1406,8 @@ public class EditorController extends WorldController implements InputProcessor 
                 honeyPatchButton.getHeight() / 2, BUTTON_X, hpbY(), 0, BUTTON_SCALE, BUTTON_SCALE);
         canvas.draw(loadButton,  loadbPressed ? Color.GRAY : Color.WHITE, loadButton.getWidth() / 2,
                 loadButton.getHeight() / 2, BUTTON_X, loadbY(), 0, BUTTON_SCALE, BUTTON_SCALE);
+        canvas.draw(ballButton,  ballbPressed ? Color.GRAY : Color.WHITE, ballButton.getWidth() / 2,
+                ballButton.getHeight() / 2, BUTTON_X, ballbY(), 0, BUTTON_SCALE, BUTTON_SCALE);
         canvas.end();
 
 
@@ -1495,6 +1560,7 @@ public class EditorController extends WorldController implements InputProcessor 
         public float[][] spikedPlatformPos;
         public float[][] honeyPatchPos;
         public float[] background;
+        public float[][] ballPos;
 
         public Level(){
 
@@ -1508,6 +1574,7 @@ public class EditorController extends WorldController implements InputProcessor 
         public void setSpikedPlatform(float[][] spikedPlatformPos) {this.spikedPlatformPos = spikedPlatformPos; }
         public void setHoneyPatch(float[][] honeyPatchPos) { this.honeyPatchPos = honeyPatchPos; }
         public void setBackground(float[] backgroundPos) { this.background = backgroundPos; }
+        public void setBall(float[][] ballPos) { this.ballPos = ballPos; }
 
     }
 
@@ -1569,6 +1636,17 @@ public class EditorController extends WorldController implements InputProcessor 
 
         if (level.getHoneyPatches().getArrayBodies().size > 0){
             jsonLevel.setHoneyPatch(getPlatforms(2));
+        }
+
+        if (level.getBees() != null){
+            Array<BallModel> balls = level.getBalls();
+            float[][] ballArray = new float[balls.size][2];
+            for (int i=0; i<ballArray.length; i++){
+                Vector2 ballPos = balls.get(i).getPosition();
+                ballArray[i][0] = ballPos.x;
+                ballArray[i][1] = ballPos.y;
+            }
+            jsonLevel.setBall(ballArray);
         }
 
         return jsonLevel;

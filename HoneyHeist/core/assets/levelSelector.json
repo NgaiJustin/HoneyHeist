@@ -5,7 +5,7 @@
         "levelEditor": "shared/button.png",
         "unlock_button": "shared/level_empty.png",
         "complete_button": "shared/level_complete_thick.png",
-        "lock_button": "shared/level_locked_large.png"
+        "lock_button": "shared/level_locked_large.png",
         "title": "shared/levelselectlabel.png",
         "left": "shared/left_arrow.png",
         "right": "shared/right_arrow.png",
@@ -28,6 +28,7 @@
         }
     },
     "jsons": {
-        "levelData": "savedGameData.json"
+        "levelData": "savedGameData.json",
+        "constants": "platform/constants2.json"
     }
 }

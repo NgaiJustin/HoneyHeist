@@ -57,6 +57,8 @@ public class LevelController implements ContactListener {
     protected TextureRegion background;
     /** The texture for the tilesBackground */
     protected TextureRegion tilesBackground;
+    /** The texture for the ball */
+    protected TextureRegion ballTexture;
     /** The texture for AI Nodes, used for debugging */
     protected TextureRegion whiteSquare;
     /** The font for giving messages to the player */
@@ -429,8 +431,10 @@ public class LevelController implements ContactListener {
      * @param directory Reference to global asset manager.
      */
     public void gatherAssets(AssetDirectory directory, String dataFilePath) {
+        ballTexture      = new TextureRegion(directory.getEntry("platform:ball", Texture.class));
+
         avatarTexture    = new TextureRegion(directory.getEntry("platform:ant", Texture.class));
-        larvaeTexture = new TextureRegion(directory.getEntry("platform:larvae", Texture.class));
+        larvaeTexture    = new TextureRegion(directory.getEntry("platform:larvae", Texture.class));
         flyingBeeTexture = new TextureRegion(directory.getEntry("platform:flyingBee", Texture.class));
 
         walkingPlayer   = directory.getEntry( "platform:playerWalk.pacing", FilmStrip.class );
@@ -706,9 +710,14 @@ public class LevelController implements ContactListener {
         avatar.setIsTrulyDead(false);
         addObject(avatar);
 
+        // Create Ball array
+        Array<BallModel> balls = new Array<>();
+
         // Create chaser bees
         Array<AbstractBeeModel> bees = new Array<AbstractBeeModel>();
-        level = new LevelModel(avatar,bees,goalDoor,platforms, spikedPlatforms, honeyPatches, levelBackground, new Rectangle(bounds));
+
+        // Init Level Model
+        level = new LevelModel(avatar,bees,balls,goalDoor,platforms, spikedPlatforms, honeyPatches, levelBackground, new Rectangle(bounds));
       
         aIController = new AIController(level);
 
@@ -749,8 +758,24 @@ public class LevelController implements ContactListener {
             aIController.createAIForSingleCharacter(flyingBee, constants.get("FlyingBee").get("ai_controller_options"));
         }
 
-        //establish draw order:
+        // Add Balls based on Level data
+        /*
+            TODO:   I wrote this code modelling of what we did for the bees and larvae.
+                    Have not tested that this works yet since we don't have a level with balls yet
+         */
+        JsonValue ballPositions = levelData.get("ballPos");
+        if (ballPositions != null) {
+            for (int i = 0; i < ballPositions.size; i++) {
+                float[] pos = ballPositions.get(i).asFloatArray();
+                BallModel ball = new BallModel(constants.get("Ball"), pos[0], pos[1]);
+                ball.setDrawScale(scale);
+                ball.setTexture(ballTexture);
+                balls.add(ball);
+                addObject(ball);
+            }
+        }
 
+        //establish draw order:
         addObject(honeyPatches);
         addObject(spikedPlatforms);
 
@@ -785,7 +810,9 @@ public class LevelController implements ContactListener {
 
          */
 
-        volume = constants.getFloat("volume", 1.0f);
+        //volume = constants.getFloat("volume", 1.0f);
+        this.volume = constants.get("defaults").getFloat("volume", 1.0f);
+        System.out.println(volume);
 
     }
 
@@ -801,6 +828,7 @@ public class LevelController implements ContactListener {
         SpikedPlatformModel spikedPlatforms = level.getSpikedPlatforms();
         PlayerModel avatar = level.getPlayer();
         Array<AbstractBeeModel> bees = level.getBees();
+        Array<BallModel> balls = level.getBalls();
         Vector2 origin = level.getOrigin();
 
         platforms.startRotation(isClockwise, origin);
@@ -820,6 +848,12 @@ public class LevelController implements ContactListener {
         for(AbstractBeeModel bee : bees){
             if((bee.isGrounded()||bee.isInHoney()) && platformNotRotating) {
                 bee.startRotation(isClockwise, origin);
+            }
+        }
+        for (BallModel ball : balls) {
+            System.out.println("Grounded: " + ball.isGrounded());
+            if((ball.isGrounded()||ball.isInHoney()) && platformNotRotating) {
+                ball.startRotation(isClockwise, origin);
             }
         }
     }
@@ -1004,19 +1038,34 @@ public class LevelController implements ContactListener {
             }
         }
 
+        for (BallModel ball : level.getBalls()){
+            ball.applyForce();
+            if ((platforms.isRotating() && !ball.isRotating()) && (ball.isGrounded() || ball.isInHoney())) {
+                //&&((bee.isGrounded() && !bee.isInHoney())||(bee.isInHoney() && bee.getHoneyTime()==0))){
+                ball.startRotation(platforms.getRemainingAngle(), platforms.isClockwise(), level.getOrigin());
+                ball.setCurrentSpeed(platforms.getCurrentSpeed());
+            }
+            if(!ball.isGrounded()){
+                ball.getSensorFixtures().clear();
+            }
+            if(!ball.isInHoney()){
+                ball.getHoneyFixtures().clear();
+            }
+        }
+
         isRotating = platforms.isRotating();
         angleLeft = platforms.getRemainingAngle();
         if (didRotate) {
             rotateClockwise();
-            if (angleLeft <= 2*Math.PI/24 && isRotating && !didQueueCounterClockwise){
-            //if (isRotating && !didQueueCounterClockwise){
+            //if (angleLeft <= 2*Math.PI/24 && isRotating && !didQueueCounterClockwise){
+            if (isRotating && !didQueueCounterClockwise){
                 System.out.print("Queue Clockwise\n");
                 didQueueClockwise = true;
             }
         } else if (didAntiRotate) {
             rotateCounterClockwise();
-            if (angleLeft <= 2*Math.PI/24 && isRotating && !didQueueClockwise){
-            //if (isRotating && !didQueueClockwise){
+            //if (angleLeft <= 2*Math.PI/24 && isRotating && !didQueueClockwise){
+            if (isRotating && !didQueueClockwise){
                 System.out.print("Queue Counter Clockwise\n");
                 didQueueCounterClockwise = true;
             }
@@ -1032,6 +1081,17 @@ public class LevelController implements ContactListener {
         if(transition != null && transition.isFinished()){
             transition.markRemoved(true);
             transition = null;
+        }
+        if (isComplete()){
+            float dist = 0.35f;
+            Vector2 goalPos = level.getGoalDoor().getPosition().cpy();
+            Vector2 playerPos = avatar.getPosition().cpy();
+            if (goalPos.dst(playerPos) < dist) {
+                // System.out.println("CONTACT");
+                avatar.setBodyType(BodyDef.BodyType.StaticBody);
+            }
+            avatar.setInHoney(true);
+            avatar.setShrinking(true);
         }
 
         if(isComplete()&&transition==null&&countdown<EXIT_COUNT-40){
@@ -1107,6 +1167,7 @@ public class LevelController implements ContactListener {
 
         PlayerModel avatar = level.getPlayer();
         Array<AbstractBeeModel> bees = level.getBees();
+        Array<BallModel> balls = level.getBalls();
         BoxObstacle goalDoor = level.getGoalDoor();
 
         try {
@@ -1120,19 +1181,19 @@ public class LevelController implements ContactListener {
                     bd2.getClass().getSuperclass().getSuperclass().getSimpleName().equals("CharacterModel");
 
             if (((bd1.getName().contains("spiked")) && bd2isCharacterModel) ||
-            bd2.getName().contains("spiked") && bd1isCharacterModel){
+                bd2.getName().contains("spiked") && bd1isCharacterModel){
                 if ((avatar == bd1 || avatar == bd2) && !isComplete()){
                     // Player is dead
                     // System.out.println("PLAYER DIED");
                     avatar.setIsDead(true);
-                    deathId = playSound(deathSound, deathId, 0.1f);
+                    deathId = playSound(deathSound, deathId, 0.1f * this.volume);
                     setFailure(true);
                 }
                 else if (bd1isCharacterModel){
                     AbstractBeeModel bee = (AbstractBeeModel) bd1;
                     // System.out.println("ENEMY DIED: "+bee.getSensorName());
                     bee.setIsDead(true);
-                    deathId = playSound(deathSound, deathId, 0.1f);
+                    deathId = playSound(deathSound, deathId, 0.1f * this.volume);
                     // Marked for removed, moved to the update loop
                     // enemy is only removed when the death animation finishes playing
                     // bd1.markRemoved(true);
@@ -1140,7 +1201,7 @@ public class LevelController implements ContactListener {
                     AbstractBeeModel bee = (AbstractBeeModel) bd2;
                     // System.out.println("ENEMY DIED: "+bee.getSensorName());
                     bee.setIsDead(true);
-                    deathId = playSound(deathSound, deathId, 0.1f);
+                    deathId = playSound(deathSound, deathId, 0.1f * this.volume);
                     // Marked for removed, moved to the update loop
                     // enemy is only removed when the death animation finishes playing
                     // bd2.markRemoved(true);
@@ -1160,7 +1221,14 @@ public class LevelController implements ContactListener {
                 if ((((bee.getSensorName().equals(fd2) && bee != bd1)&&(bd1.getName().contains("platform")) &&
                         !bee.getSensorFixtures().contains(fix1)) ||
                     ((bee.getSensorName().equals(fd1) && bee != bd2)&&(bd2.getName().contains("platform")) &&
-                        !bee.getSensorFixtures().contains(fix2)))&&bee.getClass()== LarvaeModel.class) {
+                        !bee.getSensorFixtures().contains(fix2)))&&bee.getClass() == LarvaeModel.class) {
+                    bee.setGrounded(true);
+                    bee.getSensorFixtures().add(bee == bd1 ? fix2 : fix1); // Could have more than one ground
+                }
+                else if ((((("clipping"+bee.getSensorName()).equals(fd2) && bee != bd1)&&(bd1.getName().contains("platform")) &&
+                        !bee.getSensorFixtures().contains(fix1)) ||
+                        ((("clipping"+bee.getSensorName()).equals(fd1) && bee != bd2)&&(bd2.getName().contains("platform")) &&
+                                !bee.getSensorFixtures().contains(fix2)))&&bee.getClass() == FlyingBeeModel.class) {
                     bee.setGrounded(true);
                     bee.getSensorFixtures().add(bee == bd1 ? fix2 : fix1); // Could have more than one ground
                 }
@@ -1176,6 +1244,33 @@ public class LevelController implements ContactListener {
                     bee.setMaxspeed(level.getHoneyPatches().getSlowSpeed());
                 }
             }
+            //check if ball is grounded
+            for (BallModel ball : balls) {
+                if (((ball.getSensorName().equals(fd2) && ball != bd1)&&
+                        (bd1.getName().contains("platform")||bd1.getName().contains("spikedplat")) &&
+                        !ball.getSensorFixtures().contains(fix1)) ||
+                    ((ball.getSensorName().equals(fd1) && ball != bd2)&&
+                        (bd2.getName().contains("platform")||bd2.getName().contains("spikedplat")) &&
+                        !ball.getSensorFixtures().contains(fix2))) {
+                    ball.setGrounded(true);
+                    ball.getSensorFixtures().add(ball == bd1 ? fix2 : fix1); // Could have more than one ground
+                }
+                if (((ball.getSensorName().equals(fd2) && ball != bd1)&& fix2.isSensor()&&(bd1.getName().contains("honeypatch")) &&
+                //if (((ball.getSensorName().equals(fd2) && ball != bd1)&&(bd1.getName().contains("honeypatch")) &&
+                        !ball.getHoneyFixtures().contains(fix1)) ||
+                        ((ball.getSensorName().equals(fd1) && ball != bd2)&& fix1.isSensor()&&(bd2.getName().contains("honeypatch"))&&
+                        //((ball.getSensorName().equals(fd1) && ball != bd2)&&(bd2.getName().contains("honeypatch"))&&
+                                !ball.getHoneyFixtures().contains(fix2))) {
+                    //System.out.print(bee.getSensorName()+" in honeypatch\n");
+                    //bee.setGrounded(true);
+                    ball.setInHoney(true);
+                    //bee.setHoneyTime(0.5f);
+                    ball.getHoneyFixtures().add(ball == bd1 ? fix2 : fix1); // Could have more than one ground
+                    System.out.print("honey fixtures: " + ball.getHoneyFixtures().size + "\n");
+                    ball.setMaxspeed(level.getHoneyPatches().getSlowSpeed());
+                }
+            }
+
             // Check for honeypatch
             if (((avatar.getSensorName().equals(fd2) && avatar != bd1)&& fix2.isSensor() && (bd1.getName().contains("honeypatch"))&&
                     !honeyFixtures.contains(fix1)) ||
@@ -1190,18 +1285,26 @@ public class LevelController implements ContactListener {
             }
 
             // Check for contact with enemy
-            if (!isFailure() && !isComplete() &&
+            if (!isFailure() &&
                     ((bd1 == avatar && bd2.getClass().getSuperclass() == AbstractBeeModel.class) ||
                     (bd1.getClass().getSuperclass() == AbstractBeeModel.class && bd2 == avatar))) {
-                avatar.setIsDead(true);
-                deathId = playSound(deathSound, deathId, 0.1f);
-                setFailure(true);
+
+                AbstractBeeModel temp = (bd2.getClass().getSuperclass() == AbstractBeeModel.class ?
+                        (AbstractBeeModel) bd2 : (AbstractBeeModel) bd1);
+
+                if(!temp.getIsDead()) {
+                    avatar.setIsDead(true);
+                    deathId = playSound(deathSound, deathId, 0.1f * this.volume);
+                    if (!isComplete()) {
+                        setFailure(true);
+                    }
+                }
             }
 
             // Check for win condition
             if (((bd1 == avatar && bd2 == goalDoor) ||
                     (bd1 == goalDoor && bd2 == avatar))&&!isComplete()) {
-                winId = playSound(winSound, winId);
+                winId = playSound(winSound, winId, 0.5f * volume);
                 setComplete(true);
             }
         } catch (Exception e) {
@@ -1256,8 +1359,8 @@ public class LevelController implements ContactListener {
             }
 
             for(AbstractBeeModel bee : bees) {
-                if (((bee.getSensorName().equals(fd2) && bee != bd1)&&(bd1.getName().contains("platform"))) ||
-                        ((bee.getSensorName().equals(fd1) && bee != bd2)&&(bd2.getName().contains("platform")))) {
+                if ((((bee.getSensorName().equals(fd2)||("clipping"+bee.getSensorName()).equals(fd2))  && bee != bd1)&&(bd1.getName().contains("platform"))) ||
+                        (((bee.getSensorName().equals(fd1)||("clipping"+bee.getSensorName()).equals(fd1)) && bee != bd2)&&(bd2.getName().contains("platform")))) {
                     bee.getSensorFixtures().remove(bee == bd1 ? fix2 : fix1);
                     if (bee.getSensorFixtures().size == 0) {
                         bee.setGrounded(false);
@@ -1270,6 +1373,30 @@ public class LevelController implements ContactListener {
                     if (bee.getHoneyFixtures().size == 0) {
                         bee.setDefaultMaxspeed();
                         bee.setInHoney(false);
+                    }
+                    //if (bee.getSensorFixtures().size == 0) {
+                    //    bee.setGrounded(false);
+                    //}
+                }
+            }
+
+            for(BallModel ball : level.getBalls()) {
+                if (((ball.getSensorName().equals(fd2) && ball != bd1)&&
+                        (bd1.getName().contains("platform")||bd1.getName().contains("spikedplat"))) ||
+                        ((ball.getSensorName().equals(fd1) && ball != bd2)&&
+                        (bd2.getName().contains("platform")||bd2.getName().contains("spikedplat")))) {
+                    ball.getSensorFixtures().remove(ball == bd1 ? fix2 : fix1);
+                    if (ball.getSensorFixtures().size == 0) {
+                        ball.setGrounded(false);
+                    }
+                }
+                if (((ball.getSensorName().equals(fd2) && ball != bd1)&& fix2.isSensor()&&(bd1.getName().contains("honeypatch"))) ||
+                        ((ball.getSensorName().equals(fd1) && ball != bd2)&& fix1.isSensor()&&(bd2.getName().contains("honeypatch")))) {
+                    ball.getHoneyFixtures().remove(ball == bd1 ? fix2 : fix1);
+                    //System.out.print("exiting honeypatch!\n");
+                    if (ball.getHoneyFixtures().size == 0) {
+                        ball.setDefaultMaxspeed();
+                        ball.setInHoney(false);
                     }
                     //if (bee.getSensorFixtures().size == 0) {
                     //    bee.setGrounded(false);
@@ -1337,7 +1464,7 @@ public class LevelController implements ContactListener {
      * @return the new sound instance for this asset.
      */
     public long playSound(SoundBuffer sound, long soundId) {
-        return playSound( sound, soundId, 1.0f );
+        return playSound( sound, soundId, volume );
     }
 
 
@@ -1352,15 +1479,15 @@ public class LevelController implements ContactListener {
      *
      * @param sound		The sound asset to play
      * @param soundId	The previously playing sound instance
-     * @param volume	The sound volume
+     * @param vol	The sound volume
      *
      * @return the new sound instance for this asset.
      */
-    public long playSound(SoundBuffer sound, long soundId, float volume) {
+    public long playSound(SoundBuffer sound, long soundId, float vol) {
         if (soundId != -1 && sound.isPlaying( soundId )) {
             sound.stop( soundId );
         }
-        return sound.play(volume);
+        return sound.play(vol);
     }
 
     /**
@@ -1373,7 +1500,7 @@ public class LevelController implements ContactListener {
         if (soundId != -1 && sound.isPlaying (soundId)){
             sound.stop(soundId);
         }
-        return sound.loop(1f);
+        return sound.loop(volume);
     }
 
     /**

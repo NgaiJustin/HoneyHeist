@@ -30,6 +30,10 @@ public class LevelModel {
      */
     private PlayerModel playerModel;
     /**
+     * Reference to the list of balls
+     */
+    private Array<BallModel> balls;
+    /**
      * Reference to the list of bees
      */
     private Array<AbstractBeeModel> bees;
@@ -69,10 +73,11 @@ public class LevelModel {
      * <p>
      * The game has default gravity and other settings
      */
-    public LevelModel(PlayerModel playerModel, Array<AbstractBeeModel> bees, BoxObstacle goalDoor,
+    public LevelModel(PlayerModel playerModel, Array<AbstractBeeModel> bees, Array<BallModel> balls, BoxObstacle goalDoor,
                       PlatformModel platforms, SpikedPlatformModel spikedPlatforms,
                       HoneypatchModel honeyPatches, PolygonObstacle levelBackground, Rectangle bounds) {
         this.playerModel = playerModel;
+        this.balls = balls;
         this.bees = bees;
         this.goalDoor = goalDoor;
         this.platforms = platforms;
@@ -83,8 +88,7 @@ public class LevelModel {
         this.bounds = bounds;
     }
 
-    public LevelModel() {
-    }
+    public LevelModel() { }
 
     public PlatformModel getPlatforms() {
         return platforms;
@@ -92,13 +96,15 @@ public class LevelModel {
 
     public void setPlatforms(PlatformModel platforms) { this.platforms = platforms; }
 
+    public void setBalls (Array<BallModel> balls) {this.balls = balls;}
+
+    public Array<BallModel> getBalls() {return balls;}
+
     public SpikedPlatformModel getSpikedPlatforms() {return spikedPlatforms;}
 
     public void setSpikedPlatforms(SpikedPlatformModel spikedPlatforms) { this.spikedPlatforms = spikedPlatforms; }
 
-    public PlayerModel getPlayer() {
-        return playerModel;
-    }
+    public PlayerModel getPlayer() { return playerModel; }
 
     public void setPlayer(PlayerModel playerModel) { this.playerModel = playerModel; }
 

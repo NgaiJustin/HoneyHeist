@@ -6,7 +6,7 @@
       "wrapV": "repeated"
     },
     "shared:honeyPatch": {
-      "file": "shared/honeyPatch.png",
+      "file": "shared/honeypatch.png",
       "wrapU": "repeated",
       "wrapV": "repeated"
     },
@@ -17,9 +17,9 @@
     },
     "shared:crosshair": "shared/crosshair.png",
     "shared:goal": "shared/goaldoor.png",
-    "shared:background": "shared/background.png",
+    "shared:background": "shared/newbackground_w_keys.png",
     "shared:whiteSquare": "shared/whiteSquare.png",
-    "shared:pauseButton": "shared/pause.png",
+    "shared:pauseButton": "shared/pause_symmetric.png",
     "shared:pauseBackground": "shared/pause_background.png",
     "shared:pauseMainMenu": "shared/pause_menu_button.png",
     "shared:pauseQuit": "shared/pause_quit_button.png",
@@ -33,6 +33,7 @@
     "platform:ant": "platform/ant.png",
     "platform:larvae": "platform/larvae.png",
     "platform:flyingBee": "platform/chaserBee.png",
+    "platform:ball" : "platform/ball.png",
 
     "platform:playerWalk": {
       "file": "platform/walkstrip.png",
@@ -178,7 +179,8 @@
     "editor:loadButton": "editor/loadButton.png",
     "editor:larvaButton": "editor/larvaButton.png",
     "editor:honeyPatchButton": "editor/honeyPatchButton.png",
-    "editor:spikedPlatformButton": "editor/spikedPlatformButton.png"
+    "editor:spikedPlatformButton": "editor/spikedPlatformButton.png",
+    "editor:ballButton": "editor/ballButton.png"
   },
   "jsons": {
     "platform:constants": "platform/constants.json",
@@ -204,7 +206,10 @@
     "levels:threadTheNeedle": "levels/threadTheNeedle.json",
     "levels:toTheTopRight": "levels/toTheTopRight.json",
     "levels:yoloLarvaeDrop": "levels/yoloLarvaeDrop.json",
-    "levels:yoloSkydiver": "levels/yoloSkydiver.json"
+    "levels:yoloSkydiver": "levels/yoloSkydiver.json",
+    "levels:simpleSpikedBall": "levels/simpleSpikedBall.json",
+    "levels:killTheBeesWithTheBall": "levels/killTheBeesWithTheBall.json",
+    "levels:ballMaze": "levels/ballMaze.json"
   },
   "sounds": {
     "platform:jump": "platform/jump.mp3",
@@ -223,7 +228,7 @@
       "size": 32
     },
     "shared:retro": {
-        "file": "shared/RetroGame.ttf",
+        "file": "shared/LoRes9OTWide-Bold.ttf",
         "size": 64
     },
     "shared:marker": {
