@@ -785,6 +785,7 @@ public class LevelController implements ContactListener {
             transition.setGravityScale(0);
             transition.setDrawScale(scale);
             transition.setAnimationStrip(levelTransition);
+            transition.setName("transition");
             addObject(transition);
         }
 
@@ -1076,6 +1077,8 @@ public class LevelController implements ContactListener {
         } else if (!isRotating && didQueueCounterClockwise){
             rotateCounterClockwise();
             didQueueCounterClockwise = false;
+        } else if (!isRotating && horizontal!=0){
+            avatar.setStickTime(0);
         }
 
         if(transition != null && transition.isFinished()){
@@ -1100,6 +1103,7 @@ public class LevelController implements ContactListener {
             transition.setGravityScale(0);
             transition.setDrawScale(scale);
             transition.setAnimationStrip(levelTransition);
+            transition.setName("transition");
             addObject(transition);
             if(platforms.isRotating()) {
                 float angle = ((float)Math.PI/3 - platforms.getRemainingAngle());
@@ -1189,7 +1193,7 @@ public class LevelController implements ContactListener {
                     deathId = playSound(deathSound, deathId, 0.1f * this.volume);
                     setFailure(true);
                 }
-                else if (bd1isCharacterModel){
+                else if (!(avatar == bd1 || avatar == bd2)&&bd1isCharacterModel){
                     AbstractBeeModel bee = (AbstractBeeModel) bd1;
                     // System.out.println("ENEMY DIED: "+bee.getSensorName());
                     bee.setIsDead(true);
@@ -1197,7 +1201,7 @@ public class LevelController implements ContactListener {
                     // Marked for removed, moved to the update loop
                     // enemy is only removed when the death animation finishes playing
                     // bd1.markRemoved(true);
-                } else {
+                } else if (!(avatar == bd1 || avatar == bd2)&&bd2isCharacterModel){
                     AbstractBeeModel bee = (AbstractBeeModel) bd2;
                     // System.out.println("ENEMY DIED: "+bee.getSensorName());
                     bee.setIsDead(true);

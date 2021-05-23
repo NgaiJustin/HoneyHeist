@@ -1013,6 +1013,8 @@ public abstract class Obstacle {
 
 	public float getCurrentSpeed() { return currentSpeed; }
 
+	public void setStickTime(float stickTime){this.stickTime = stickTime;}
+
 	public void setCurrentSpeed(float speed) { currentSpeed = speed; }
 
 	/**
