@@ -71,10 +71,9 @@ public class PlayerModel extends CharacterModel {
         }
 
         PolygonShape spikeCollision = new PolygonShape();
-        spikeCollision.setAsBox(getWidth()/4f,getHeight()/10f);
+        spikeCollision.setAsBox(getWidth()/5f,getHeight()/12f);
         FixtureDef spikeCollDef = new FixtureDef();
         spikeCollDef.shape = spikeCollision;
-        sensorShape = spikeCollision;
         body.createFixture(spikeCollDef);
         return check;
     }

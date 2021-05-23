@@ -1189,23 +1189,32 @@ public class LevelController implements ContactListener {
                 if ((avatar == bd1 || avatar == bd2) && !isComplete()){
                     // Player is dead
                     // System.out.println("PLAYER DIED");
-                    avatar.setIsDead(true);
-                    deathId = playSound(deathSound, deathId, 0.1f * this.volume);
-                    setFailure(true);
+                    if(!avatar.getIsDead()) {
+                        avatar.setIsDead(true);
+                        avatar.setGrounded(true);
+                        deathId = playSound(deathSound, deathId, 0.1f * this.volume);
+                        setFailure(true);
+                    }
                 }
                 else if (!(avatar == bd1 || avatar == bd2)&&bd1isCharacterModel){
                     AbstractBeeModel bee = (AbstractBeeModel) bd1;
                     // System.out.println("ENEMY DIED: "+bee.getSensorName());
-                    bee.setIsDead(true);
-                    deathId = playSound(deathSound, deathId, 0.1f * this.volume);
+                    if(!bee.getIsDead()) {
+                        bee.setIsDead(true);
+                        bee.setGrounded(true);
+                        deathId = playSound(deathSound, deathId, 0.1f * this.volume);
+                    }
                     // Marked for removed, moved to the update loop
                     // enemy is only removed when the death animation finishes playing
                     // bd1.markRemoved(true);
                 } else if (!(avatar == bd1 || avatar == bd2)&&bd2isCharacterModel){
                     AbstractBeeModel bee = (AbstractBeeModel) bd2;
                     // System.out.println("ENEMY DIED: "+bee.getSensorName());
-                    bee.setIsDead(true);
-                    deathId = playSound(deathSound, deathId, 0.1f * this.volume);
+                    if(!bee.getIsDead()) {
+                        bee.setIsDead(true);
+                        bee.setGrounded(true);
+                        deathId = playSound(deathSound, deathId, 0.1f * this.volume);
+                    }
                     // Marked for removed, moved to the update loop
                     // enemy is only removed when the death animation finishes playing
                     // bd2.markRemoved(true);
