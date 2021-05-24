@@ -544,7 +544,9 @@ public class LevelController implements ContactListener {
         setComplete(false);
         setFailure(false);
         populateLevel();
-        bgmId = loopSound(bgm, bgmId);
+        if(bgmId == 1) {
+            bgmId = loopSound(bgm, bgmId);
+        }
     }
 
     /**
@@ -1188,7 +1190,7 @@ public class LevelController implements ContactListener {
                 bd2.getName().contains("spiked") && bd1isCharacterModel){
                 if ((avatar == bd1 || avatar == bd2) && !isComplete()){
                     // Player is dead
-                    // System.out.println("PLAYER DIED");
+                    //System.out.println("PLAYER DIED");
                     if(!avatar.getIsDead()) {
                         avatar.setIsDead(true);
                         avatar.setGrounded(true);
@@ -1298,7 +1300,7 @@ public class LevelController implements ContactListener {
             }
 
             // Check for contact with enemy
-            if (!isFailure() &&
+            if (!isFailure() && !isComplete() && !avatar.getIsDead() &&
                     ((bd1 == avatar && bd2.getClass().getSuperclass() == AbstractBeeModel.class) ||
                     (bd1.getClass().getSuperclass() == AbstractBeeModel.class && bd2 == avatar))) {
 
@@ -1449,15 +1451,15 @@ public class LevelController implements ContactListener {
         }
 
         // Final message
-        if (complete && !failed) {
-            displayFont.setColor(Color.YELLOW);
+        /*if (complete && !failed) {
+            displayFont.setColor(Color.FOREST);
             canvas.begin(); // DO NOT SCALE
             canvas.drawTextCentered("VICTORY!", displayFont, 0.0f);
             canvas.end();
-        } else if (failed) {
+        } else */if (failed) {
             displayFont.setColor(Color.RED);
             canvas.begin(); // DO NOT SCALE
-            canvas.drawTextCentered("FAILURE!", displayFont, 0.0f);
+            canvas.drawTextCentered("STUNG!", displayFont, 0.0f);
             canvas.end();
         }
     }
