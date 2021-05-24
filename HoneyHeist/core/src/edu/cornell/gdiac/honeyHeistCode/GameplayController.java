@@ -544,6 +544,7 @@ public class GameplayController implements Screen, InputProcessor {
 		} else if (menuReady) {
         	pause();
         	levelController.stopAllSounds();
+        	levelController.setBgmId(1);
         	listener.exitScreen(this, EXIT_MENU);
         	return false;
 		} else if (levelController.getCountdown() > 0) {

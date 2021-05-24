@@ -125,6 +125,8 @@ public class LevelController implements ContactListener {
 
     private TransitionModel transition = null;
 
+    private boolean transNext = false;
+
     /**
      * Returns true if debug mode is active.
      *
@@ -175,6 +177,9 @@ public class LevelController implements ContactListener {
      *
      * @return true if the level is completed.
      */
+
+    public void setBgmId (long id){bgmId = id;}
+
     public boolean isComplete( ) {
         return complete;
     }
@@ -535,6 +540,7 @@ public class LevelController implements ContactListener {
         }
         objects.clear();
         addQueue.clear();
+        transition = null;
         world.dispose();
         sensorFixtures.clear();
         honeyFixtures.clear();
@@ -781,7 +787,7 @@ public class LevelController implements ContactListener {
         addObject(honeyPatches);
         addObject(spikedPlatforms);
 
-        if(transition!=null) {
+        if(transNext == true) {
             transition = new TransitionModel(level.getOrigin().x, level.getOrigin().y, true);
             transition.setSensor(true);
             transition.setGravityScale(0);
@@ -789,6 +795,7 @@ public class LevelController implements ContactListener {
             transition.setAnimationStrip(levelTransition);
             transition.setName("transition");
             addObject(transition);
+            transNext = false;
         }
 
 
@@ -1114,6 +1121,7 @@ public class LevelController implements ContactListener {
                 transition.startRotation(platforms.getRemainingAngle(), platforms.isClockwise(), level.getOrigin());
                 transition.setCurrentSpeed(platforms.getCurrentSpeed());
             }
+            transNext = true;
         }
     }
     /**
