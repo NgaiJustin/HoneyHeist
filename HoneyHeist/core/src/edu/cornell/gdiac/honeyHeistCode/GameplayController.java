@@ -1,10 +1,10 @@
 /*
  * WorldController.java
  *
- * This is the most important new class in this lab.  This class serves as a combination 
- * of the CollisionController and GameplayController from the previous lab.  There is not 
- * much to do for collisions; Box2d takes care of all of that for us.  This controller 
- * invokes Box2d and then performs any after the fact modifications to the data 
+ * This is the most important new class in this lab.  This class serves as a combination
+ * of the CollisionController and GameplayController from the previous lab.  There is not
+ * much to do for collisions; Box2d takes care of all of that for us.  This controller
+ * invokes Box2d and then performs any after the fact modifications to the data
  * (e.g. gameplay).
  *
  * If you study this class, and the contents of the edu.cornell.cs3152.physics.obstacles
@@ -133,8 +133,9 @@ public class GameplayController implements Screen, InputProcessor {
 	/** Pause Menu Background texture */
 	private Texture pauseBackground;
 	/** Constants for the position of pauseBackground */
-	private final float PAUSE_BG_XPOS = Gdx.graphics.getWidth()*0.7f;
-	private final float PAUSE_BG_YPOS = Gdx.graphics.getHeight()*0.75f;
+	private final float PAUSE_BG_XPOS = Gdx.graphics.getWidth()*0.668f;
+	private final float PAUSE_BG_YPOS = Gdx.graphics.getHeight()*0.77f;
+	private float PAUSE_BG_SCALE = 1.3f;
 	/** Pause Menu Quit texture */
 	private Texture pauseQuit;
 	/** If the quit button is pressed */
@@ -143,7 +144,7 @@ public class GameplayController implements Screen, InputProcessor {
 	private boolean quitReady;
 	/** Constants for the position of pauseQuit */
 	private final float PAUSE_QUIT_XPOS = Gdx.graphics.getWidth()*0.63f;
-	private final float PAUSE_QUIT_YPOS = Gdx.graphics.getHeight()*0.7f;
+	private final float PAUSE_QUIT_YPOS = Gdx.graphics.getHeight()*0.4f;
 	/** Pause Menu Resume texture */
 	private Texture pauseResume;
 	/** If the resume button is pressed */
@@ -156,14 +157,14 @@ public class GameplayController implements Screen, InputProcessor {
 //	private boolean resumeReady;
 	/** Constants for the position of pauseResume */
 	private final float PAUSE_RESUME_XPOS = Gdx.graphics.getWidth()*0.63f;
-	private final float PAUSE_RESUME_YPOS = Gdx.graphics.getHeight()*0.55f;
+	private final float PAUSE_RESUME_YPOS = Gdx.graphics.getHeight()*0.7f;
 	/** Pause Menu MainMenu texture */
 	private Texture pauseMenu;
 //	/** If the main menu button is pressed */
 //	private boolean menuPressed;
 	/** Constants for the position of pauseMenu */
 	private final float PAUSE_MENU_XPOS = Gdx.graphics.getWidth()*0.63f;
-	private final float PAUSE_MENU_YPOS = Gdx.graphics.getHeight()*0.4f;
+	private final float PAUSE_MENU_YPOS = Gdx.graphics.getHeight()*0.55f;
 	/** Pause button texture */
     private Texture pauseButton;
 	/** If the pause button is pressed */
@@ -171,9 +172,9 @@ public class GameplayController implements Screen, InputProcessor {
 	/** If it's in the pause state */
 	private boolean isPaused;
 	/** Constants for the position of pause button */
-	private final float PAUSE_XPOS = Gdx.graphics.getWidth()*0.95f;
-	private final float PAUSE_YPOS = Gdx.graphics.getHeight()*0.95f;
-	private final float PAUSE_SCALE = 0.7f;
+	private final float PAUSE_XPOS = Gdx.graphics.getWidth()*0.94f;
+	private final float PAUSE_YPOS = Gdx.graphics.getHeight()*0.94f;
+	private final float PAUSE_SCALE = 0.4f;
 	/** Menu button texture */
 	private Texture menuButton;
 	/** Offset for the menu word on the button */
@@ -431,7 +432,7 @@ public class GameplayController implements Screen, InputProcessor {
 	 *
 	 * Adds a physics object in to the insertion queue.
 	 *
-	 * Objects on the queue are added just before collision processing.  We do this to 
+	 * Objects on the queue are added just before collision processing.  We do this to
 	 * control object creation.
 	 *
 	 * param obj The object to add
@@ -616,7 +617,7 @@ public class GameplayController implements Screen, InputProcessor {
 //		}
 		levelController.postUpdate(dt);
 	}
-	
+
 	/**
 	 * Draw the physics objects to the canvas
 	 *
@@ -643,7 +644,8 @@ public class GameplayController implements Screen, InputProcessor {
 		if (isPaused) {
 			if (pauseBackground !=null) {
 				canvas.draw(pauseBackground, Color.WHITE, pauseBackground.getWidth(), pauseBackground.getHeight(),
-						PAUSE_BG_XPOS, PAUSE_BG_YPOS, 0, menuScale*scaleFactor, menuScale*scaleFactor);
+						PAUSE_BG_XPOS, PAUSE_BG_YPOS, 0, menuScale*scaleFactor*PAUSE_BG_SCALE,
+						menuScale*scaleFactor*PAUSE_BG_SCALE);
 			}
 			if (pauseMenu != null) {
 				tint = (menuPressed ? Color.GRAY: Color.WHITE);
@@ -707,9 +709,9 @@ public class GameplayController implements Screen, InputProcessor {
 	}
 
 	/**
-	 * Called when the Screen is resized. 
+	 * Called when the Screen is resized.
 	 *
-	 * This can happen at any point during a non-paused state but will never happen 
+	 * This can happen at any point during a non-paused state but will never happen
 	 * before a call to show().
 	 *
 	 * @param width  The new width in pixels
@@ -747,8 +749,8 @@ public class GameplayController implements Screen, InputProcessor {
 
 	/**
 	 * Called when the Screen is paused.
-	 * 
-	 * This is usually when it's not active or visible on screen. An Application is 
+	 *
+	 * This is usually when it's not active or visible on screen. An Application is
 	 * also paused before it is destroyed.
 	 */
 	public void pause() {
@@ -763,7 +765,7 @@ public class GameplayController implements Screen, InputProcessor {
 	public void resume() {
 		// TODO Auto-generated method stub
 	}
-	
+
 	/**
 	 * Called when this screen becomes the current screen for a Game.
 	 */
@@ -845,17 +847,17 @@ public class GameplayController implements Screen, InputProcessor {
 //			if(textureBounds.contains(screenX,screenY)) {
 //				pausePressed = true;
 //			}
-//			radius = PAUSE_SCALE*scaleFactor*pauseButton.getWidth()/2.0f;
-//			dist = (screenX-PAUSE_XPOS)*(screenX-PAUSE_XPOS)+(screenY-PAUSE_YPOS)*(screenY-PAUSE_YPOS);
-//			if (dist < radius*radius) {
-//				pausePressed = true;
-//			}
-			width = PAUSE_SCALE * scaleFactor * pauseButton.getWidth() /2.0f;
-			height = PAUSE_SCALE * scaleFactor * pauseButton.getHeight() /2.0f;
-			if (Math.abs(screenX - PAUSE_XPOS + width) < Math.abs(width) && Math.abs(screenY -
-					PAUSE_YPOS + height) < Math.abs(height)) {
+			radius = PAUSE_SCALE*scaleFactor*pauseButton.getWidth()/2.0f;
+			dist = (screenX-PAUSE_XPOS+radius)*(screenX-PAUSE_XPOS+radius)+(screenY-PAUSE_YPOS+radius)*(screenY-PAUSE_YPOS+radius);
+			if (dist < radius*radius) {
 				pausePressed = true;
 			}
+//			width = PAUSE_SCALE * scaleFactor * pauseButton.getWidth() /2.0f;
+//			height = PAUSE_SCALE * scaleFactor * pauseButton.getHeight() /2.0f;
+//			if (Math.abs(screenX - PAUSE_XPOS + width) < Math.abs(width) && Math.abs(screenY -
+//					PAUSE_YPOS + height) < Math.abs(height)) {
+//				pausePressed = true;
+//			}
 		}
 		return false;
 	}
