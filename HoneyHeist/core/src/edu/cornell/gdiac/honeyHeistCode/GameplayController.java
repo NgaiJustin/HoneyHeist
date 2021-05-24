@@ -535,7 +535,7 @@ public class GameplayController implements Screen, InputProcessor {
 			listener.exitScreen(this, EXIT_QUIT);
 			return false;
 		} else if (input.didExit()) {
-        	isPaused = true;
+        	isPaused = !isPaused;
         	return false;
         } else if (input.didAdvance()) {
 			pause();
