@@ -125,6 +125,8 @@ public class LevelController implements ContactListener {
 
     private TransitionModel transition = null;
 
+    private boolean transNext = false;
+
     /**
      * Returns true if debug mode is active.
      *
@@ -175,6 +177,9 @@ public class LevelController implements ContactListener {
      *
      * @return true if the level is completed.
      */
+
+    public void setBgmId (long id){bgmId = id;}
+
     public boolean isComplete( ) {
         return complete;
     }
@@ -535,6 +540,7 @@ public class LevelController implements ContactListener {
         }
         objects.clear();
         addQueue.clear();
+        transition = null;
         world.dispose();
         sensorFixtures.clear();
         honeyFixtures.clear();
@@ -544,7 +550,9 @@ public class LevelController implements ContactListener {
         setComplete(false);
         setFailure(false);
         populateLevel();
-        bgmId = loopSound(bgm, bgmId);
+        if(bgmId == 1) {
+            bgmId = loopSound(bgm, bgmId);
+        }
     }
 
     /**
@@ -779,13 +787,15 @@ public class LevelController implements ContactListener {
         addObject(honeyPatches);
         addObject(spikedPlatforms);
 
-        if(transition!=null) {
+        if(transNext == true) {
             transition = new TransitionModel(level.getOrigin().x, level.getOrigin().y, true);
             transition.setSensor(true);
             transition.setGravityScale(0);
             transition.setDrawScale(scale);
             transition.setAnimationStrip(levelTransition);
+            transition.setName("transition");
             addObject(transition);
+            transNext = false;
         }
 
 
@@ -1076,6 +1086,8 @@ public class LevelController implements ContactListener {
         } else if (!isRotating && didQueueCounterClockwise){
             rotateCounterClockwise();
             didQueueCounterClockwise = false;
+        } else if (!isRotating && horizontal!=0){
+            avatar.setStickTime(0);
         }
 
         if(transition != null && transition.isFinished()){
@@ -1100,7 +1112,8 @@ public class LevelController implements ContactListener {
             transition.setGravityScale(0);
             transition.setDrawScale(scale);
             transition.setAnimationStrip(levelTransition);
-            addObject(transition);
+            transition.setName("transition");
+            addQueuedObject(transition);
             if(platforms.isRotating()) {
                 float angle = ((float)Math.PI/3 - platforms.getRemainingAngle());
                 if(platforms.isClockwise()) transition.setAngle(angle);
@@ -1108,6 +1121,7 @@ public class LevelController implements ContactListener {
                 transition.startRotation(platforms.getRemainingAngle(), platforms.isClockwise(), level.getOrigin());
                 transition.setCurrentSpeed(platforms.getCurrentSpeed());
             }
+            transNext = true;
         }
     }
     /**
@@ -1184,24 +1198,33 @@ public class LevelController implements ContactListener {
                 bd2.getName().contains("spiked") && bd1isCharacterModel){
                 if ((avatar == bd1 || avatar == bd2) && !isComplete()){
                     // Player is dead
-                    // System.out.println("PLAYER DIED");
-                    avatar.setIsDead(true);
-                    deathId = playSound(deathSound, deathId, 0.1f * this.volume);
-                    setFailure(true);
+                    //System.out.println("PLAYER DIED");
+                    if(!avatar.getIsDead()) {
+                        avatar.setIsDead(true);
+                        avatar.setGrounded(true);
+                        deathId = playSound(deathSound, deathId, 0.1f * this.volume);
+                        setFailure(true);
+                    }
                 }
-                else if (bd1isCharacterModel){
+                else if (!(avatar == bd1 || avatar == bd2)&&bd1isCharacterModel){
                     AbstractBeeModel bee = (AbstractBeeModel) bd1;
                     // System.out.println("ENEMY DIED: "+bee.getSensorName());
-                    bee.setIsDead(true);
-                    deathId = playSound(deathSound, deathId, 0.1f * this.volume);
+                    if(!bee.getIsDead()) {
+                        bee.setIsDead(true);
+                        bee.setGrounded(true);
+                        deathId = playSound(deathSound, deathId, 0.1f * this.volume);
+                    }
                     // Marked for removed, moved to the update loop
                     // enemy is only removed when the death animation finishes playing
                     // bd1.markRemoved(true);
-                } else {
+                } else if (!(avatar == bd1 || avatar == bd2)&&bd2isCharacterModel){
                     AbstractBeeModel bee = (AbstractBeeModel) bd2;
                     // System.out.println("ENEMY DIED: "+bee.getSensorName());
-                    bee.setIsDead(true);
-                    deathId = playSound(deathSound, deathId, 0.1f * this.volume);
+                    if(!bee.getIsDead()) {
+                        bee.setIsDead(true);
+                        bee.setGrounded(true);
+                        deathId = playSound(deathSound, deathId, 0.1f * this.volume);
+                    }
                     // Marked for removed, moved to the update loop
                     // enemy is only removed when the death animation finishes playing
                     // bd2.markRemoved(true);
@@ -1285,7 +1308,7 @@ public class LevelController implements ContactListener {
             }
 
             // Check for contact with enemy
-            if (!isFailure() &&
+            if (!isFailure() && !isComplete() && !avatar.getIsDead() &&
                     ((bd1 == avatar && bd2.getClass().getSuperclass() == AbstractBeeModel.class) ||
                     (bd1.getClass().getSuperclass() == AbstractBeeModel.class && bd2 == avatar))) {
 
@@ -1436,15 +1459,15 @@ public class LevelController implements ContactListener {
         }
 
         // Final message
-        if (complete && !failed) {
-            displayFont.setColor(Color.YELLOW);
+        /*if (complete && !failed) {
+            displayFont.setColor(Color.FOREST);
             canvas.begin(); // DO NOT SCALE
             canvas.drawTextCentered("VICTORY!", displayFont, 0.0f);
             canvas.end();
-        } else if (failed) {
+        } else */if (failed) {
             displayFont.setColor(Color.RED);
             canvas.begin(); // DO NOT SCALE
-            canvas.drawTextCentered("FAILURE!", displayFont, 0.0f);
+            canvas.drawTextCentered("STUNG!", displayFont, 0.0f);
             canvas.end();
         }
     }

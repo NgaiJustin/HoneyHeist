@@ -1,6 +1,7 @@
 package edu.cornell.gdiac.honeyHeistCode.models;
 
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.physics.box2d.*;
 import com.badlogic.gdx.utils.JsonValue;
 import edu.cornell.gdiac.honeyHeistCode.GameCanvas;
 import edu.cornell.gdiac.util.FilmStrip;
@@ -55,6 +56,26 @@ public class PlayerModel extends CharacterModel {
         sensorName = "AntGroundSensor";
         this.isShrinking = false;
         this.shrinkFactor = 1.0f;
+    }
+
+    @Override
+    public boolean activatePhysics(World world) {
+        Boolean check = super.activatePhysics(world);
+
+
+        Filter filter = new Filter();
+        filter.categoryBits = 0x0001;
+        filter.maskBits = 0x0001;
+        for(Fixture fix : body.getFixtureList()){
+            fix.setFilterData(filter);
+        }
+
+        PolygonShape spikeCollision = new PolygonShape();
+        spikeCollision.setAsBox(getWidth()/5f,getHeight()/12f);
+        FixtureDef spikeCollDef = new FixtureDef();
+        spikeCollDef.shape = spikeCollision;
+        body.createFixture(spikeCollDef);
+        return check;
     }
 
     /**
