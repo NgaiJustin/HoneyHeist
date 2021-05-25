@@ -5,6 +5,11 @@
       "wrapU": "repeated",
       "wrapV": "repeated"
     },
+    "shared:honeyPatch": {
+      "file": "shared/honeypatch.png",
+      "wrapU": "repeated",
+      "wrapV": "repeated"
+    },
     "shared:poisonWall": {
       "file": "shared/poisonWall.png",
       "wrapU": "repeated",
@@ -12,9 +17,13 @@
     },
     "shared:crosshair": "shared/crosshair.png",
     "shared:goal": "shared/goaldoor.png",
-    "shared:background": "shared/background.png",
+    "shared:background": "shared/newbackground.png",
     "shared:whiteSquare": "shared/whiteSquare.png",
-    "shared:pauseButton": "shared/OLDplay.png",
+    "shared:pauseButton": "shared/pause.png",
+    "shared:pauseBackground": "shared/pausemenu.png",
+    "shared:pauseMainMenu": "shared/menuButton.png",
+    "shared:pauseQuit": "shared/quitButton.png",
+    "shared:pauseResume": "shared/resumeButton.png",
     "shared:menuButton": "shared/label.png",
     "shared:tilesBackground": {
       "file": "shared/tilesBackground.png",
@@ -24,9 +33,10 @@
     "platform:ant": "platform/ant.png",
     "platform:larvae": "platform/larvae.png",
     "platform:flyingBee": "platform/chaserBee.png",
+    "platform:ball" : "platform/ball.png",
 
     "platform:playerWalk": {
-      "file": "platform/beeWalkstrip.png",
+      "file": "platform/walkstrip.png",
       "sprites": {
         "pacing": {
           "rows": 1,
@@ -34,6 +44,25 @@
         }
       }
     },
+    "platform:playerFlail": {
+      "file": "platform/flailStrip.png",
+      "sprites": {
+        "pacing": {
+          "rows": 1,
+          "cols": 5
+        }
+      }
+    },
+    "platform:playerDeath": {
+      "file": "platform/deathStrip.png",
+      "sprites": {
+        "pacing": {
+          "rows": 1,
+          "cols": 7
+        }
+      }
+    },
+
     "platform:larvaeWalk": {
       "file": "platform/larvaeWalkstrip.png",
       "sprites": {
@@ -43,6 +72,34 @@
         }
       }
     },
+    "platform:larvaeFlail": {
+      "file": "platform/larvaeFlailStrip.png",
+      "sprites": {
+        "pacing": {
+          "rows": 1,
+          "cols": 4
+        }
+      }
+    },
+    "platform:larvaeDeath": {
+      "file": "platform/larvaeDeathStrip.png",
+      "sprites": {
+        "pacing": {
+          "rows": 1,
+          "cols": 6
+        }
+      }
+    },
+    "platform:larvaeChase": {
+      "file": "platform/larvaeChase.png",
+      "sprites": {
+        "pacing": {
+          "rows": 1,
+          "cols": 5
+        }
+      }
+    },
+
     "platform:beeFly": {
       "file": "platform/beeFlystrip.png",
       "sprites": {
@@ -52,6 +109,43 @@
         }
       }
     },
+    "platform:beeFlail": {
+      "file": "platform/beeFlailStrip.png",
+      "sprites": {
+        "pacing": {
+          "rows": 1,
+          "cols": 6
+        }
+      }
+    },
+    "platform:beeDeath": {
+      "file": "platform/beeDeathStrip.png",
+      "sprites": {
+        "pacing": {
+          "rows": 1,
+          "cols": 6
+        }
+      }
+    },
+    "platform:beeChase": {
+      "file": "platform/beeChasingStrip.png",
+      "sprites": {
+        "pacing": {
+          "rows": 1,
+          "cols": 5
+        }
+      }
+    },
+    "platform:levelTransition":{
+      "file": "platform/leveltransitionstrip.png",
+      "sprites": {
+        "pacing": {
+          "rows": 1,
+          "cols": 12
+        }
+      }
+    },
+
     "platform:spikeULeft": "platform/upLeftSpike.png",
     "platform:spikeUMid": "platform/upMidSpike.png",
     "platform:spikeURight": "platform/upRightSpike.png",
@@ -85,18 +179,52 @@
     "editor:loadButton": "editor/loadButton.png",
     "editor:larvaButton": "editor/larvaButton.png",
     "editor:honeyPatchButton": "editor/honeyPatchButton.png",
-    "editor:spikedPlatformButton": "editor/spikedPlatformButton.png"
+    "editor:spikedPlatformButton": "editor/spikedPlatformButton.png",
+    "editor:ballButton": "editor/ballButton.png"
   },
   "jsons": {
     "platform:constants": "platform/constants.json",
     "platform:constants2": "platform/constants2.json",
     "platform:prototypeLevel": "platform/prototypeLevel.json",
-    "platform:defaultLevel": "platform/defaultLevel.json"
+    "platform:defaultLevel": "platform/defaultLevel.json",
+    "levels:complicatedSpikes": "levels/complicatedSpikes.json",
+    "levels:honeyPatchAndTwoBees": "levels/honeyPatchAndTwoBees.json",
+    "levels:honeypatchIntro": "levels/honeypatchIntro.json",
+    "levels:honeypatchWithBees": "levels/honeypatchWithBees.json",
+    "levels:killWithSpike": "levels/killWithSpike.json",
+    "levels:larvaeAvoidMultiple": "levels/larvaeAvoidMultiple.json",
+    "levels:multipleEnemies": "levels/multipleEnemies.json",
+    "levels:oneBee": "levels/oneBee.json",
+    "levels:oneLarvae": "levels/oneLarvae.json",
+    "levels:prototypeLevelRedux": "levels/prototypeLevelRedux.json",
+    "levels:rotation": "levels/rotation.json",
+    "levels:rotationInMidAir": "levels/rotationInMidAir.json",
+    "levels:moreComplexMazeWithoutHazards": "levels/secondLevel.json",
+    "levels:spikesEverywhereONEBee": "levels/spikesEverywhereONEBee.json",
+    "levels:spikesEverywhereTWOBee": "levels/spikesEverywhereTWOBee.json",
+    "levels:spikesIntro": "levels/spikesIntro.json",
+    "levels:threadTheNeedle": "levels/threadTheNeedle.json",
+    "levels:toTheTopRight": "levels/toTheTopRight.json",
+    "levels:yoloLarvaeDrop": "levels/yoloLarvaeDrop.json",
+    "levels:yoloSkydiver": "levels/yoloSkydiver.json",
+    "levels:simpleSpikedBall": "levels/simpleSpikedBall.json",
+    "levels:killTheBeesWithTheBall": "levels/killTheBeesWithTheBall.json",
+    "levels:ballMaze": "levels/ballMaze.json",
+    "levels:surroundedBySpikes": "levels/surroundedBySpikes.json",
+    "levels:killLarvaeWithSpike": "levels/killLarvaeWithSpike.json",
+    "levels:boulderMaze": "levels/boulderMaze.json",
+    "levels:boulderComplicated": "levels/boulderComplicated.json"
   },
   "sounds": {
     "platform:jump": "platform/jump.mp3",
     "platform:pew": "platform/pew.mp3",
-    "platform:plop": "platform/plop.mp3"
+    "platform:plop": "platform/plop.mp3",
+    "audio:soundeffect_death": "audio/soundeffect_death.mp3",
+    "audio:soundeffect_death_pixel": "audio/soundeffect_death_pixel.mp3",
+    "audio:soundeffect_tracking": "audio/soundeffect_tracking.mp3",
+    "audio:soundeffect_win": "audio/soundeffect_win.mp3",
+    "audio:bgm": "audio/bgm.mp3",
+    "audio:soundtrack_mainmenu": "audio/soundtrack_mainmenu.mp3"
   },
   "fonts": {
     "menuFont": {
@@ -104,8 +232,8 @@
       "size": 32
     },
     "shared:retro": {
-        "file": "shared/RetroGame.ttf",
-        "size": 64
+        "file": "shared/LoRes9OTWide-Bold.ttf",
+        "size": 80
     },
     "shared:marker": {
       "file": "shared/MarkerFelt.ttf",

@@ -209,7 +209,11 @@
     "levels:yoloSkydiver": "levels/yoloSkydiver.json",
     "levels:simpleSpikedBall": "levels/simpleSpikedBall.json",
     "levels:killTheBeesWithTheBall": "levels/killTheBeesWithTheBall.json",
-    "levels:ballMaze": "levels/ballMaze.json"
+    "levels:ballMaze": "levels/ballMaze.json",
+    "levels:surroundedBySpikes": "levels/surroundedBySpikes.json",
+    "levels:killLarvaeWithSpike": "levels/killLarvaeWithSpike.json",
+    "levels:boulderMaze": "levels/boulderMaze.json",
+    "levels:boulderComplicated": "levels/boulderComplicated.json"
   },
   "sounds": {
     "platform:jump": "platform/jump.mp3",

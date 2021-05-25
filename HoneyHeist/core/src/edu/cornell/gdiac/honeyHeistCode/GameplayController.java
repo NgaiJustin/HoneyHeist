@@ -516,7 +516,7 @@ public class GameplayController implements Screen, InputProcessor {
         }
 
         // Toggle debug
-        if (input.didDebug()) {
+        /*if (input.didDebug()) {
 //            debug = !debug;
             levelController.setDebug(!levelController.isDebug());
         }
@@ -528,7 +528,7 @@ public class GameplayController implements Screen, InputProcessor {
         // Handle resets
         if (input.didReset()) {
             reset();
-        }
+        }*/
 
         // Now it is time to maybe switch screens.
         if (quitReady) {
@@ -538,10 +538,10 @@ public class GameplayController implements Screen, InputProcessor {
 		} else if (input.didExit()) {
         	isPaused = !isPaused;
         	return false;
-        } else if (input.didAdvance()) {
-			pause();
-			listener.exitScreen(this, EXIT_EDITOR);
-			return false;
+//        } else if (input.didAdvance()) {
+//			pause();
+//			listener.exitScreen(this, EXIT_EDITOR);
+//			return false;
 		} else if (menuReady) {
         	pause();
         	levelController.stopAllSounds();
