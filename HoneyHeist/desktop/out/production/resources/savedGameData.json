@@ -2,106 +2,106 @@
 "levels": [
 	{
 		"unlock": true,
-		"complete": false,
+		"complete": true,
 		"file": "levels:rotation"
 	},
 	{
-		"unlock": false,
+		"unlock": true,
 		"complete": false,
 		"file": "levels:moreComplexMazeWithoutHazards"
 	},
 	{
-		"unlock": false,
+		"unlock": true,
 		"complete": false,
 		"file": "levels:spikesIntro"
 	},
 	{
-		"unlock": false,
+		"unlock": true,
 		"complete": false,
 		"file": "levels:complicatedSpikes"
 	},
 	{
-		"unlock": false,
+		"unlock": true,
 		"complete": false,
 		"file": "levels:oneLarvae"
 	},
 	{
-		"unlock": false,
+		"unlock": true,
 		"complete": false,
 		"file": "levels:larvaeAvoidMultiple"
 	},
 	{
-		"unlock": false,
+		"unlock": true,
 		"complete": false,
 		"file": "levels:killWithSpike"
 	},
 	{
-		"unlock": false,
+		"unlock": true,
 		"complete": false,
 		"file": "levels:oneBee"
 	},
 	{
-		"unlock": false,
+		"unlock": true,
 		"complete": false,
 		"file": "levels:multipleEnemies"
 	},
 	{
-		"unlock": false,
+		"unlock": true,
 		"complete": false,
 		"file": "levels:honeypatchIntro"
 	},
 	{
-		"unlock": false,
+		"unlock": true,
 		"complete": false,
 		"file": "levels:honeyPatchAndTwoBees"
 	},
 	{
-		"unlock": false,
+		"unlock": true,
 		"complete": false,
 		"file": "levels:yoloLarvaeDrop"
 	},
 	{
-		"unlock": false,
+		"unlock": true,
 		"complete": false,
 		"file": "levels:simpleSpikedBall"
 	},
 	{
-		"unlock": false,
+		"unlock": true,
 		"complete": false,
 		"file": "levels:killTheBeesWithTheBall"
 	},
 	{
-		"unlock": false,
+		"unlock": true,
 		"complete": false,
 		"file": "levels:honeypatchWithBees"
 	},
 	{
-		"unlock": false,
+		"unlock": true,
 		"complete": false,
 		"file": "levels:prototypeLevelRedux"
 	},
 	{
-		"unlock": false,
+		"unlock": true,
 		"complete": false,
 		"file": "levels:ballMaze"
 	},
 	{
-		"unlock": false,
+		"unlock": true,
 		"complete": false,
 		"file": "levels:yoloSkydiver"
 	},
 	{
-		"unlock": false,
+		"unlock": true,
 		"complete": false,
 		"file": "levels:boulderComplicated"
 	},
 	{
-		"unlock": false,
+		"unlock": true,
 		"complete": false,
 		"file": "levels:rotationInMidAir"
 	},
 	{
-		"unlock": false,
+		"unlock": true,
 		"complete": false,
 		"file": "levels:threadTheNeedle"
 	}

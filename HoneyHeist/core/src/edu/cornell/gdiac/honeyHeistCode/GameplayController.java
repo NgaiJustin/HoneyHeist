@@ -555,7 +555,7 @@ public class GameplayController implements Screen, InputProcessor {
 				reset();
 			} else if (levelController.isComplete()) {
 				pause();
-				saveData();
+//				saveData();
 				currentLevelNum ++;
 				System.out.println("current level: " + currentLevelNum);
 				listener.exitScreen(this, EXIT_NEXT);
@@ -932,24 +932,21 @@ public class GameplayController implements Screen, InputProcessor {
 		return jsonLevels;
 	}
 
-	public void saveData() {
-//		System.out.print("current directory: ");
-		String localPath = Gdx.files.getLocalStoragePath();
-		System.out.print("localPath: " + localPath);
-		FileHandle file = Gdx.files.absolute(localPath + "savedGameData.json");
-		System.out.println("file content: " + localPath + "savedGameData.json");
-		int size = allLevelData.size;
-		System.out.println("size: " + size);
-		allLevelData.get(currentLevelNum - 1).get("complete").set(true);
-		if (currentLevelNum < size) {
-			allLevelData.get(currentLevelNum).get("unlock").set(true);
-		}
-		Levels jsonLevels = convertToJsonLevel();
-		Json json = new Json();
-		json.setOutputType(JsonWriter.OutputType.json);
-		file.writeString(json.prettyPrint(jsonLevels), false);
-		System.out.println("saved");
-	}
+//	public void saveData() {
+//		String localPath = Gdx.files.getLocalStoragePath();
+//		FileHandle file = Gdx.files.absolute(localPath + "savedGameData.json");
+////		FileHandle gamefile = Gdx.files.external("savedGameData.json");
+//		int size = allLevelData.size;
+//		allLevelData.get(currentLevelNum - 1).get("complete").set(true);
+//		if (currentLevelNum < size) {
+//			allLevelData.get(currentLevelNum).get("unlock").set(true);
+//		}
+//		Levels jsonLevels = convertToJsonLevel();
+//		Json json = new Json();
+//		json.setOutputType(JsonWriter.OutputType.json);
+//		file.writeString(json.prettyPrint(jsonLevels), false);
+//		System.out.println("saved");
+//	}
 
 	/**
 	 * Called when a key was pressed (UNSUPPORTED)

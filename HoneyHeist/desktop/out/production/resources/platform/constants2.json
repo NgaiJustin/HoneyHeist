@@ -4,7 +4,7 @@
       "friction": 0.4,
       "density": 0.0,
       "restitution": 0.1,
-      "volume": 0.8
+      "volume": 0.2
     },
     "goal": {
       "density": 0.0,
@@ -12,12 +12,12 @@
       "restitution": 0.0
     },
     "player": {
-      "shrink": [0.75, 0.65],
+      "shrink": [0.9, 0.65],
       "force": 20.0,
       "damping": 10.0,
       "density": 1.0,
       "friction": 0.0,
-      "maxspeed": 3.0,
+      "maxspeed": 3.3,
       "jump_force": 5.5,
       "jump_cool": 30,
       "shot_cool": 40,
@@ -32,7 +32,7 @@
       "damping": 10.0,
       "density": 1.0,
       "friction": 0.0,
-      "maxspeed": 3.0,
+      "maxspeed": 3.3,
       "jump_force": 5.5,
       "jump_cool": 30,
       "shot_cool": 40,
@@ -49,19 +49,20 @@
         "wander_speed_factor": 0.5,
         "chase_speed_factor": 0.5,
         "check_fall_off_platform": 1,
-        "ticksBeforeChangeInRandomDirection": 15
+        "ticksBeforeChangeInRandomDirection": 15,
+        "ticksUntilChangeMustOccur": 180
       }
     },
   "FlyingBee": {
     "shrink": [
-      0.95,
-      0.7
+      0.75,
+      1.75
     ],
     "force": 20.0,
     "damping": 10.0,
     "density": 1.0,
     "friction": 0.0,
-    "maxspeed": 3.0,
+    "maxspeed": 3.3,
     "jump_force": 5.5,
     "jump_cool": 30,
     "shot_cool": 40,
@@ -71,13 +72,28 @@
     },
     "ai_controller_options": {
       "enemy_type": 0,
-      "chase_distance": 3,
+      "chase_distance": 4,
       "wander_radius": 0.7,
       "target": 0,
       "wander_speed_factor": 0.001,
       "chase_speed_factor": 0.5,
       "check_fall_off_platform": 0,
-      "ticksBeforeChangeInRandomDirection": 120
+      "ticksBeforeChangeInRandomDirection": 120,
+      "ticksUntilChangeMustOccur": 240
+    }
+  },
+  "Ball" : {
+    "shrink" : [
+      1, 1
+    ],
+    "damping": 10.0,
+    "density": 10.0,
+    "friction": 100.0,
+    "maxspeed": 3.3,
+    "radius": 0.5,
+    "sensor": {
+      "shrink": 0.1,
+      "height": 0.05
     }
   }
 }
