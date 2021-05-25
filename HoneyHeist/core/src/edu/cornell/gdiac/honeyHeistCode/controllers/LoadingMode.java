@@ -81,6 +81,9 @@ public class LoadingMode implements Screen, InputProcessor, ControllerListener {
 	/** Loading text (full) */
 	private Texture loadingFull;
 
+	/** Loading hexagons */
+	private Texture loadingHex;
+
 	/** Loading Tree animation */
 	private FilmStrip loadingTree;
 
@@ -99,7 +102,7 @@ public class LoadingMode implements Screen, InputProcessor, ControllerListener {
 	/** Ration of the bar height to the screen */
 	private static float BAR_HEIGHT_RATIO = 0.25f;	
 	/** Height of the progress bar */
-	private static float BUTTON_SCALE  = 0.75f;
+	private static float BUTTON_SCALE  = 1.125f;
 	
 	/** Reference to GameCanvas created by the root */
 	private GameCanvas canvas;
@@ -220,6 +223,8 @@ public class LoadingMode implements Screen, InputProcessor, ControllerListener {
 		// Put in the Loading animation gif
 		loadingTree = internal.getEntry("tree.pacing", FilmStrip.class);
 
+		// Put in the Loading hexagons
+		loadingHex = internal.getEntry("hex", Texture.class);
 
 
 		// Break up the status bar texture into regions
@@ -307,17 +312,18 @@ public class LoadingMode implements Screen, InputProcessor, ControllerListener {
 	private void draw() {
 		canvas.begin();
 
-		canvas.draw(background, 0, 0);
-		animateTree();
+		canvas.draw(background,Color.WHITE, 0,0,
+				background.getWidth()*0.25f, background.getHeight()*0.25f);
+		//animateTree();
 
 		if (playButton == null) {
 			drawProgress(canvas);
 		} else {
 			Color tint = (pressState == 1 ? Color.GRAY: Color.WHITE);
-			canvas.draw(playButton, tint, playButton.getWidth()/2, playButton.getHeight()/2, 
-						centerX, centerY, 0, BUTTON_SCALE*scale, BUTTON_SCALE*scale);
-
-
+			float width = playButton.getWidth()*BUTTON_SCALE;
+			float height = playButton.getHeight()*BUTTON_SCALE;
+			canvas.draw(playButton, tint, centerX-0.35f*width, centerY-1.1f*height,
+					width, height);
 		}
 
 		canvas.end();
@@ -334,11 +340,10 @@ public class LoadingMode implements Screen, InputProcessor, ControllerListener {
 	 */	
 	private void drawProgress(GameCanvas canvas) {
 
-
+/*
 		canvas.draw(loadingEmpty, Color.WHITE, centerX-(loadingEmpty.getWidth()/2), centerY*0.9f,
 				loadingEmpty.getWidth(), loadingEmpty.getHeight());
 
-		/*
 		canvas.draw(statusBkgLeft,   Color.WHITE, centerX-width/2, centerY,
 				scale*statusBkgLeft.getRegionWidth(), scale*statusBkgLeft.getRegionHeight());
 		canvas.draw(statusBkgRight,  Color.WHITE,centerX+width/2-scale*statusBkgRight.getRegionWidth(), centerY,
@@ -354,8 +359,15 @@ public class LoadingMode implements Screen, InputProcessor, ControllerListener {
 		if (progress > 0) {
 
 			float span = progress*loadingFull.getHeight();
-			canvas.draw(loadingFull, Color.WHITE, centerX-(loadingFull.getWidth()/2), centerY*0.9f,
-					loadingFull.getWidth(), loadingFull.getHeight(), 1, progress, true);
+			//canvas.draw(loadingHex, Color.WHITE, centerX-(loadingFull.getWidth()/2), centerY*0.9f,
+			//		loadingFull.getWidth(), loadingFull.getHeight(), 1, progress, true);
+			float w = loadingHex.getWidth()*2.035f;
+			float h = loadingHex.getHeight()*2.035f;
+
+			for(float i = 0; i*0.125f < 1-progress; i++){
+				canvas.draw(loadingHex, Color.WHITE, centerX+((3.23f-i)*w), centerY-(1.1f*h),w,h);
+			}
+
 
 			/*
 			canvas.draw(statusFrgRight,  Color.WHITE,centerX-width/2+scale*statusFrgLeft.getRegionWidth()+span, centerY,
@@ -484,11 +496,25 @@ public class LoadingMode implements Screen, InputProcessor, ControllerListener {
 		
 		// TODO: Fix scaling
 		// Play button is a circle.
+
+		float width = playButton.getWidth()*BUTTON_SCALE;
+		float height = playButton.getHeight()*BUTTON_SCALE;
+
+		float leftX = centerX-0.35f*width;
+		float rightX = centerX+0.65f*width;
+		float bottomY = centerY-1.1f*height;
+		float topY = centerY-0.1f*height;
+		if(screenX > leftX && screenX < rightX && screenY > bottomY && screenY < topY){
+			pressState = 1;
+		}
+		/*
 		float radius = BUTTON_SCALE*scale*playButton.getWidth()/2.0f;
 		float dist = (screenX-centerX)*(screenX-centerX)+(screenY-centerY)*(screenY-centerY);
 		if (dist < radius*radius) {
 			pressState = 1;
 		}
+
+		 */
 		return false;
 	}
 	

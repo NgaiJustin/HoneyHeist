@@ -1,6 +1,6 @@
 {
 	"textures": {
-        "background": "shared/loadingtemp.png",
+        "background": "shared/loading_background.png",
         "tree": {
           "file": "shared/loadingTree.png",
           "sprites": {
@@ -13,6 +13,7 @@
         "empty": "shared/loading_empty.png",
         "full": "shared/loading_full.png",
 		"play": "shared/play.png",
+        "hex": "shared/loading_hex.png",
         "progress": {
             "file":      "shared/progressbar.png",
             "atlas":     {
