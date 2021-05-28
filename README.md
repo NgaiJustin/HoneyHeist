@@ -1,13 +1,37 @@
+![banner](./Assets/banner.png)
+
 # HoneyHeist
 
-## Download instructions:
-Download the jar by clicking on the latest release of our game on the right side of the screen.
+_Capstone Project for CS 3152 - Intro to Game Development_
+
+As an ant in a beehive, you have struck liquid gold. The deeper you delve, the more dense and succulent the honey is. Crawl and rock your way through sticky platforms and enemies towards the core of the hive to get a taste of the finest and most luscious honey the universe has to offer!
+
+## Download:
+
+-   Download the zip from one of the following links
+
+    [Mac Release](https://github.com/NgaiJustin/HoneyHeist/releases/tag/4.3) (MacOS 10.13+)
+
+    [Windows Release](https://github.com/NgaiJustin/HoneyHeist/releases/tag/4.2) (Windows 7+)
+
+-   Unzip
+-   Right click, Open
+
+## Objective:
+
+![Objective](./Assets/objective.png)
 
 ## Controls:
-Move character using left and right arrow keys.
-Rotate the stage counter-clockwise using A.
-Rotate the stage clockwise using D.
 
-Level's can be selected through the main menu. All 19 levels are available, ordered by their difficulty.
-Pause the game by clicking on the play button.
-Return to the main menu by clicking on the menu button.
+![Controls](./Assets/controls.png)
+
+## Team:
+
+Ariya Feng | Design Lead \
+Michael Paul Hanlon | Project Lead \
+Justin Ngai | Programmer \
+Liam Ryu Riley | Software Lead \
+Kiryu Sakakibara | Programmer \
+Benjamin Lee Stewart | Audio Lead \
+Justin C Tse | Programmer \
+Yihan Zhang | Programmer
