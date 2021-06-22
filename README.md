@@ -29,7 +29,7 @@ As an ant in a beehive, you have struck liquid gold. The deeper you delve, the m
 
 Ariya Feng | Design Lead \
 Michael Paul Hanlon | Project Lead \
-[Justin Ngai](justinngai.me) | Programmer \
+[Justin Ngai](https://justinngai.me/) | Programmer \
 Liam Ryu Riley | Software Lead \
 Kiryu Sakakibara | Programmer \
 Benjamin Lee Stewart | Audio Lead \
